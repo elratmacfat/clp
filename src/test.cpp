@@ -1,15 +1,12 @@
 
 
 #include <elrat/clp.h>
-
 #include <elrat/testbench.h>
 
 #include <functional>
 #include <iostream>
 #include <string>
 #include <vector>
-
-
 
 using namespace elrat::clp;
 using namespace elrat::testbench;
@@ -18,8 +15,8 @@ using namespace std;
 // In order of dependence
 void TestCmdMap();
 void TestCmdStr();          // 'CmdStr': independent
-void TestUtility();         // util.h/util.cpp
-void TestConstraint();      // 'Constraint' interface, 'Min', 'Max', 'Range': depends on util.h/util.cpp
+void TestUtility();         // 
+void TestConstraint();      // 'Constraint' interface, 'Min', 'Max', 'Range': depe
 void TestParamDesc();       // 'ParamDesc/ParameterDescriptor': depends on 'Constraint'
 void TestOptDesc();         // 'OptDesc/OptionDescriptor': depends on 'ParamDesc'
 
@@ -74,6 +71,11 @@ int main ( int argc, char* argv[] )
 //
 //  TestCase Cmd Map
 //
+//	This is more of a does-it-even-compile-test
+//
+//	Testing if several callable constructs can be bound
+//	to the CmdMap's template parameter.
+//
 void TestCmdMap()
 {
     {   // shared_ptr
@@ -117,6 +119,10 @@ void TestCmdMap()
 
 //
 //  CmdStr / CommandStrings
+//
+//  Checks if issued command strings are parsed correctly.
+//  In addition, the behaviour upon accessing existing and
+//  non-existing elements is tested.
 //
 void TestCmdStr() {
     { // CmdStr: Empty
@@ -165,13 +171,10 @@ void TestCmdStr() {
     }
 }
 
-//
-//  util.h/util.cpp
-//
 void TestUtility()
 {
-    {
-        TestCase t("util.h/util.cpp - isDecimal()");
+    { // Testing regex for strings representing decimal numbers.
+        TestCase t("isDecimal()");
         t.check( isDecimal("-10") );
         t.check( isDecimal("0") );
         t.check( isDecimal("-0") );
@@ -183,8 +186,8 @@ void TestUtility()
         t.check( !isDecimal("42.1") );
         t.check( !isDecimal("067") );
     }
-    {
-        TestCase t("util.h/util.cpp - isHex()");
+    { // Testing regex for hex 
+        TestCase t("isHex()");
         t.check( isHex("0xFF") );
         t.check( isHex("0Xff") );
         t.check( isHex("0XD3adc0d3") );
@@ -197,8 +200,8 @@ void TestUtility()
         t.check( !isHex("+0xFF"));
         t.check( !isHex("-0xFF"));
     }
-    {
-        TestCase t("util.h/util.cpp - isOctal()");
+    { // Testing regex for octal 
+        TestCase t("isOctal()");
         t.check( isOctal("01") );
         t.check( isOctal("07") );
         t.check( isOctal("0777") );
@@ -208,8 +211,8 @@ void TestUtility()
         t.check( !isOctal("505") );
         t.check( !isOctal("0787") );
     }
-    {
-        TestCase t("util.h/util.cpp - isFloatingPoint()");
+    { // Testing regex for floating point numbers
+        TestCase t("isFloatingPoint()");
         t.check( isFloatingPoint("+1") );
         t.check( isFloatingPoint("1") );
         t.check( isFloatingPoint("-1") );

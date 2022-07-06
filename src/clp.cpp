@@ -1,3 +1,5 @@
+
+
 #include <elrat/clp.h>
 
 #include <cassert>
@@ -5,19 +7,17 @@
 #include <memory>
 #include <regex>
 
-
+// Runtime assert with message.
 #define assertm(exp, msg) assert(((void)msg, exp)) // cppreference.com
 
 
 namespace elrat {
 namespace clp {
 
+	// Be more verbose and use these constants as function arguments
+	// for parameter and option definitions (instead of passing just true/false).
 	const bool Mandatory{false};
 	const bool Optional{true};
-
-	//
-	// cmddescmap.cpp
-	//
 
 	// static help descriptor
 	const CmdDesc cmdDescHelp(
@@ -26,7 +26,11 @@ namespace clp {
 				{ parameter<Identifier>("command","Print the description of the specified command only.") },
 				{ OptDesc("long",'l',"Pass this option to be more descriptive.") });
 
+	
 
+	//
+	//	CommandDescriptorMap (CmdDescMap)
+	//
 	CmdDescMap::CmdDescMap( const std::string& szName, bool addHelpDescriptor )
 	: m_szName{szName}
 	{
@@ -107,9 +111,8 @@ namespace clp {
 	}
 
 
-
 	//
-	// cmddesc.cpp
+	//	CommandDescriptor (CmdDesc)
 	//
 	CmdDesc::CmdDesc(
 			const std::string& szName,
@@ -249,7 +252,7 @@ namespace clp {
 	}
 
 	//
-	// optdesc.cpp 
+	// OptionDescriptor (OptDesc) 
 	//
 	OptDesc option(
 		const std::string& szName,
@@ -366,7 +369,7 @@ namespace clp {
 	}
 
 	// 
-	// paramdesc.cpp
+	//	ParameterDescriptor (ParamDesc)
 	// 
 	ErrorCode internal_validate( const std::string& szRegex, const std::string& szParam ) {
 		return ( regex_match( szParam, std::regex( szRegex ) )
@@ -453,7 +456,7 @@ namespace clp {
 
 
 	//
-	// cmdstr.cpp
+	// 	CommandStrings (CmdStr)
 	//
 	CmdStr::CmdStr()
 	{
@@ -529,7 +532,7 @@ namespace clp {
 	}
 
 	//
-	//	Command
+	//	CmdStr: Command related
 	//
 
 	const std::string& CmdStr::getCommandName() const {
@@ -548,7 +551,7 @@ namespace clp {
 
 
 	//
-	//	Option
+	//	CmdStr: Option related
 	//
 
 	int CmdStr::getOptionCount() const
@@ -572,7 +575,7 @@ namespace clp {
 	}
 
 	//
-	//	Parameter
+	//	CmdStr: Parameter related
 	//
 
 	int CmdStr::getParameterCount( int optIndex ) const
@@ -608,7 +611,7 @@ namespace clp {
 	}
 
 	//
-	// util.cpp
+	//	Utility
 	// 
 	static bool is_X ( const std::string& szArg, const std::string& szRegex )
 	{

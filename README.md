@@ -1,8 +1,4 @@
-# elrat-clp
-
-(Work in progress)
-
-C++ library
+# clp
 
 ## Overview
 
@@ -31,13 +27,14 @@ It requires C++11.
 
 Included in the root directory is a `CMakeLists.txt`, which produces a shared library (or a DLL if you're on Windows), a test program, and some other executables.
 
-The test program depends on `elrat-testbench` (a header-only library). If it is not found, compiling the test will be skipped.
-
 #### Manual
 - Copy sources into your project directly
     - Copy `src/clp.cpp` and `inc/elrat/clp.h` to your project.
 - Compile into a library manually
     - *TODO*
+#### Test
+
+A `test.cpp` is included, but depends on `elrat/testbench.h`, which is not part of the repository yet. The CMake-File will skip building the test.
 
 ## Implementation Details
 
