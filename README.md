@@ -21,20 +21,38 @@ Alternatively, before going into the source code, you can visit the *Implementat
 
 ### How does it compile?
 
-It requires C++11.
+- Requirements
+	- C++11
 
-#### CMake
+- Optional 
+	- `Boost.Test`: Just if you want to compile the test executable.
+	- `CMake`: Only if you want to use the included CMakeLists.file. This is not necessary at all. A simple one-liner will compile the library just as well, as shown below.
+
+#### Compile with the help of CMake
 
 Included in the root directory is a `CMakeLists.txt`, which produces a shared library (or a DLL if you're on Windows), a test program, and some other executables.
 
+```
+cd /path/to/clp-root-directory
+mkdir build
+cd build
+```
+
+Invoke CMake on the parent directory, creating the build files in the current directory. If `Boost` could not be found, the test executable will be skipped.
+
+```
+cmake ..
+make
+```
+
+There are additional examples that will be compiled and linked against the library. However, calling `make install` will not install these. Only the header file and the library is installed.
+
 #### Manual
 - Copy sources into your project directly
-    - Copy `src/clp.cpp` and `inc/elrat/clp.h` to your project.
+    - Copy `src/clp.cpp` and `inc/elrat/clp.h` to your project folder.
+    - `#include <elrat/clp.h>` in your source file.
 - Compile into a library manually
     - *TODO*
-#### Test
-
-A `test.cpp` is included, but depends on `elrat/testbench.h`, which is not part of the repository yet. The CMake-File will skip building the test.
 
 ## Implementation Details
 
