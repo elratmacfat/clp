@@ -101,7 +101,7 @@ namespace clp {
 
 	ErrorCode CmdDescMap::validate( CmdStr& cmdStr ) const {
 		ErrorCode result = ErrorCode::INVALID_COMMAND;
-		for( CmdIndex i{0}; i < static_cast<CmdIndex>(m_vCmdDesc.size()); i++ ) {
+		for( unsigned i{0}; i < m_vCmdDesc.size(); i++ ) {
 			result = m_vCmdDesc[i].validate( cmdStr );
 			if (result != ErrorCode::INVALID_COMMAND) {
 				break;
@@ -440,6 +440,7 @@ namespace clp {
 		return internal_constraints_check( ParamDesc::m_vpConstraints, szParam );
 	}
 
+	// TODO Find the correct regular expression for 'path'. What about the differences between Windows/MacOS/Linux?
 	ErrorCode ParamDescPath::validate( const std::string& szParam ) const {
 		ErrorCode result{ internal_validate("^([_\\w]+)$", szParam ) };
 		if ( result != SUCCESS)

@@ -1,63 +1,29 @@
 //
-// 	elrat-clp © elratmacfat, 2022
+// 	clp © elratmacfat, 2021
 // 
 // 	command line processor
 //
-// 	file: elrat/clp/clp.h
-//	
-//	What is it?
-//	-----------
-//	A command within a command line based application consists of the command name itself, its parameters
-//	and options which in turn may have own parameters.
-//	The command line processor solves the following tasks, typically in the given order:
-//		1. The programmer sets up the descriptors and the functions for all of his commands.
-//		2. A command line, e.g. "helpme --verbose", is converted into an object, which determines the different
-//		parts (command, options and parameters).
-//		3. The command object is then processed by the command desciptor map (set up by the programmer during
-//		the initialization), which then can tell whether the issued command exists, and if so, also validates
-//		the attached options and parameters (Have all mandatory options/parameters been provided? Are there too
-//		many? Is the parameter's data type correct?).
-//		4. If the command including the options and parameters does match one of the commands described in the
-//		command descriptor map, the corresponding function may be invoked with the command object as parameter.
-//		The invoked function can safely assume that all the necessary information is provided, and can be 
-//		converted into the required types without further type checking.
-//	This is a brief summary of what this library can do. The example (src/example.cpp) should help to get a 
-//	better idea of how this is achieved in detail.
+// 	file: elrat/clp.h
 //
-//	Please note that the commands are required the follow the syntax rules defined by this library. For
-//	production you'd probably be better off with boost::program_options.
 //
-//	Command Syntax
-//	--------------
-//	A command can be followed by zero or more parameters. The last parameter of the command or the previous 
-//	option, or previous option's parameter can be followed by another option. Each option can be followed by
-//	zero or more parameters.
+// 	Structure of this file:
 //
-//	Syntax:
+// 		- includes
+// 		
+// 		- namespace elrat::clp
+// 			
+// 		- Forward declaration 
+// 			- with brief descriptions of what these classes/functions do.
+//			
+//		- Complete class declaration 
+//			- with more detailed descriptions on how to use the class.
+//			
+//		- Template classes or template members are either implemented within
+//		  or right below the declaration.
 //
-//		<Command> [<Parameter>]* [<--Option|-O> [<Parameter>]*]*
 //
-//		< >     Value of command, option or parameter.
-//		*       0 or more
-//		--      Option name. The double dash is followed by an option name of at least one character.
-//		-       Option shorthand. A single dash is followed by exactly one character. The next characters
-//				will be treated as the option's parameter, e.g. -d5 is the same as -d 5 or -d=5.
-//
-//	The inspect_cmdstr application (source file: src/inspect_cmdstr.cpp) is a quick way for you to see
-//	how your input command line would be interpreted.
-//
-//	Background
-//	----------
-//	The author regularly wrote/writes small programs that require input from the user via the command line.
-//	After going through the hassle of implementing the application-specific if-statements over and over 
-//	again, the decision to implement a more or less general purpose library for this use case was made.
-//
-//		
-//
-
 #ifndef ELRAT_CLP_H
 #define ELRAT_CLP_H
-
 
 #include <iomanip>
 #include <iostream>
@@ -71,74 +37,117 @@
 
 namespace elrat { 
 namespace clp {
+	
 	//
-	//	Types
+	//
+	//	Types & Constants
+	//
 	//
 	
+	// ErrorCode is used to give feedback about issued commands
+	//
 	typedef enum _ErrorCode {
-		SUCCESS = 0,                    // Yeah!
-		FAILURE,            // 1        // Something's off, but the author was too lazy to be more communicative about it.
-		INVALID_COMMAND,                 // The command name is not existent/could not be found in the map.
-		INVALID_OPTION,      // 3        // Option used that is not declared at all (wrong name)
-		MISSING_OPTION,                  // Mandatory options are missing.
-		TOO_MANY_OPTIONS,     // 5        // More options provided than declared in the descriptor
-		INVALID_ARGUMENT,                // Argument is of wrong type or doesn't match the declared constraints, e.g. a number is too high or low.
-		MISSING_ARGUMENT,    // 7        // Too few parameters provided. Some parameters may be mandatory.
-		TOO_MANY_ARGUMENTS                // Provided arguments may be valid, but there're additional parameters that don't make sense.
+		SUCCESS = 0,				// Yeah!
+		FAILURE,			// 1 	// Something's off, but the author was too lazy to be more communicative about it.
+		INVALID_COMMAND,			// The command name is not existent/could not be found in the map.
+		INVALID_OPTION, 	// 3	// Option used that is not declared at all (wrong name)
+		MISSING_OPTION,     		// Mandatory options are missing.
+		TOO_MANY_OPTIONS,	// 5	// More options provided than declared in the descriptor
+		INVALID_ARGUMENT,   		// Argument is of wrong type or doesn't match the declared constraints, e.g. a number is too high or low.
+		MISSING_ARGUMENT,	// 7	// Too few parameters provided. Some parameters may be mandatory.
+		TOO_MANY_ARGUMENTS  	    // Provided arguments may be valid, but there're additional parameters that don't make sense.
 	} ErrorCode;
 
-	extern const bool Mandatory;
-	extern const bool Optional;
+	// Error code to string
+	//
+	// Usage example: std::cout << "Error\n" << ErrorMessage.at( ec ) << "\n";
+	//
+	// TODO The current way of retrieving the error message yields the possibility of an out_of_range exception to be thrown. \
+	// Encapsulate the map access in a function for \
+	// 1. convenient usage and \
+	// 2. nothrow guarantee.
+	//
+	extern const std::map<ErrorCode,const char*> ErrorMessage;
 
+	// When setting up your command descriptors, you have to specify if a parameter is optional or mandatory.
+	// Instead of passing a bland 'true' or 'false', you can use these constants, making the call more verbose
+	// about what's going on.
+	//
+	extern const bool Mandatory; // == false
+	extern const bool Optional;  // == true
+
+	// 
+	//
+	// Forward Declaration
+	//
+	//
+	
+	// The CmdMap/CommandMap is a std::map with a std::string as key (the command name) and a 'Callback' as value.
+	// The 'Callback' can actually be anything. It doesn't even have to be callable. But it should be, if you 
+	// follow the intended usage (as shown in src/example.cpp)
+	//
 	template <class Callback> class CmdMap;
 	template <class Callback> using CommandMap = CmdMap<Callback>;
 
+	// CmdStr/CommandStrings is the object that takes a string (e.g. "mycommand 1337 --verbose"), and parses/separates
+	// parameters and options. 
+	// You can either compile and run src/inspect_cmdstr.cpp to see what the results are, or scroll down to the class
+	// declaration.
+	//
 	class   CmdStr;
 	typedef CmdStr      CommandStrings;
 
+	// A command is an aggregate of options and parameters. So are their descriptors.
+	//
 	class   CmdDesc;
 	typedef CmdDesc     CommandDescriptor;
 
+	// The complete description of a command is mapped to its own name, making it easy and fast to find the corresponding
+	// description in a typical use case (The user issues a command line, which first 'word' is the command itself).
+	//
 	class   CmdDescMap;
 	typedef CmdDescMap  CommandDescriptorMap;
 
+	// Option Descriptor. Is very similar to a Command Descriptor, but may be declared mandatory or optional (I see the 
+	// paradox in the nomenclature, but one could think of 'setting' or 'switch' instead of an option, that might be required
+	// in some cases.
+	// An option can have several parameters, but does not have to.
+	//
 	class   OptDesc;
 	typedef OptDesc     OptionDescriptor;
 
-	class   ParamDesc;
-	typedef ParamDesc   ParameterDescriptor;
-
+	// Each of the following parameter descriptor imply their intended usage and datatype.
+	//
 	class   ParamDescNumN;          typedef ParamDescNumN           NumN;           // N*   (positive numbers + zero)
 	class   ParamDescNumZ;          typedef ParamDescNumZ           NumZ;           // Z    (whole numbers)
 	class   ParamDescNumR;          typedef ParamDescNumR           NumR;           // R    (real numbers)
 	class   ParamDescIdentifier;    typedef ParamDescIdentifier     Identifier;     //
 	class   ParamDescString;        typedef ParamDescString         String;         //
 
+	// Utility free functions
+	// Check if the given string represents a number using regular expressions (std::regex)
 	//
-	// 	Utility
-	//
-	
-	// Checks if the given string represents number using regular expressions (std::regex)
-	bool isHex( const std::string& );	// e.g. 0xAB, 0xf2
+	bool isHex( const std::string& );				// e.g. 0xAB, 0xf2
 	bool isOctal( const std::string& );
-	bool isDecimal( const std::string& );	// no leading zeros allowed
-	bool isFloatingPoint( const std::string& );
+	bool isDecimal( const std::string& );			// no leading zeros allowed, because this would indicate an octal representation.
+	
+	bool isFloatingPoint( const std::string& );		// Any decimal can be interpreted as a floating point.
 
 
-	// Error code to string
-	extern const std::map<ErrorCode,const char*> ErrorMessage;
-
-
+	//
+	// Class Declaration And Implementation Of Template Free Functions and Template Members
+	// 
 
 	// 
 	// 	Constraint
+	// 	----------
 	//
-	//  Constraint objects can be attached to parameter objects.
-	//  If a parameter's value doesn't fulfill the constraint's criteria,
-	//  the command line is considered invalid. 
+	//	The Parameter Descriptor (ParamDesc[Num[N|Z|R]|Identifier|String]) itself defines the required data type.
+	//	By adding constraints to that descriptor, the range of valid values can be defined. 
 	//
+	//	Constraint objects are attached to the parameter objects in their constructor call. 
 	//
-	// 	Example:
+	// 	Example
 	//		typedef std::shared_ptr<Constraint> P;
 	//
 	//  	P p1{ constraint<Min>(5)> };
@@ -147,20 +156,41 @@ namespace clp {
 	//
 	//		P p2{ constraint<Range,double>(5.0,12.4)> };
 	
-	// Interface
+	// This is the interface the specific constraints have to implement.
+	//
 	class Constraint {
 	public:
 		virtual ErrorCode check( const std::string& szArg ) const = 0;
 		virtual std::string toString() const = 0;
 	};
 
-	//  Use this template to create constraints
+	//  Use this template to create constraints in a readable fashion.
+	//  This is shown in detail where the parameter descriptors are 
+	//  declared.
+	//
+	//	Example:
+	//		// Create the constraint that the parameter value is expected
+	//		// to be ( >= 5 && <= 10 ).
+	//		auto constraint_ptr = constraint<Range, int>( 5, 10 );
+	//
+	//	Template parameters:
+	//		_T		is the template parameter of C (this is a syntax related necessatiy).
+	//		C		is the specified 'Constraint', namely one of 'Min', 'Max' or 'Range'.
+	//		T		This is the data type of the constraint itself and therefor also the  
+	//				type of function arguments (constraint values).
+	//		Arg		The constraint values
+	//				- 'Min' and 'Max' require one argument,
+	//				- 'Range' requires two
+	//				- Maybe more types will be added, that require any amount of arguments.
+	//
 	template <template <class _T> class C, class T, class ... Arg>
 	std::shared_ptr<Constraint> constraint( Arg ... a ) {
 		return std::shared_ptr<Constraint>( new C<T>( a ... ) );
 	}
 
-	// Internal helper (doesnt work with char and unsigned char due to the use of stringstreams)
+	// Converts the given string into a numerical type.
+	// This is an internal helper function.
+	// 
 	template <class NumType>
 	NumType convert( const std::string& szArg ) {
 		std::stringstream ss(szArg);
@@ -179,7 +209,9 @@ namespace clp {
 			"-> Value of 'szArg' could not be converted into a numeric type.\n");
 		return result;
 	}
+	
 	// Min-Constraint
+	// 
 	template <class NumType>
 	class Min : public Constraint {
 	public:
@@ -196,7 +228,9 @@ namespace clp {
 	private:
 		NumType m_arg;
 	};
+	
 	// Max-Constraint
+	//
 	template <class NumType>
 	class Max : public Constraint {
 	public:
@@ -215,6 +249,7 @@ namespace clp {
 	};
 	
 	// Range-Constraint
+	//
 	template <class NumType>
 	class Range : public Constraint {
 	public:
@@ -232,7 +267,11 @@ namespace clp {
 		NumType m_min, m_max;
 	};
 
-
+	//
+	// 
+	// Descriptor (Desc) 
+	// -----------------
+	//
 	// Base class for command, option and parameter. Provides a 'name' and a descriptive 'what' line.
 	class Desc {
 	public:
@@ -246,29 +285,22 @@ namespace clp {
 	};
 
 	//
-	// 	ParamDesc (Parameter Descriptor)
 	//
-	//  Usage:
+	// Parameter Descriptor (ParamDesc)
+	// --------------------------------
+	// 
+	// Parameters are attached to Command and Option Descriptors. Each parameters can have
+	// a set of constraints.
 	//
-	//  	typedef std::shared_ptr<ParamDesc> P;   // just for the example
+	// The following is the base class for specified Parameter Descriptors. The individual
+	// specifications imply their data type and to some extent their intended usage.
+	// E.g. an 'Identifier' is a 'String', but not every 'String' is an 'Identifier'.
+	// The specifications contain different regex rules, that determine if a given parameter
+	// value meets the requirement.
 	//
-	//  	P a{ parameter<Identifier>("name") };
-	//  	P b = parameter<NumR>("Radius","Circle's radius, duh.", MANDATORY, { constraint<Min,double>(0) } );
-	template<class ParameterType>
-	std::shared_ptr<ParamDesc> parameter(
-		const std::string& szName,
-		const std::string& szWhat = std::string(),
-		bool bOptional = Optional,
-		const std::vector<std::shared_ptr<Constraint>>& vpConstraints = {})
-	{
-		return std::shared_ptr<ParamDesc>( new ParameterType(szName,szWhat,bOptional,vpConstraints) );
-	}
-
-
 	class ParamDesc : public Desc {
 	public:
-		ParamDesc(
-			const std::string& szName,
+		ParamDesc( const std::string& szName,
 			const std::string& szWhat = std::string(""),
 			bool bOptional = Optional,
 			const std::vector<std::shared_ptr<Constraint>>& vpConstraints = {});
@@ -286,29 +318,53 @@ namespace clp {
 		std::vector<std::shared_ptr<Constraint>> m_vpConstraints;
 	};
 
+	// Use this template to create parameters for better readability. 
+	// As opposed to typing out the std::shared_ptr<> stuff.
+	//
+	// Example:
+	// 		// Assigment omitted, because the return value will probably always be used
+	// 		// directly in command/option descriptor's constructor call.
+	//  	parameter<NumR>("Radius","The inner circle's radius", MANDATORY, { 
+	//  			constraint<Min,double>(0.25) 
+	//  	});
+	template<class ParameterType>
+	std::shared_ptr<ParamDesc> parameter( const std::string& szName,
+		const std::string& szWhat = std::string(),
+		bool bOptional = Optional,
+		const std::vector<std::shared_ptr<Constraint>>& vpConstraints = {})
+	{
+		return std::shared_ptr<ParamDesc>( new ParameterType(szName,szWhat,bOptional,vpConstraints) );
+	}
+
+	// Here are the specified parameter descriptors.
+	//
 	// Numbers: positive whole numbers + zero (N)
+	//
 	class ParamDescNumN : public ParamDesc {
 	public:
-		using ParamDesc::ParamDesc; // use non-default constructor of base class
+		using ParamDesc::ParamDesc; 	// This means: Use non-default constructor of base class
 		virtual ErrorCode validate( const std::string& szParam ) const;
 	};
 
 
 	// Numbers: negative and positive whole numbers. (Z)
+	//
 	class ParamDescNumZ : public ParamDesc {
 	public:
 		using ParamDesc::ParamDesc;
 		virtual ErrorCode validate( const std::string& szParam ) const;
 	};
 
-	// Numbers: Floating point number (R)
+	// Numbers: Real numbers (R)
+	//
 	class ParamDescNumR : public ParamDesc {
 	public:
 		using ParamDesc::ParamDesc;
 		virtual ErrorCode validate( const std::string& szParam ) const;
 	};
 
-	// String: Identifier
+	// String: Identifier (like variable names and such, no special characters allowed,...)
+	//
 	class ParamDescIdentifier : public ParamDesc {
 	public:
 		using ParamDesc::ParamDesc;
@@ -316,6 +372,8 @@ namespace clp {
 	};
 
 	// String: Path
+	// TODO Go to src/clp.cpp and implement the regular expression for the ParamDescPath.
+	// Not implemented and not tested. Totally neglected.
 	class ParamDescPath : public ParamDesc {
 	public:
 		using ParamDesc::ParamDesc;
@@ -323,26 +381,23 @@ namespace clp {
 	};
 
 	// String: any String
+	// Just about any string is accepted as parameters, e.g. a message or something.
+	//
 	class ParamDescString : public ParamDesc {
 	public:
 		using ParamDesc::ParamDesc;
 		virtual ErrorCode validate( const std::string& szParam ) const;
 	};
 
-
-	//
-	//	OptDesc (Option Descriptor) 
 	//
 	//
-	
-	// For better readability of command descriptor map initialization,
-	// use this function to construct an OptDesc.
-	OptDesc option(	const std::string& szName,
-		const char& szShortName = '\0',
-		const std::string& szWhat = std::string(),
-		bool bOptional = Optional,
-		const std::vector<std::shared_ptr<ParamDesc>>& vpParameters = {} );
-
+	// Option Descriptor (OptDesc)
+	// ---------------------------
+	//
+	//
+	// Unlike 'Constraint' and 'ParamDesc', this class is not a base class.
+	// It contains everything to represent any option.
+	//
 	class OptDesc : public Desc {
 	public:
 		OptDesc( const std::string& szName,
@@ -371,9 +426,39 @@ namespace clp {
 		std::vector<std::shared_ptr<ParamDesc>> m_vpParamDesc;
 	};
 
+	// For better readability of the Command Descriptor's initialization,
+	// use this function to construct an Option Descriptor.
 	// 
-	// CmdDesc (Command Descriptor)
+	// Example
+	// 		option("message",'m',"Leave a concise, meaningful description of what you've changed.", Mandatory, {
+	// 			parameter<String>("msg","commit message")
+	// 		});
+	//
+	OptDesc option(	const std::string& szName,
+		const char& szShortName = '\0',
+		const std::string& szWhat = std::string(),
+		bool bOptional = Optional,
+		const std::vector<std::shared_ptr<ParamDesc>>& vpParameters = {} );
+
+	//
 	// 
+	// Command Descriptor (CmdDesc)
+	// ----------------------------
+	//
+	// This is where it starts coming together.
+	//
+	// Example:
+	//
+	// 		CommandDescriptor("dump", "Dump the specified state.", {
+	// 				parameter<NumN>("state","The state you want to dump. If omitted, the current state is assumed.", Optional )
+	// 			},
+	// 			{
+	// 				option("file",'f',"Instead of printing the state to stdout, write it to a file.", Optional, {
+	// 					parameter<String>("filename", "If the file exists, it will be overwritten." )
+	// 				})
+	// 			}
+	// 		);
+	//
 	class CmdDesc : public Desc {
 	public:
 		// If you're really lazy, a minimal constructor call looks like CmdDesc("command");
@@ -400,27 +485,28 @@ namespace clp {
 
 
 	//
-	// CmdStr (Command String) 
+	// Command Strings (CmdStr)
+	// ------------------------
 	//
-	//	Internal data looks like the following table.
-	//	Assuming a non-empty string is passed to CmdStr constructor,
-	//	'getOptionCount()' will always return at least 1, because the
-	//	command itself is treated as an option.
-	//	The actual options start at index == 1.
+	// Internal data looks like the following table.
+	// Assuming a non-empty string is passed to CmdStr constructor,
+	// 'getOptionCount()' will always return at least 1, because the
+	// command itself is treated as an option.
+	// The actual options start at index == 1.
 	//
-	//		vector< pair < string, vector<string> >
+	// vector< pair < string, vector<string> >
 	//
-	//		Vector     --- Pair ---
-	//		Index   First       Second
-	//		-----   -----       ------
-	//		0       <command>:  <parameter-array0>
-	//		1       <option1>:  <parameter-array1>
-	//		2       <option2>:  <parameter-array2>
-	//		.       .           .
-	//		.       .           .
+	//	Vector     --- Pair ---
+	//	Index   First       Second
+	//	-----   -----       ------
+	//	0       <command>:  <parameter-array0>
+	//	1       <option1>:  <parameter-array1>
+	//	2       <option2>:  <parameter-array2>
+	//	.       .           .
+	//	.       .           .
 	//
-	//	Accessing non-existent elements will result in a std::out_of_range
-	//	exception thrown by the underlying std::vector.
+	// Accessing non-existent elements will result in a std::out_of_range
+	// exception thrown by the underlying std::vector.
 	//
 	//
 	class CmdStr {
@@ -452,6 +538,7 @@ namespace clp {
 		//
 		//  Command
 		//
+		
 		const std::string& getCommandName() const;
 		int getCommandParameterCount() const;
 		const std::string& getCommandParameter( int index ) const;
@@ -491,8 +578,6 @@ namespace clp {
 
 		// Get the whole vector of parameters attached to a single option.
 		const std::vector<std::string>& getParameters( int optIndex ) const;
-
-
 
 		//
 		//  Miscellaneous
@@ -541,12 +626,11 @@ namespace clp {
 		return result;
 	}
 
-
 	//
-	// CmdDescMap (Command Descriptor Map)
 	//
-	typedef int CmdIndex;
-
+	// Command Descriptor Map (CmdDescMap)
+	//
+	//
 	class CmdDescMap {
 	public:
 
@@ -578,41 +662,63 @@ namespace clp {
 
 
 	//
-	// CmdMap (Command Map)
+	// Command Map (CmdMap)
 	//
-	template <class CmdType>
+	// This class is absolutely optional. It wraps around a std::map, and its sole purpose
+	// is to encapsulate the iterator "arithmetics".
+	//
+	// Template parameter
+	// 		T	is supposed to be a callable object/function in this context, but it can be 
+	// 			about anything, because the actual call to that object is done outside of 
+	// 			this library by the application programmer.
+	// 			
+	template <class T>
 	class CmdMap {
 	public:
 
-		CmdMap() { };
-		CmdMap( const std::map<std::string,CmdType>& arg ) : m_map{arg} {};
+		CmdMap() = default;
+		
+		CmdMap( const std::map<std::string,T>& arg ) : m_map{arg} {};
 
-		bool add( const std::string& szCmd, CmdType ct ) {
-		if (!ct)
-			return false;
-		auto it = m_map.find(szCmd);
-		if ( it != m_map.end() )
-			return false;
+		// Map an object 'ct' to string 'szCmd'. If the key 'szCmd' already exists,
+		// the map remains unaltered and false is returned.
+		//
+		bool add( const std::string& szCmd, T ct ) {
+			if (!ct)
+				return false;
+			auto it = m_map.find(szCmd);
+			if ( it != m_map.end() )
+				return false;
 			m_map[szCmd] = ct;
-		return true;
+			return true;
 		}
 
-		CmdType get( const std::string& szCmd ) const {
-		for( auto it = m_map.begin(); it != m_map.end(); it++ )
-			if ( it->first == szCmd )
-			return it->second;
-		return CmdType();
-		/*
-		auto it = m_map.find(szCmd);    // map<>::find() crashes under some undetermined circumstances.
-		if ( it != m_map.end() )
-			return it->second;
-		return CmdType();       // std::function, std::shared_ptr
-		*/
+		// Retrieve a copy of the object mapped to 'szCmd'.
+		//
+		// If not found, default construct and return.
+		// A default constructed std::function or a std::shared_ptr
+		// evaluates to false, which comes in handy for the purpose
+		// of this class.
+		//
+		T get( const std::string& szCmd ) const {
+			for( auto it = m_map.begin(); it != m_map.end(); it++ )
+				if ( it->first == szCmd )
+					return it->second;
+			return T();
+
+			/*
+			// Previous implementation using std::map::find()
+			//
+			auto it = m_map.find(szCmd);    // map<>::find() crashes under some undetermined circumstances.
+				if ( it != m_map.end() )
+					return it->second;
+			return T();       // std::function, std::shared_ptr
+			*/
 		}
 
 
 	private:
-		std::map<std::string,CmdType> m_map;
+		std::map<std::string,T> m_map;
 	};
 
 
@@ -643,3 +749,4 @@ namespace clp {
 } // clp
 } // elrat
 #endif // include guard
+
