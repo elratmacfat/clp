@@ -1,119 +1,320 @@
-
-
-#include <elrat/clp.h>
+//
+// 	clp © elratmacfat, 2021
+// 
+// 	command line processor
+//
+// 	file: clp.cpp ( implementation of elrat/clp.h )
+//
 
 #include <cassert>
 #include <iostream>
 #include <memory>
 #include <regex>
 
-// Runtime assert with message.
-#define assertm(exp, msg) assert(((void)msg, exp)) // cppreference.com
+#include <elrat/clp.h>
 
+// Runtime assert with message.
+//
+#define assertm(exp, msg) assert(((void)msg, exp)) // cppreference.com
 
 namespace elrat {
 namespace clp {
+
+	//
+	//
+	// Types & Constants
+	//
+	//
 
 	// Be more verbose and use these constants as function arguments
 	// for parameter and option definitions (instead of passing just true/false).
 	const bool Mandatory{false};
 	const bool Optional{true};
 
-	// static help descriptor
-	const CmdDesc cmdDescHelp(
-				"help",
-				"Print a quick reference of available commands.",
-				{ parameter<Identifier>("command","Print the description of the specified command only.") },
-				{ OptDesc("long",'l',"Pass this option to be more descriptive.") });
-
-	
-
+	// This command descriptor is used as default help-command in any command descriptor map.
 	//
-	//	CommandDescriptorMap (CmdDescMap)
-	//
-	CmdDescMap::CmdDescMap( const std::string& szName, bool addHelpDescriptor )
-	: m_szName{szName}
-	{
-		if ( addHelpDescriptor ) {
-		   add( cmdDescHelp );
+	const CmdDesc cmdDescHelp( "help", "Print a quick reference of available commands.", 
+		{
+			parameter<Identifier>("command","Print the description of the specified command only.") 
+		},
+		{ 
+			option("long",'l',"Pass this option to be more descriptive.") 
 		}
+	);
+	
+	//
+	//
+	static const std::map<ErrorCode,const char*> ErrorMessages{
+		 {SUCCESS,			"Success."}
+		,{FAILURE,			"Undefined error."}
+		,{INVALID_COMMAND,	"Invalid command (command not found in the current context.)"}
+		,{INVALID_OPTION,	"Invalid option."}
+		,{MISSING_OPTION,	"Missing option."}
+		,{TOO_MANY_OPTIONS,	"Too many options provided."}
+		,{INVALID_ARGUMENT,	"Invalid argument."}
+		,{MISSING_ARGUMENT,	"Missing argument."}
+		,{TOO_MANY_ARGUMENTS, "Too many arguments provided."}
+	};
+
+	//
+	//
+	//	Utility
+	//
+	//
+	
+	static bool is_X ( const std::string& szArg, const std::string& szRegex )
+	{
+		return std::regex_match(szArg,std::regex(szRegex));
 	}
 
-	CmdDescMap::CmdDescMap( const std::string& szName, const std::vector<CmdDesc>& vCmdDesc, bool addHelpDescriptor )
-	: m_szName{szName}
+	bool isHex( const std::string& szArg )
 	{
-		if ( addHelpDescriptor )
-			add( cmdDescHelp );
-		for( auto c : vCmdDesc )
-			add( c );
+		return is_X( szArg, "^(0[Xx][0-9a-fA-F]+)$" );
 	}
 
-	const std::string& CmdDescMap::getName() const
+	bool isOctal( const std::string& szArg )
 	{
-		return m_szName;
+		return is_X( szArg, "^(0[0-7]+)$" );
 	}
 
-	bool CmdDescMap::add( const CmdDesc& cmdDesc )
+	bool isDecimal( const std::string& szArg )
 	{
-		for ( const CmdDesc& obj : m_vCmdDesc )
-			if ( obj.getName() == cmdDesc.getName() )
+		return is_X( szArg, "(^([+-]?[1-9]\\d+)$)|(^([+-]?0+)$)" );
+	}
+
+	bool isFloatingPoint( const std::string& szArg)
+	{
+		return is_X( szArg, "^([+-]?\\d*.?\\d+)$");
+	}
+
+	// Converts the given error code into a human readable error message.
+	//
+	std::string toString( const ErrorCode& ec ) {
+		try {
+			return ErrorMessages.at( ec );
+		} catch( std::out_of_range ) {
+		}
+		return std::string("Unknown error code.");
+	}
+
+	//
+	//
+	std::ostream& operator<<( std::ostream& os, const ErrorCode& ec ) {
+		os << toString( ec );
+		return os;
+	}
+
+	//
+	// 
+	//	ParameterDescriptor (ParamDesc)
+	//
+	//
+	
+	ErrorCode internal_validate( const std::string& szRegex, const std::string& szParam ) {
+		return ( regex_match( szParam, std::regex( szRegex ) )
+				? ErrorCode::SUCCESS
+				: ErrorCode::INVALID_ARGUMENT );
+	}
+
+	ErrorCode internal_constraints_check( const std::vector<std::shared_ptr<Constraint>>& vpConstraints, const std::string& szParam ) {
+		for( auto& pConstraint : vpConstraints ) {
+			ErrorCode result {pConstraint->check(szParam)};
+			if ( result != SUCCESS )
+				return result;
+		}
+		return SUCCESS;
+	}
+
+	ParamDesc::ParamDesc(
+		const std::string& szName,
+		const std::string& szWhat,
+		bool bOptional,
+		const std::vector<std::shared_ptr<Constraint>>& vpConstraints )
+	: Desc( szName, szWhat ),
+	  m_bOptional{bOptional},
+	  m_vpConstraints(vpConstraints)
+	{
+
+	}
+
+	ParamDesc::~ParamDesc() {
+
+	}
+
+	bool ParamDesc::isOptional() const
+	{
+		return m_bOptional;
+	}
+
+	const std::vector<std::shared_ptr<Constraint>>& ParamDesc::getConstraints() const
+	{
+		return m_vpConstraints;
+	}
+
+	ErrorCode ParamDescNumN::validate( const std::string& szParam ) const {
+		ErrorCode result{ internal_validate("(^(\\d+)$)|(^(0x[0-9a-fA-F]+)$)|(^(0[0-7]+)$)", szParam ) };
+		if ( result != SUCCESS)
+			return result;
+		return internal_constraints_check( ParamDesc::m_vpConstraints, szParam );
+	}
+
+	ErrorCode ParamDescNumZ::validate( const std::string& szParam ) const {
+		ErrorCode result{ internal_validate("^([+-]?\\d+)$", szParam ) };
+		if ( result != SUCCESS)
+			return result;
+		return internal_constraints_check( ParamDesc::m_vpConstraints, szParam );
+	}
+
+	ErrorCode ParamDescNumR::validate( const std::string& szParam ) const {
+		ErrorCode result{ internal_validate("^([+-]?\\d*.?\\d+)$", szParam ) };
+		if ( result != SUCCESS)
+			return result;
+		return internal_constraints_check( ParamDesc::m_vpConstraints, szParam );
+	}
+
+	ErrorCode ParamDescIdentifier::validate( const std::string& szParam ) const {
+		ErrorCode result{ internal_validate("^([_a-zA-Z][_\\w]*)$", szParam ) };
+		if ( result != SUCCESS)
+			return result;
+		return internal_constraints_check( ParamDesc::m_vpConstraints, szParam );
+	}
+
+	// TODO Find the correct regular expression for 'path'. What about the differences between Windows/MacOS/Linux?
+	ErrorCode ParamDescPath::validate( const std::string& szParam ) const {
+		ErrorCode result{ internal_validate("^([_\\w]+)$", szParam ) };
+		if ( result != SUCCESS)
+			return result;
+		return internal_constraints_check( ParamDesc::m_vpConstraints, szParam );
+	}
+
+	ErrorCode ParamDescString::validate( const std::string& szParam ) const {
+		ErrorCode result{ internal_validate("^(.+)$", szParam ) };
+		if ( result != SUCCESS)
+			return result;
+		return internal_constraints_check( ParamDesc::m_vpConstraints, szParam );
+	}
+
+	//
+	//
+	// OptionDescriptor (OptDesc) 
+	//
+	//
+	
+	OptDesc option(
+		const std::string& szName,
+		const char& szShortName,
+		const std::string& szWhat,
+		bool bOptional,
+		const std::vector<std::shared_ptr<ParamDesc>>& vpParameters)
+	{
+		return OptDesc(szName,szShortName,szWhat,bOptional,vpParameters);
+	}
+
+	OptDesc::OptDesc(
+		const std::string& szName,
+		const char& cName,
+		const std::string& szWhat,
+		bool bOptional,
+		const std::vector<std::shared_ptr<ParamDesc>>& vpParamDesc )
+	: Desc(szName,szWhat), m_cName{cName}, m_bOptional{bOptional}, m_vpParamDesc{vpParamDesc}
+	{
+		for( unsigned i{1}; i < m_vpParamDesc.size(); i++ )
+			assertm(
+			   !(!m_vpParamDesc[i]->isOptional() && m_vpParamDesc[i-1]->isOptional()),
+			   "Mandatory parameters must be declared before any optional parameters.");
+	}
+
+	bool OptDesc::add( const std::shared_ptr<ParamDesc>& pParamDesc )
+	{
+		if ( !pParamDesc )
+			return false;
+		for( const std::shared_ptr<ParamDesc>& p : m_vpParamDesc )
+			if ( p->getName() == pParamDesc->getName() )
 				return false;
-		m_vCmdDesc.push_back( cmdDesc );
+		m_vpParamDesc.push_back( pParamDesc );
+
+		unsigned long long n{ m_vpParamDesc.size() - 1 };
+		if ( n )
+			assertm(
+			   !(!m_vpParamDesc[n]->isOptional() && m_vpParamDesc[n-1]->isOptional()),
+			   "Mandatory parameters must be declared before any optional parameters.");
+
 		return true;
 	}
 
-	unsigned CmdDescMap::getCmdCount() const
+	unsigned OptDesc::getParamCount() const
 	{
-		return m_vCmdDesc.size();
+		return m_vpParamDesc.size();
 	}
 
-	CmdDesc& CmdDescMap::operator[](const std::string& szName )
+	bool OptDesc::isOptional() const
 	{
-		for( CmdDesc& result : m_vCmdDesc ) {
-			if ( result.getName() == szName )
+		return m_bOptional;
+	}
+
+	std::string OptDesc::getShortName() const {
+		if ( m_cName )
+			return std::string(1,m_cName);
+		else
+			return std::string();
+	}
+
+	std::shared_ptr<ParamDesc>& OptDesc::operator[]( const std::string& szName )
+	{
+		for ( std::shared_ptr<ParamDesc>& p : m_vpParamDesc )
+			if ( p->getName() == szName )
+				return p;
+		throw std::out_of_range("std::shared_ptr<ParamDesc>& OptDesc::getParamDesc(const std::string&)");
+	}
+
+	std::shared_ptr<ParamDesc>& OptDesc::operator[]( unsigned index )
+	{
+		if ( index < m_vpParamDesc.size() )
+			return m_vpParamDesc[index];
+		throw std::out_of_range("std::shared_ptr<ParamDesc>& OptDesc::getParamDesc(unsigned)");
+	}
+
+	const std::shared_ptr<ParamDesc>& OptDesc::getParamDesc( const std::string& szName ) const
+	{
+		for ( const std::shared_ptr<ParamDesc>& p : m_vpParamDesc )
+			if ( p->getName() == szName )
+				return p;
+		throw std::out_of_range("const std::shared_ptr<ParamDesc>& OptDesc::getParamDesc(const std::string&) const");
+	}
+
+	const std::shared_ptr<ParamDesc>& OptDesc::getParamDesc( unsigned index ) const
+	{
+		if ( index < m_vpParamDesc.size() )
+			return m_vpParamDesc[index];
+		throw std::out_of_range("const std::shared_ptr<ParamDesc>& OptDesc::getParamDesc(unsigned) const");
+	}
+
+	ErrorCode OptDesc::validate( const std::vector<std::string>& vParameters ) const {
+		ErrorCode result{SUCCESS};
+		unsigned i{0};
+		unsigned mandatory{0};
+		for( auto& pParamDesc : m_vpParamDesc )
+			if ( !pParamDesc->isOptional() )
+				mandatory++;
+		if ( vParameters.size() > m_vpParamDesc.size() )
+			return ErrorCode::TOO_MANY_ARGUMENTS;
+		for( ; i < vParameters.size(); i++ ) {
+			result = m_vpParamDesc[i]->validate( vParameters[i] );
+			if ( result != SUCCESS )
 				return result;
 		}
-		throw std::out_of_range("CmdDesc& CmdDescMap::operator[](const std::string&)");
-	}
-
-	CmdDesc& CmdDescMap::operator[]( unsigned index )
-	{
-		if ( index < m_vCmdDesc.size() )
-			return m_vCmdDesc[index];
-		throw std::out_of_range("CmdDesc& CmdDescMap::operator[](unsigned)");
-	}
-
-	const CmdDesc& CmdDescMap::getCmdDesc( const std::string& szName ) const
-	{
-		for( const CmdDesc& result : m_vCmdDesc ) {
-			if ( result.getName() == szName )
-				return result;
-		}
-		throw std::out_of_range("const CmdDesc& CmdDescMap::getCmdDesc(const std::string&) const");
-	}
-
-	const CmdDesc& CmdDescMap::getCmdDesc( unsigned index ) const
-	{
-		if ( index < m_vCmdDesc.size() )
-			return m_vCmdDesc[index];
-		throw std::out_of_range("const CmdDesc& CmdDescMap::getCmdDesc(unsigned) const");
-	}
-
-	ErrorCode CmdDescMap::validate( CmdStr& cmdStr ) const {
-		ErrorCode result = ErrorCode::INVALID_COMMAND;
-		for( unsigned i{0}; i < m_vCmdDesc.size(); i++ ) {
-			result = m_vCmdDesc[i].validate( cmdStr );
-			if (result != ErrorCode::INVALID_COMMAND) {
-				break;
-			}
-		}
+		if ( i < mandatory )
+			return ErrorCode::MISSING_ARGUMENT;
 		return result;
 	}
 
 
 	//
+	//
 	//	CommandDescriptor (CmdDesc)
 	//
+	//
+	
 	CmdDesc::CmdDesc(
 			const std::string& szName,
 			const std::string& szWhat,
@@ -250,211 +451,6 @@ namespace clp {
 		}
 		return result;
 	}
-
-	//
-	// OptionDescriptor (OptDesc) 
-	//
-	OptDesc option(
-		const std::string& szName,
-		const char& szShortName,
-		const std::string& szWhat,
-		bool bOptional,
-		const std::vector<std::shared_ptr<ParamDesc>>& vpParameters)
-	{
-		return OptDesc(szName,szShortName,szWhat,bOptional,vpParameters);
-	}
-
-	OptDesc::OptDesc(
-		const std::string& szName,
-		const char& cName,
-		const std::string& szWhat,
-		bool bOptional,
-		const std::vector<std::shared_ptr<ParamDesc>>& vpParamDesc )
-	: Desc(szName,szWhat), m_cName{cName}, m_bOptional{bOptional}, m_vpParamDesc{vpParamDesc}
-	{
-		for( unsigned i{1}; i < m_vpParamDesc.size(); i++ )
-			assertm(
-			   !(!m_vpParamDesc[i]->isOptional() && m_vpParamDesc[i-1]->isOptional()),
-			   "Mandatory parameters must be declared before any optional parameters.");
-	}
-
-	bool OptDesc::add( const std::shared_ptr<ParamDesc>& pParamDesc )
-	{
-		if ( !pParamDesc )
-			return false;
-		for( const std::shared_ptr<ParamDesc>& p : m_vpParamDesc )
-			if ( p->getName() == pParamDesc->getName() )
-				return false;
-		m_vpParamDesc.push_back( pParamDesc );
-
-		unsigned long long n{ m_vpParamDesc.size() - 1 };
-		if ( n )
-			assertm(
-			   !(!m_vpParamDesc[n]->isOptional() && m_vpParamDesc[n-1]->isOptional()),
-			   "Mandatory parameters must be declared before any optional parameters.");
-
-		return true;
-	}
-
-	unsigned OptDesc::getParamCount() const
-	{
-		return m_vpParamDesc.size();
-	}
-
-	bool OptDesc::isOptional() const
-	{
-		return m_bOptional;
-	}
-
-	std::string OptDesc::getShortName() const {
-		if ( m_cName )
-			return std::string(1,m_cName);
-		else
-			return std::string();
-	}
-
-	std::shared_ptr<ParamDesc>& OptDesc::operator[]( const std::string& szName )
-	{
-		for ( std::shared_ptr<ParamDesc>& p : m_vpParamDesc )
-			if ( p->getName() == szName )
-				return p;
-		throw std::out_of_range("std::shared_ptr<ParamDesc>& OptDesc::getParamDesc(const std::string&)");
-	}
-
-	std::shared_ptr<ParamDesc>& OptDesc::operator[]( unsigned index )
-	{
-		if ( index < m_vpParamDesc.size() )
-			return m_vpParamDesc[index];
-		throw std::out_of_range("std::shared_ptr<ParamDesc>& OptDesc::getParamDesc(unsigned)");
-	}
-
-	const std::shared_ptr<ParamDesc>& OptDesc::getParamDesc( const std::string& szName ) const
-	{
-		for ( const std::shared_ptr<ParamDesc>& p : m_vpParamDesc )
-			if ( p->getName() == szName )
-				return p;
-		throw std::out_of_range("const std::shared_ptr<ParamDesc>& OptDesc::getParamDesc(const std::string&) const");
-	}
-
-	const std::shared_ptr<ParamDesc>& OptDesc::getParamDesc( unsigned index ) const
-	{
-		if ( index < m_vpParamDesc.size() )
-			return m_vpParamDesc[index];
-		throw std::out_of_range("const std::shared_ptr<ParamDesc>& OptDesc::getParamDesc(unsigned) const");
-	}
-
-	ErrorCode OptDesc::validate( const std::vector<std::string>& vParameters ) const {
-		ErrorCode result{SUCCESS};
-		unsigned i{0};
-
-		unsigned mandatory{0};
-
-		for( auto& pParamDesc : m_vpParamDesc )
-			if ( !pParamDesc->isOptional() )
-				mandatory++;
-
-		if ( vParameters.size() > m_vpParamDesc.size() )
-			return ErrorCode::TOO_MANY_ARGUMENTS;
-
-		for( ; i < vParameters.size(); i++ ) {
-			result = m_vpParamDesc[i]->validate( vParameters[i] );
-			if ( result != SUCCESS )
-				return result;
-		}
-
-		if ( i < mandatory )
-			return ErrorCode::MISSING_ARGUMENT;
-
-		return result;
-	}
-
-	// 
-	//	ParameterDescriptor (ParamDesc)
-	// 
-	ErrorCode internal_validate( const std::string& szRegex, const std::string& szParam ) {
-		return ( regex_match( szParam, std::regex( szRegex ) )
-				? ErrorCode::SUCCESS
-				: ErrorCode::INVALID_ARGUMENT );
-	}
-
-	ErrorCode internal_constraints_check( const std::vector<std::shared_ptr<Constraint>>& vpConstraints, const std::string& szParam ) {
-		for( auto& pConstraint : vpConstraints ) {
-			ErrorCode result {pConstraint->check(szParam)};
-			if ( result != SUCCESS )
-				return result;
-		}
-		return SUCCESS;
-	}
-
-	ParamDesc::ParamDesc(
-		const std::string& szName,
-		const std::string& szWhat,
-		bool bOptional,
-		const std::vector<std::shared_ptr<Constraint>>& vpConstraints )
-	: Desc( szName, szWhat ),
-	  m_bOptional{bOptional},
-	  m_vpConstraints(vpConstraints)
-	{
-
-	}
-
-	ParamDesc::~ParamDesc() {
-
-	}
-
-	bool ParamDesc::isOptional() const
-	{
-		return m_bOptional;
-	}
-
-	const std::vector<std::shared_ptr<Constraint>>& ParamDesc::getConstraints() const
-	{
-		return m_vpConstraints;
-	}
-
-	ErrorCode ParamDescNumN::validate( const std::string& szParam ) const {
-		ErrorCode result{ internal_validate("(^(\\d+)$)|(^(0x[0-9a-fA-F]+)$)|(^(0[0-7]+)$)", szParam ) };
-		if ( result != SUCCESS)
-			return result;
-		return internal_constraints_check( ParamDesc::m_vpConstraints, szParam );
-	}
-
-	ErrorCode ParamDescNumZ::validate( const std::string& szParam ) const {
-		ErrorCode result{ internal_validate("^([+-]?\\d+)$", szParam ) };
-		if ( result != SUCCESS)
-			return result;
-		return internal_constraints_check( ParamDesc::m_vpConstraints, szParam );
-	}
-
-	ErrorCode ParamDescNumR::validate( const std::string& szParam ) const {
-		ErrorCode result{ internal_validate("^([+-]?\\d*.?\\d+)$", szParam ) };
-		if ( result != SUCCESS)
-			return result;
-		return internal_constraints_check( ParamDesc::m_vpConstraints, szParam );
-	}
-
-	ErrorCode ParamDescIdentifier::validate( const std::string& szParam ) const {
-		ErrorCode result{ internal_validate("^([_a-zA-Z][_\\w]*)$", szParam ) };
-		if ( result != SUCCESS)
-			return result;
-		return internal_constraints_check( ParamDesc::m_vpConstraints, szParam );
-	}
-
-	// TODO Find the correct regular expression for 'path'. What about the differences between Windows/MacOS/Linux?
-	ErrorCode ParamDescPath::validate( const std::string& szParam ) const {
-		ErrorCode result{ internal_validate("^([_\\w]+)$", szParam ) };
-		if ( result != SUCCESS)
-			return result;
-		return internal_constraints_check( ParamDesc::m_vpConstraints, szParam );
-	}
-
-	ErrorCode ParamDescString::validate( const std::string& szParam ) const {
-		ErrorCode result{ internal_validate("^(.+)$", szParam ) };
-		if ( result != SUCCESS)
-			return result;
-		return internal_constraints_check( ParamDesc::m_vpConstraints, szParam );
-	}
-
 
 	//
 	// 	CommandStrings (CmdStr)
@@ -597,8 +593,9 @@ namespace clp {
 
 
 	//
-	//	Miscellaneous
+	//	CmdStr: Miscellaneous
 	//
+	
 	void CmdStr::print( std::ostream& osDest  ) const
 	{
 		for( auto& o : m_vData ) {
@@ -610,88 +607,128 @@ namespace clp {
 			osDest << ">]\n";
 		}
 	}
-
+	
 	//
-	//	Utility
-	// 
-	static bool is_X ( const std::string& szArg, const std::string& szRegex )
-	{
-		return std::regex_match(szArg,std::regex(szRegex));
-	}
-
-	bool isHex( const std::string& szArg )
-	{
-		return is_X( szArg, "^(0[Xx][0-9a-fA-F]+)$" );
-	}
-
-	bool isOctal( const std::string& szArg )
-	{
-		return is_X( szArg, "^(0[0-7]+)$" );
-	}
-
-	bool isDecimal( const std::string& szArg )
-	{
-		return is_X( szArg, "(^([+-]?[1-9]\\d+)$)|(^([+-]?0+)$)" );
-	}
-
-	bool isFloatingPoint( const std::string& szArg)
-	{
-		return is_X( szArg, "^([+-]?\\d*.?\\d+)$");
-	}
-
-	const std::map<ErrorCode,const char*> ErrorMessage{
-		 {SUCCESS,			"Success."}
-		,{FAILURE,			"Undefined error."}
-		,{INVALID_COMMAND,	"Invalid command (command not found in the current context.)"}
-		,{INVALID_OPTION,	"Invalid option."}
-		,{MISSING_OPTION,	"Missing option."}
-		,{TOO_MANY_OPTIONS,	"Too many options provided."}
-		,{INVALID_ARGUMENT,	"Invalid argument."}
-		,{MISSING_ARGUMENT,	"Missing argument."}
-		,{TOO_MANY_ARGUMENTS, "Too many arguments provided."}
-	};
-
 	//
-	// printhelpmessage.cpp
+	//	CommandDescriptorMap (CmdDescMap)
 	//
-	void printCmdDesc( const CmdDesc&, bool bLongVersion, std::ostream& os );
-	void printConstraints( const std::vector<std::shared_ptr<Constraint>>& vpConstraints, std::ostream& os );
-	std::string indent( unsigned level );
-
-
-	bool printHelpMessage( const CmdStr& cs, const CmdDescMap& cdm, std::ostream& os )
+	//
+	
+	CmdDescMap::CmdDescMap( const std::string& szName, bool addHelpDescriptor )
+	: m_szName{szName}
 	{
-		bool bLongVersion{ (cs.getOptionIndex("long","l") > 0) };	// Check for existence of --long / -l
-		bool bPrintAll{ !cs.getCommandParameterCount() }; // bOptionaluested help for a specific command, or all of them?
-		if ( bPrintAll ) {
-			const std::string& szName = cdm.getName();
-			for (unsigned i{0};i<szName.length();i++) os << "-";
-			os << "\n" << szName << "\n";
-			for (unsigned i{0};i<szName.length();i++) os << "-";
-			os << "\n";
-			unsigned nCmdDesc{ cdm.getCmdCount() };
-			for( unsigned i{0}; i < nCmdDesc; i++ )
-				printCmdDesc( cdm.getCmdDesc(i), bLongVersion, os );
+		if ( addHelpDescriptor ) {
+		   add( cmdDescHelp );
 		}
-		else {
-			try {
-				printCmdDesc(
-					cdm.getCmdDesc( cs.getParameter(0,0) ),
-					bLongVersion,
-					os );
-			}
-			catch ( const std::out_of_range& exc ) {
+	}
+
+	CmdDescMap::CmdDescMap( const std::string& szName, const std::vector<CmdDesc>& vCmdDesc, bool addHelpDescriptor )
+	: m_szName{szName}
+	{
+		if ( addHelpDescriptor )
+			add( cmdDescHelp );
+		for( auto c : vCmdDesc )
+			add( c );
+	}
+
+	const std::string& CmdDescMap::getName() const
+	{
+		return m_szName;
+	}
+
+	bool CmdDescMap::add( const CmdDesc& cmdDesc )
+	{
+		for ( const CmdDesc& obj : m_vCmdDesc )
+			if ( obj.getName() == cmdDesc.getName() )
 				return false;
-			}
-		}
+		m_vCmdDesc.push_back( cmdDesc );
 		return true;
 	}
 
+	unsigned CmdDescMap::getCmdCount() const
+	{
+		return m_vCmdDesc.size();
+	}
+
+	CmdDesc& CmdDescMap::operator[](const std::string& szName )
+	{
+		for( CmdDesc& result : m_vCmdDesc ) {
+			if ( result.getName() == szName )
+				return result;
+		}
+		throw std::out_of_range("CmdDesc& CmdDescMap::operator[](const std::string&)");
+	}
+
+	CmdDesc& CmdDescMap::operator[]( unsigned index )
+	{
+		if ( index < m_vCmdDesc.size() )
+			return m_vCmdDesc[index];
+		throw std::out_of_range("CmdDesc& CmdDescMap::operator[](unsigned)");
+	}
+
+	const CmdDesc& CmdDescMap::getCmdDesc( const std::string& szName ) const
+	{
+		for( const CmdDesc& result : m_vCmdDesc ) {
+			if ( result.getName() == szName )
+				return result;
+		}
+		throw std::out_of_range("const CmdDesc& CmdDescMap::getCmdDesc(const std::string&) const");
+	}
+
+	const CmdDesc& CmdDescMap::getCmdDesc( unsigned index ) const
+	{
+		if ( index < m_vCmdDesc.size() )
+			return m_vCmdDesc[index];
+		throw std::out_of_range("const CmdDesc& CmdDescMap::getCmdDesc(unsigned) const");
+	}
+
+	ErrorCode CmdDescMap::validate( CmdStr& cmdStr ) const {
+		ErrorCode result = ErrorCode::INVALID_COMMAND;
+		for( unsigned i{0}; i < m_vCmdDesc.size(); i++ ) {
+			result = m_vCmdDesc[i].validate( cmdStr );
+			if (result != ErrorCode::INVALID_COMMAND) {
+				break;
+			}
+		}
+		return result;
+	}
+
+	
 
 	//
-	//	Implementation of utility functions, local to this file.
 	//
+	// Print help message
+	//
+	//
+	
+	//  
+	//
+	std::string indent( unsigned level )
+	{
+		std::string result("   ");
+		for( unsigned lvl{0}; lvl < level; lvl++ )
+			result += std::string("		");
+		return result;
+	}
 
+	//
+	//
+	void printConstraints( const std::vector<std::shared_ptr<Constraint>>& vpConstraints, std::ostream& os	)
+	{
+		unsigned long long n{vpConstraints.size()};
+		if ( n ) {
+			os << "(";
+			for( unsigned m{0}; m < n; m++ ) {
+				os << vpConstraints[m]->toString();
+				if ( m < (n-1) )
+					os << ",";
+			}
+			os << ")";
+		}
+	}
+	
+	//
+	//
 	void printCmdDesc( const CmdDesc& cmdDesc, bool bLongVersion, std::ostream& os )
 	{
 		if ( bLongVersion ) {
@@ -754,26 +791,34 @@ namespace clp {
 		}
 	}
 
-	void printConstraints( const std::vector<std::shared_ptr<Constraint>>& vpConstraints, std::ostream& os	)
+	//
+	//
+	bool printHelpMessage( const CmdStr& cs, const CmdDescMap& cdm, std::ostream& os )
 	{
-		unsigned long long n{vpConstraints.size()};
-		if ( n ) {
-			os << "(";
-			for( unsigned m{0}; m < n; m++ ) {
-				os << vpConstraints[m]->toString();
-				if ( m < (n-1) )
-					os << ",";
-			}
-			os << ")";
+		bool bLongVersion{ (cs.getOptionIndex("long","l") > 0) };	// Check for existence of --long / -l
+		bool bPrintAll{ !cs.getCommandParameterCount() }; // bOptionaluested help for a specific command, or all of them?
+		if ( bPrintAll ) {
+			const std::string& szName = cdm.getName();
+			for (unsigned i{0};i<szName.length();i++) os << "-";
+			os << "\n" << szName << "\n";
+			for (unsigned i{0};i<szName.length();i++) os << "-";
+			os << "\n";
+			unsigned nCmdDesc{ cdm.getCmdCount() };
+			for( unsigned i{0}; i < nCmdDesc; i++ )
+				printCmdDesc( cdm.getCmdDesc(i), bLongVersion, os );
 		}
-	}
-
-	std::string indent( unsigned level )
-	{
-		std::string result("   ");
-		for( unsigned lvl{0}; lvl < level; lvl++ )
-			result += std::string("		");
-		return result;
+		else {
+			try {
+				printCmdDesc(
+					cdm.getCmdDesc( cs.getParameter(0,0) ),
+					bLongVersion,
+					os );
+			}
+			catch ( const std::out_of_range& exc ) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 } // clp

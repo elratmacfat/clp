@@ -58,17 +58,6 @@ namespace clp {
 		TOO_MANY_ARGUMENTS  	    // Provided arguments may be valid, but there're additional parameters that don't make sense.
 	} ErrorCode;
 
-	// Error code to string
-	//
-	// Usage example: std::cout << "Error\n" << ErrorMessage.at( ec ) << "\n";
-	//
-	// TODO The current way of retrieving the error message yields the possibility of an out_of_range exception to be thrown. \
-	// Encapsulate the map access in a function for \
-	// 1. convenient usage and \
-	// 2. nothrow guarantee.
-	//
-	extern const std::map<ErrorCode,const char*> ErrorMessage;
-
 	// When setting up your command descriptors, you have to specify if a parameter is optional or mandatory.
 	// Instead of passing a bland 'true' or 'false', you can use these constants, making the call more verbose
 	// about what's going on.
@@ -133,6 +122,13 @@ namespace clp {
 	
 	bool isFloatingPoint( const std::string& );		// Any decimal can be interpreted as a floating point.
 
+	// 
+	//
+	std::string toString( const ErrorCode& );
+
+	//
+	//
+	std::ostream& operator<<( std::ostream&, const ErrorCode& );
 
 	//
 	// Class Declaration And Implementation Of Template Free Functions and Template Members

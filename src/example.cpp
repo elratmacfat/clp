@@ -95,7 +95,7 @@ int main( int argc, char* argv[] )
 				cout << "OK\n";
 		}
 		else
-			cout << "Error: " << ErrorMessage.at(ec) << "\n";
+			cout << "Error: " << ec << "\n";
 	}
 	cout << "End of example program\n";
 	return 0;
