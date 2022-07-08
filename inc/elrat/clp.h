@@ -445,12 +445,12 @@ namespace clp {
 	//
 	// Example:
 	//
-	// 		CommandDescriptor("dump", "Dump the specified state.", {
+	// 		command("dump", "Dump the specified state.", {
 	// 				parameter<NumN>("state","The state you want to dump. If omitted, the current state is assumed.", Optional )
 	// 			},
 	// 			{
 	// 				option("file",'f',"Instead of printing the state to stdout, write it to a file.", Optional, {
-	// 					parameter<String>("filename", "If the file exists, it will be overwritten." )
+	// 					parameter<String>("filename", "If the file exists, it will be overwritten.", Mandatory )
 	// 				})
 	// 			}
 	// 		);
@@ -479,6 +479,14 @@ namespace clp {
 		std::vector<OptDesc> m_vOptDesc;
 	};
 
+	// For the sake of a consistent interface, this CmdDesc-"factory" is added (Like the 'option' and
+	// 'parameter' functions defined above.
+	//
+	CmdDesc command( const std::string& szName, const std::string& szWhat = "", 
+						const std::vector<std::shared_ptr<ParamDesc>>& vpParameters = {},
+						const std::vector<OptDesc>& vOptions = {} ) {
+		return CmdDesc( szName, szWhat, vpParameters, vOptions );
+	}
 
 	//
 	// Command Strings (CmdStr)

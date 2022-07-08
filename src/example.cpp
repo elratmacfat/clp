@@ -106,7 +106,7 @@ CommandDescriptorMap initialize_command_descriptors()
 	// The "help" command is added automatically
 	return CommandDescriptorMap("Available commands",
 	{
-		CommandDescriptor(
+		command(
 			"makesum", "Calculates the sum of two numbers.",
 			{
 				parameter<NumR>("a","First number",Mandatory),
@@ -114,7 +114,7 @@ CommandDescriptorMap initialize_command_descriptors()
 			}
 		),
 		// Dummy command, that does nothing, but exist
-		CommandDescriptor("dummy")
+		command("dummy")
 	});
 }
 
