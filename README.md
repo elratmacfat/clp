@@ -2,7 +2,7 @@
 
 ## Overview
 
-**elrat-clp** is a command line parser with additional functionality, that intends to help the programmer focussing on the actual commands, rather than getting lost in multi-level nested if-statements. This library is not only a parser, but something like a processor, a **command line processor**.
+**clp** is a command line parser with additional functionality, that intends to help the programmer focussing on the actual commands, rather than getting lost in multi-level nested if-statements. This library is not only a parser, but also does the job of checking the integrity of an issued command (that's why the *p* stands for *processor* rather than *parser*).
 
 ### What does that mean?
 
@@ -18,17 +18,33 @@ All these steps are **not** encapsulated within the library. The program flow is
 
 Alternatively, before going into the source code, you can visit the *Implementation Details* section below.
 
-
-### How does it compile?
+## Build
 
 - Requirements
 	- C++11
 
 - Optional 
 	- `Boost.Test`: Just if you want to compile the test executable.
-	- `CMake`: Only if you want to use the included CMakeLists.file. This is not necessary at all. A simple one-liner will compile the library just as well, as shown below.
+	- `CMake`: Only if you want to use the included `CMakeLists.txt`. This is not necessary at all.
 
-#### Compile with the help of CMake
+### Manual build process
+
+This is not a full-on guide on how to compile and use the library. It is assumed that the reader is able to adapt the instruction according to his/her working enviroment.
+
+Make sure that `elrat/clp.h` can be found in the compiler's include search directory, e.g. by passing `-I"path/to/include"`. The following instructions assume the project root folder to be the current working directory, therefore `-I"inc"` points to the subdirectory `inc` where `elrat/clp.h` can be found.
+
+```
+g++ -c -I"inc" -fPIC -o clp.o src/clp.pp
+g++ -shared -I"inc" -o libclp.so clp.o
+``` 
+
+An application can be linked against this library by passing `-lclp`. If necessary, specify the library search directory with `-L"path/to/lib"`.
+
+``` 
+g++ -I"inc" -lclp -o example src/example.cpp
+``` 
+
+### CMake
 
 Included in the root directory is a `CMakeLists.txt`, which produces a shared library (or a DLL if you're on Windows), a test program, and some other executables.
 
@@ -45,22 +61,19 @@ cmake ..
 make
 ```
 
-There are additional examples that will be compiled and linked against the library. However, calling `make install` will not install these. Only the header file and the library is installed.
+### Install
 
-#### Manual
-- Copy sources into your project directly
-    - Copy `src/clp.cpp` and `inc/elrat/clp.h` to your project folder.
-    - `#include <elrat/clp.h>` in your source file.
-- Compile into a library manually
-    - *TODO*
+After `make` had nothing to complain about, you can invoke `make install`, which copies the header and the library in their default locations. The example and test applications are not installed.
 
 ## Implementation Details
+
+*(work in progress)*
 
 - A command can be followed by zero or more parameters. 
 - The last parameter of the command or the previous option, or previous option's parameter can be followed by another option. 
 - Each option can be followed by zero or more parameters.
 
-#### Syntax:
+### Syntax:
 
 ```
 <Command> <Parameter>* [<--Option|-O> <Parameter>*]*
