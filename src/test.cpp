@@ -1,9 +1,9 @@
-
 #define BOOST_TEST_MODULE clp test module
 #include <boost/test/included/unit_test.hpp>
 
 #include <elrat/clp.h>
 using namespace elrat::clp;
+
 #include <stdexcept>
 #include <functional>
 #include <iostream>
@@ -19,14 +19,18 @@ const CmdDescMap cdm("Available commands", {
 	}),
 	CmdDesc("cmd2","constraints test command",
 	{
-		parameter<NumN>("A", "Natural number (N)", Mandatory, { constraint<Min,unsigned>(10) } ),
-		parameter<NumZ>("B", "Whole number (Z)", Mandatory, { constraint<Range,int>(-10,+10) } ),
-		parameter<NumR>("C", "Real number (R)", Mandatory, { constraint<Max,double>(10.1) } )
+		parameter<NumN>("A", "Natural number (N)", Mandatory, { 
+			constraint<Min,unsigned>(10)}),
+		parameter<NumZ>("B", "Whole number (Z)", Mandatory, { 
+			constraint<Range,int>(-10,+10) } ),
+		parameter<NumR>("C", "Real number (R)", Mandatory, { 
+			constraint<Max,double>(10.1) } )
 	}),
 	CmdDesc("cmd3","Options", {},
 	{
 		option("flag",'\0',"Set option to do X.", Optional),
-		option("option",'o',"Some option.",Optional,{parameter<Identifier>("Arg","Blah",Optional)})
+		option("option",'o',"Some option.",Optional,{
+			parameter<Identifier>("Arg","Blah",Optional)})
 	})
 });
 
@@ -36,14 +40,19 @@ BOOST_AUTO_TEST_CASE( CommandMap_with_shared_ptr )
 {
 	class C { }; 
 	typedef std::shared_ptr<C> PC;
-	CmdMap<PC> m({ {"one",PC(new C())}, {"two",PC(new C())} });	// Does the initializationConstructor
-	BOOST_CHECK( bool(m.get("one")) );							// in the constructor work as intended?
-	BOOST_CHECK( bool(m.get("two")) );
+
+	// Does the initialization in the constructor work as intended?
+	CmdMap<PC> m({ 
+		{"one",PC(new C())}, 
+		{"two",PC(new C())} 
+	});
+
+	BOOST_CHECK( m.get("one") );							
+	BOOST_CHECK( m.get("two") );
 	BOOST_CHECK( !m.get("three") );
-	m.add("three",PC(new C()));					// Add/map another object
-	BOOST_CHECK( bool(m.get("three")) );
 
-
+	m.add("three",PC(new C()));
+	BOOST_CHECK( m.get("three")) ;
 }
 
 // std::function as CmdMap template argument
@@ -51,10 +60,12 @@ BOOST_AUTO_TEST_CASE( CommandMap_with_shared_ptr )
 BOOST_AUTO_TEST_CASE( CommandMap_with_stdfunction ) 
 {
 	CmdMap<std::function<void()>> m;
-	m.add("one",std::function<void()>( [](){} ));	 // empty lambda expression, does not matter
-	BOOST_CHECK( bool( m.get("one") ) );
-	BOOST_CHECK( !m.get("two") );
+	
+	// Add a non-empty function
+	m.add("one",std::function<void()>( [](){} ));
 
+	BOOST_CHECK( m.get("one") );
+	BOOST_CHECK( !m.get("two") );
 }
 
 // function pointer as CmdMap template argument
@@ -71,83 +82,20 @@ BOOST_AUTO_TEST_CASE( CommandMap_with_function_pointer )
 	BOOST_CHECK( !m.get("help") );
 }
 
-//
-//	CmdStr / CommandStrings
-//
-//	Checks if issued command strings are parsed correctly.
-//	In addition, the behaviour upon accessing existing and
-//	non-existing elements is tested.
-//
-//	TODO 	Fix the not properly working BOOST_CHECK_THROW calls
-//			I put the code into a comment. Good practice, I know.
-//			But I know that the to-be-tested functions do throw.
-//			The tests passed before migrating to Boost, and I
-//			can't figure it out for now.
-//			Description below!
-//
 BOOST_AUTO_TEST_CASE( CmdStr_parsing_and_accessing_elements )
 {
 	bool thrown;
 	CmdStr c;
-	BOOST_CHECK( c.isEmpty() );								// Ask for container size -> OK
-	BOOST_CHECK(!c.getOptionCount());						//			"
-
-	// The throwing function here is 'std::vector::at' (access elements with boundary checking)
-	// However, BOOST_CHECK_THROW doesn't work quite right here.
-	// The exception is not raised because the bound function (std::bind(...)) is not executed,
-	// or it is raised and caught, but not reported.
-	//
-	/*
-	BOOST_CHECK_THROW( 
-		std::bind( &CmdStr::getParameterCount, &c, 1 ), 
-		std::out_of_range& );							// Get the parameter count of a non-existent option.
-
-	BOOST_CHECK_THROW( 
-		std::bind( &CmdStr::getCommandName, &c ),
-		std::out_of_range );						// Access non-existent element -> Throw
-	
-	BOOST_CHECK_THROW( 
-		std::bind( &CmdStr::getCommandParameterCount, &c ), 
-		std::out_of_range  );							//					"
-	
-	BOOST_CHECK_THROW( 
-		std::bind( &CmdStr::getCommandParameter, &c, 0 ), 
-		std::out_of_range  );							//					"
-	
-	BOOST_CHECK_THROW( 
-		std::bind( &CmdStr::getParameter, &c, 0, 0 ), 
-		std::out_of_range  );							// Same as getCommandParameter(0)
-	
-	BOOST_CHECK_THROW( 
-		std::bind( &CmdStr::getParameter, &c, 1, 0 ), 
-		std::out_of_range  );							// Access non-existent element -> Throw
-	*/
-
-	// Using a lambda expression instead of std::bind yields the same results. 
-	/*
-	BOOST_CHECK_THROW( 
-		[&](){
-			c.getParameterCount(1); 
-		}, 
-		std::out_of_range );
-	*/
-
-	// Calling 'c.getParameterCount(1);' independently,
-	// i.e. inside BOOST_AUTO_TEST_CASE, but outside of
-	// BOOST_CHECK_THROW, will result in a raised (and 
-	// uncaught) std::out_of_range exception.
-	/*
-	c.getParameterCount(1); 
-	*/
-
-	thrown = false;
-	try { c.getParameterAs<int>(1,2); } catch ( std::out_of_range& ) { thrown = true; }
-	BOOST_CHECK( thrown );
-
-	thrown = false;
-	try { c.getParameterAs<double>(1,2); } catch ( ... ) { thrown = true; }
-	BOOST_CHECK( thrown );
-
+	BOOST_CHECK( c.isEmpty() );	
+	BOOST_CHECK(!c.getOptionCount());
+	BOOST_CHECK_THROW( c.getParameterCount(1), std::out_of_range );
+	BOOST_CHECK_THROW( c.getCommandName(), std::out_of_range );						
+	BOOST_CHECK_THROW( c.getCommandParameterCount(), std::out_of_range );
+	BOOST_CHECK_THROW( c.getCommandParameter(0), std::out_of_range );
+	BOOST_CHECK_THROW( c.getParameter(0,0),	std::out_of_range );
+	BOOST_CHECK_THROW( c.getParameter(1,0),	std::out_of_range );
+	BOOST_CHECK_THROW( c.getParameterAs<int>(1,2), std::out_of_range );
+	BOOST_CHECK_THROW( c.getParameterAs<double>(1,2), std::out_of_range );
 }
 
 // CmdStr: Options
@@ -193,12 +141,12 @@ BOOST_AUTO_TEST_CASE( Utility_isDecimal )
 // Testing regex for hex
 BOOST_AUTO_TEST_CASE( Utility_isHex )
 {
-	BOOST_CHECK( isHex("0xFF") );			// Check for case insensitivity
-	BOOST_CHECK( isHex("0Xff") );			//             "
-	BOOST_CHECK( isHex("0XD3adc0d3") );		//             "
-	BOOST_CHECK( isHex("0x0"));				// A simple zero
+	BOOST_CHECK( isHex("0xFF") );		// Check for case insensitivity
+	BOOST_CHECK( isHex("0Xff") );		//             "
+	BOOST_CHECK( isHex("0XD3adc0d3") );	//             "
+	BOOST_CHECK( isHex("0x0"));		// A simple zero
 
-	BOOST_CHECK( !isHex("") );				// Empty string
+	BOOST_CHECK( !isHex("") );		// Empty string
 	BOOST_CHECK( !isHex("0x") );
 	BOOST_CHECK( !isHex("0xFFgABCDEFz"));
 	BOOST_CHECK( !isHex("0xxFAC"));
@@ -231,17 +179,14 @@ BOOST_AUTO_TEST_CASE( Utility_isFloatingPoint )
 	BOOST_CHECK( isFloatingPoint("0777") );
 }
 
-
+// Constraint Interface -> Derived classes: Min, Max, Range
 //
-//	Constraint Interface -> Derived classes: Min, Max, Range
-//
-//	Types 'char' and 'unsigned char' don't work well with the implementation
-//	probably because of the internal use of stringstreams for conversion.
-//	Haven't had a closer look yet, because ... low priority.
+// Types 'char' and 'unsigned char' don't work well with the implementation
+// probably because of the internal use of stringstreams for conversion.
+// Haven't had a closer look yet, because ... low priority.
 //
 BOOST_AUTO_TEST_CASE( Constraint_templated_converter )
 {
-	//BOOST_CHECK_EQUAL( convert<unsigned char>("0xFF"), static_cast<unsigned char>(255) );
 	BOOST_CHECK_EQUAL( convert<unsigned short>("0xFF"), static_cast<unsigned short>(255) );
 	BOOST_CHECK_EQUAL( convert<double>("12.3456789"), 12.3456789 );
 	BOOST_CHECK_EQUAL( convert<int>("0777"), 0777 );
