@@ -106,7 +106,7 @@ using NumN = ParamDescNumN;
 
 // Z = Whole numbers (negative, zero, positive)
 class ParamDescNumZ;          
-using NumZ ParamDescNumZ;
+using NumZ = ParamDescNumZ;
 
 // R = Real numbers (such Pi)
 class ParamDescNumR;          
