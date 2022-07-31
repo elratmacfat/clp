@@ -14,23 +14,47 @@ using namespace elrat::clp;
 const CmdDescMap cdm("Available commands", {
 	CmdDesc("cmd1","Optional parameters.",
 	{
-		parameter<Identifier>("param1","mandatory parameter.", Mandatory),
-		parameter<Identifier>("param2","optional parameter.")
+		parameter<Identifier>("param1",
+			"mandatory parameter.", 
+			Mandatory),
+		parameter<Identifier>("param2",
+			"optional parameter.")
 	}),
 	CmdDesc("cmd2","constraints test command",
 	{
-		parameter<NumN>("A", "Natural number (N)", Mandatory, { 
-			constraint<Min,unsigned>(10)}),
-		parameter<NumZ>("B", "Whole number (Z)", Mandatory, { 
-			constraint<Range,int>(-10,+10) } ),
-		parameter<NumR>("C", "Real number (R)", Mandatory, { 
-			constraint<Max,double>(10.1) } )
+		parameter<NumN>("A", 
+			"Natural number (N)", 
+			Mandatory, 
+			{ 
+			constraint<Min,unsigned>(10)
+			}),
+		parameter<NumZ>("B", 
+			"Whole number (Z)", 
+			Mandatory, 
+			{ 
+			constraint<Range,int>(-10,+10) 
+			}),
+		parameter<NumR>("C", 
+			"Real number (R)", 
+			Mandatory, 
+			{ 
+			constraint<Max,double>(10.1) 
+			})
 	}),
-	CmdDesc("cmd3","Options", {},
+	CmdDesc("cmd3","Options", 
 	{
-		option("flag",'\0',"Set option to do X.", Optional),
-		option("option",'o',"Some option.",Optional,{
-			parameter<Identifier>("Arg","Blah",Optional)})
+		// no command parameters
+	},
+	{
+		option("flag",'\0',
+			"Set option to do X.", 
+			Optional),
+		option("option",'o',
+			"Some option.",
+			Optional,
+			{
+			parameter<Identifier>("Arg","Blah",Optional)
+			})
 	})
 });
 
@@ -106,7 +130,7 @@ BOOST_AUTO_TEST_CASE( CmdStr_options )
 	BOOST_CHECK( c.getOptionIndex("option-name") == 1 );
 	BOOST_CHECK( c.getOptionIndex("f") == 2 );
 	BOOST_CHECK( c.getOptionIndex("g") == 3 );
-	BOOST_CHECK( c.getOptionIndex("x") == -1 );		// find non-existent option
+	BOOST_CHECK( c.getOptionIndex("x") == -1 ); // x does not exist.
 	BOOST_CHECK( c.getCommandName() == std::string("cmd1") );
 	BOOST_CHECK( c.getCommandParameter(0) == std::string("__arg") );
 	BOOST_CHECK( c.getCommandParameter(1) == std::string("test12") );
@@ -119,7 +143,7 @@ BOOST_AUTO_TEST_CASE( CmdStr_parameter )
 	BOOST_CHECK_EQUAL( c.getParameterAs<int>(0,0), 0x45 );
 	BOOST_CHECK_EQUAL( c.getParameterAs<int>(0,1), 0777 );
 	BOOST_CHECK_EQUAL( c.getParameterAs<int>(0,2), -12390 );
-	BOOST_CHECK_EQUAL( c.getParameterAs<float>(0,3), static_cast<float>(12.21) );
+	BOOST_CHECK_EQUAL( c.getParameterAs<float>(0,3), 12.21f);
 }
 
 // Testing regex for decimals
@@ -187,9 +211,15 @@ BOOST_AUTO_TEST_CASE( Utility_isFloatingPoint )
 //
 BOOST_AUTO_TEST_CASE( Constraint_templated_converter )
 {
-	BOOST_CHECK_EQUAL( convert<unsigned short>("0xFF"), static_cast<unsigned short>(255) );
-	BOOST_CHECK_EQUAL( convert<double>("12.3456789"), 12.3456789 );
-	BOOST_CHECK_EQUAL( convert<int>("0777"), 0777 );
+	BOOST_CHECK_EQUAL( 
+		convert<unsigned short>("0xFF"),
+		static_cast<unsigned short>(255) );
+	BOOST_CHECK_EQUAL( 
+		convert<double>("12.3456789"), 
+		12.3456789 );
+	BOOST_CHECK_EQUAL( 
+		convert<int>("0777"), 
+		0777 );
 }
 
 //
@@ -242,8 +272,8 @@ BOOST_AUTO_TEST_CASE( Constraint_Range_with_hex_input )
 	P a{ constraint<Max,unsigned short>(127) };
 	BOOST_CHECK( a->check("0x00") == SUCCESS );
 	BOOST_CHECK( a->check("0x6A") == SUCCESS );
-	BOOST_CHECK( a->check("0x7F") == SUCCESS );				// 127
-	BOOST_CHECK( a->check("0x80") == INVALID_ARGUMENT );	 // 128
+	BOOST_CHECK( a->check("0x7F") == SUCCESS ); // 127
+	BOOST_CHECK( a->check("0x80") == INVALID_ARGUMENT ); // 128
 	BOOST_CHECK( a->check("0xFF") == INVALID_ARGUMENT );
 }
 
@@ -270,7 +300,9 @@ BOOST_AUTO_TEST_CASE( ParameterDescriptor_AnyString )
 {
 	typedef std::shared_ptr<ParamDesc> P;
 	P p(new ParamDescString("string", "" ));
-	BOOST_CHECK_EQUAL( p->validate("my string can look like anything..."), SUCCESS );
+	BOOST_CHECK_EQUAL( 
+		p->validate("my string c@n L00k like anything..."), 
+		SUCCESS );
 }
 	
 BOOST_AUTO_TEST_CASE( Command_Descriptor_Map )

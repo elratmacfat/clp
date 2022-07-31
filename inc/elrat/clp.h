@@ -118,6 +118,9 @@ using Identifier = ParamDescIdentifier;
 class ParamDescString;        
 using String = ParamDescString;
 
+// 
+using ConstraintPtr = std::shared_ptr<Constraint>;
+using ParamDescPtr = std::shared_ptr<ParamDesc>;
 // Check if the given string represents a number using regular
 // expressions (std::regex)
 //
@@ -167,8 +170,8 @@ public:
 // Arg	The constraint parameters
 //
 template <template <class T_> class C, class T, class ... Arg>
-std::shared_ptr<Constraint> constraint( Arg ... a ) {
-	return std::shared_ptr<Constraint>( new C<T>( a ... ) );
+ConstraintPtr constraint( Arg ... a ) {
+	return ConstraintPtr( new C<T>( a ... ) );
 }
 
 // Converts the given string into a numerical type.
@@ -179,17 +182,15 @@ NumType convert( const std::string& szArg ) {
 	std::stringstream ss(szArg);
 	NumType result{0};
 	if ( isDecimal(szArg) )
-	ss >> std::dec >> result;
+		ss >> std::dec >> result;
 	else if ( isHex(szArg) )
-	ss >> std::hex >> result;
+		ss >> std::hex >> result;
 	else if ( isOctal(szArg) )
-	ss >> std::oct >> result;
+		ss >> std::oct >> result;
 	else if ( isFloatingPoint(szArg) )
-	ss >> result;
+		ss >> result;
 	else
-	throw std::runtime_error(
-		"template <class NumType> NumType convert(const std::string& szArg)\n"
-		"-> Value of 'szArg' could not be converted into a numeric type.\n");
+		throw std::runtime_error("convert(): invalid argument.");
 	return result;
 }
 
@@ -240,11 +241,15 @@ public:
 
 	virtual ErrorCode check( const std::string& szArg ) const {
 		NumType t = convert<NumType>(szArg);
-		return ( t >= m_min && t <= m_max ) ? SUCCESS : INVALID_ARGUMENT;
+		return ( t >= m_min && t <= m_max ) 
+			? SUCCESS 
+			: INVALID_ARGUMENT;
 	}
 
 	virtual std::string toString() const {
-		return std::to_string(m_min) + std::string("...")+ std::to_string(m_max);
+		return std::to_string(m_min) 
+			+ std::string("...")
+			+ std::to_string(m_max);
 	}
 private:
 	NumType m_min, m_max;
@@ -279,19 +284,20 @@ public:
 	ParamDesc( const std::string& szName,
 		const std::string& szWhat = std::string(""),
 		bool bOptional = Optional,
-		const std::vector<std::shared_ptr<Constraint>>& vpConstraints = {});
+		const std::vector<ConstraintPtr>& 
+			vpConstraints = {});
 
 	virtual ~ParamDesc();
 
 	bool isOptional() const;
 
-	const std::vector<std::shared_ptr<Constraint>>& getConstraints() const;
+	const std::vector<ConstraintPtr>& getConstraints() const;
 
 	virtual ErrorCode validate( const std::string& szParam ) const = 0;
 
 protected:
 	bool m_bOptional;
-	std::vector<std::shared_ptr<Constraint>> m_vpConstraints;
+	std::vector<ConstraintPtr> m_vpConstraints;
 };
 
 // Use this template to create parameters for better readability. 
@@ -301,12 +307,12 @@ protected:
 //  	auto p = parameter<NumR>("width", 'w', "Rectangle's width");
 //	
 template<class ParameterType>
-std::shared_ptr<ParamDesc> parameter( const std::string& szName,
+ParamDescPtr parameter( const std::string& szName,
 	const std::string& szWhat = std::string(),
 	bool bOptional = Optional,
-	const std::vector<std::shared_ptr<Constraint>>& vpConstraints = {})
+	const std::vector<ConstraintPtr>& vpConstraints = {})
 {
-	return std::shared_ptr<ParamDesc>( 
+	return ParamDescPtr( 
 		new ParameterType(szName,szWhat,bOptional,vpConstraints));
 }
 
@@ -314,7 +320,7 @@ std::shared_ptr<ParamDesc> parameter( const std::string& szName,
 //
 class ParamDescNumN : public ParamDesc {
 public:
-	using ParamDesc::ParamDesc; 	// This means: Use non-default constructor of base class
+	using ParamDesc::ParamDesc; // = Use non-default ctor of base class
 	virtual ErrorCode validate( const std::string& szParam ) const;
 };
 
@@ -335,7 +341,8 @@ public:
 	virtual ErrorCode validate( const std::string& szParam ) const;
 };
 
-// String: Identifier (like variable names and such, no special characters allowed,...)
+// String: Identifier 
+// like variable names and such, no special characters allowed
 //
 class ParamDescIdentifier : public ParamDesc {
 public:
@@ -344,8 +351,8 @@ public:
 };
 
 // String: Path
-// TODO Go to src/clp.cpp and implement the regular expression for the ParamDescPath.
-// Not implemented and not tested. Totally neglected.
+// TODO Go to src/clp.cpp and implement the regular expression for the
+// 	ParamDescPath. Not implemented and not tested. Totally neglected.
 class ParamDescPath : public ParamDesc {
 public:
 	using ParamDesc::ParamDesc;
@@ -368,33 +375,40 @@ public:
 		const char& szShortName,
 		const std::string& szWhat,
 		bool bOptional = Optional,
-		const std::vector<std::shared_ptr<ParamDesc>>& vpParameters = {} );
+		const std::vector<ParamDescPtr>& 
+			vpParameters = {} );
 
-	bool add( const std::shared_ptr<ParamDesc>& pParamDesc );
+	bool add( const ParamDescPtr& pParamDesc );
 
 	unsigned getParamCount() const;
+	
 	bool isOptional() const;
+	
 	std::string getShortName() const;
 
-	std::shared_ptr<ParamDesc>& operator[]( const std::string& szName );
-	std::shared_ptr<ParamDesc>& operator[]( unsigned index );
+	ParamDescPtr& operator[]( const std::string& szName );
+	
+	ParamDescPtr& operator[]( unsigned index );
 
-	const std::shared_ptr<ParamDesc>& getParamDesc( const std::string& szName ) const;
-	const std::shared_ptr<ParamDesc>& getParamDesc( unsigned index ) const;
+	const ParamDescPtr& 
+		getParamDesc( const std::string& szName ) const;
+	
+	const ParamDescPtr& 
+		getParamDesc( unsigned index ) const;
 
-	ErrorCode validate( const std::vector<std::string>& vParameters ) const;
+	ErrorCode validate(const std::vector<std::string>& vParameters) const;
 
 private:
 	const char m_cName;
 	const bool m_bOptional;
-	std::vector<std::shared_ptr<ParamDesc>> m_vpParamDesc;
+	std::vector<ParamDescPtr> m_vpParamDesc;
 };
 
 // For better readability of the Command Descriptor's initialization,
 // use this function to construct an Option Descriptor.
 // 
 // Example
-//	option("message",'m',"Leave a meaningful description of what you've changed.", 
+//	option("message",'m',"Meaningful description of what you've changed.", 
 //		Mandatory, 
 //		{
 // 			parameter<String>("msg","commit message")
@@ -405,7 +419,7 @@ OptDesc option(	const std::string& szName,
 	const char& szShortName = '\0',
 	const std::string& szWhat = std::string(),
 	bool bOptional = Optional,
-	const std::vector<std::shared_ptr<ParamDesc>>& vpParameters = {} );
+	const std::vector<ParamDescPtr>& vpParameters = {} );
 
 // Command Descriptor (CmdDesc)
 //
@@ -413,11 +427,13 @@ OptDesc option(	const std::string& szName,
 //
 //	CmdDesc cd = command("dump", "Dump the specified state.", 
 //		{
-// 		parameter<NumN>("state","If omitted, the current state is assumed.", Optional )
+// 		parameter<NumN>("state","State ID", Optional )
 // 		},{
 // 		option("file",'f',"Write it to a file.", Optional, 
 // 			{
-// 			parameter<String>("filename", "Destination file.", Mandatory )
+// 			parameter<String>("filename", 
+// 				"Destination file.", 
+// 				Mandatory )
 // 			})
 // 		}
 // 	);
@@ -426,7 +442,8 @@ class CmdDesc : public Desc {
 public:
 	CmdDesc( const std::string& szName,
 		const std::string& szWhat = "",
-		const std::vector<std::shared_ptr<ParamDesc>>& vpParameters = {},
+		const std::vector<ParamDescPtr>& 
+			vpParameters = {},
 		const std::vector<OptDesc>& vOptions = {});
 
 	bool add( const OptDesc& optDesc );
@@ -449,8 +466,9 @@ private:
 // is introduced, doing the constructor call. 
 //
 CmdDesc command( const std::string& szName, const std::string& szWhat = "", 
-					const std::vector<std::shared_ptr<ParamDesc>>& vpParameters = {},
-					const std::vector<OptDesc>& vOptions = {} ) {
+	const std::vector<ParamDescPtr>& vpParameters = {},
+	const std::vector<OptDesc>& vOptions = {} ) 
+{
 	return CmdDesc( szName, szWhat, vpParameters, vOptions );
 }
 
@@ -548,24 +566,31 @@ public:
 
 private:
 	template <typename T>
-	T getParameterAs( int& optIndex, int& paramIndex, const std::true_type& ) const;
+	T getParameterAs(int& optIndex, 
+		int& paramIndex, 
+		const std::true_type& ) const;
 
 	template <typename T>
-	T getParameterAs( int& optIndex, int& paramIndex, const std::false_type& ) const;
+	T getParameterAs( int& optIndex, 
+		int& paramIndex, 
+		const std::false_type& ) const;
 
-	std::vector< std::pair<std::string, std::vector<std::string> > > m_vData;
+	std::vector<std::pair<std::string, std::vector<std::string>>> m_vData;
 };
 
 
 template <typename T>
 T CmdStr::getParameterAs( int optIndex, int paramIndex ) const {
-	return getParameterAs<T>( optIndex, paramIndex, std::is_integral<T>() );
+	return getParameterAs<T>(optIndex, paramIndex, std::is_integral<T>());
 }
 
 
 // Function for integral types
 template <typename T>
-T CmdStr::getParameterAs( int& optIndex, int& paramIndex, const std::true_type& ) const
+T CmdStr::getParameterAs( 
+	int& optIndex, 
+	int& paramIndex, 
+	const std::true_type& ) const
 {
 	auto& optPair{ m_vData.at(optIndex) };
 	std::stringstream ss(optPair.second.at(paramIndex));
@@ -576,7 +601,10 @@ T CmdStr::getParameterAs( int& optIndex, int& paramIndex, const std::true_type& 
 
 // Function for floating point types, or any other type possible
 template <typename T>
-T CmdStr::getParameterAs( int& optIndex, int& paramIndex, const std::false_type& ) const
+T CmdStr::getParameterAs( 
+	int& optIndex, 
+	int& paramIndex, 
+	const std::false_type& ) const
 {
 	auto& optPair{ m_vData.at(optIndex) };
 	std::stringstream ss( optPair.second.at(paramIndex) );
@@ -653,8 +681,8 @@ public:
 	//
 	CmdMap( const std::map<std::string,T>& arg ) : m_map{arg} {};
 
-	// Map an object 'ct' to string 'szCmd'. If the key 'szCmd' already exists,
-	// the map remains unaltered and false is returned.
+	// Map an object 'ct' to string 'szCmd'. If the key 'szCmd' already 
+	// exists, the map remains unaltered and false is returned.
 	//
 	bool add( const std::string& szCmd, T ct ) {
 		if (!ct)
@@ -685,18 +713,22 @@ private:
 
 
 
-// Pre-implemented function to print a quick reference of a given CommandDescriptorMap.
+// Pre-implemented function to print a quick reference of a given 
+// CommandDescriptorMap.
 //
 // Syntax:
 //	help [<command>] [--long|-l]
 //
 // Examples:
-//	help            - Prints a short syntax reference of all existing commands.
+//	help            - Prints a short syntax reference of all commands.
 //	help x          - Prints reference of command "x" only
-//	help --long     - Prints an extended description of all existing commands.
+//	help --long     - Prints an extended description of all commands.
 //	help x --long   - Prints description of command "x" only
 //
-bool printHelpMessage( const CmdStr& cs, const CmdDescMap& cdm, std::ostream& osDest );
+bool printHelpMessage( 
+	const CmdStr& cs, 
+	const CmdDescMap& cdm, 
+	std::ostream& osDest );
 	
 } // clp
 } // elrat
