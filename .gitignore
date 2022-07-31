@@ -1,4 +1,4 @@
-# CMake
+# CMake (for accidental in-source builds)
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
@@ -11,7 +11,7 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
-# My build folder
+# build folder inside the source directory
 build
 
 # VIM swap files
