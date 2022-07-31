@@ -1,21 +1,48 @@
 //
-// 	clp © elratmacfat, 2021
+// project.......: command line processor (clp)
+// file..........: inc/elrat/clp.h
+// author........: elratmacfat
+// description...: user input command line processing library. 
+//                 - processing input commands to validate their correctness
+//                 in the application context.
+//                 - benefits for application programmer are
+//                    - within implementation of commands, the command line
+//                    is guaranteed to be valid, i.e. satisfy the requirements
+//                    defined in the description, that the programmer has to
+//                    setup.
+//                    - generating user-readable help messages describing the
+//                    syntax rules and usage of the commands.
+//
+// initialization / setup
+//
+// 1. the programmer describes the application specific commands using
+// 	CommandDescriptor and related classes, and adds them to a container 
+// 	of type CommandDescriptorMap.
+// 	
+// 2. the programmer implements the command functions and maps them to their 
+// 	command names (that are also used in the command description).
+// 	The map to the implemented command to the command name, a CommandMap 
+// 	can be used.
 // 
-// 	command line processor
+// in main / loop over input source / ...
 //
-// 	file: elrat/clp.h
+// 3. an input command line, e.g. something like "help me -i --am_lost", has 
+// 	to be passed to an elrat::clp::CommandStrings object, which parses
+// 	the elements of the command.
+// 	
+// 	TODO In the current the state the syntax rules are constant and defined 
+// 	by the library, which reduces usability of the library and should be
+// 	addressed soon.
 //
+// 4. the CommandStrings object then has to be passed to the
+// 	CommandDescriptorMap, that was defined in step 1, which compares the
+// 	input command with the descriptions.
 //
-// 	Structure of this file:
+// 5. if the issued command is considered valid, the corresponding command
+// 	function can be retrieved from the CommandMap, defined in step 2.
 //
-//- Forward declaration 
-// 		- with brief descriptions of what these classes/functions do.
-//	
-//- Complete class declaration 
-//	- with more detailed descriptions on how to use the class.
-//	
-//- Template classes or template members are either implemented within
-//  or right below the declaration.
+// 6. invoke the command which should take the CommandStrings object as 
+// 	parameter.
 //
 //
 #ifndef ELRAT_CLP_H

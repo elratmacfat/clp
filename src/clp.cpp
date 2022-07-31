@@ -1,11 +1,9 @@
 //
-// 	clp © elratmacfat, 2021
-// 
-// 	command line processor
+// project.......: command line processor (clp)
+// file..........: src/clp.cpp
+// author........: elratmacfat
+// description...: implementation of inc/elrat/clp.h:
 //
-// 	file: clp.cpp ( implementation of elrat/clp.h )
-//
-
 #include <cassert>
 #include <iostream>
 #include <memory>
