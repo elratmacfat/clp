@@ -910,7 +910,7 @@ void printCmdDesc( const CmdDesc& cmdDesc, bool bLongVersion, std::ostream& os )
 
 //
 //
-bool printHelpMessage( 
+void printHelpMessage( 
 	const CmdStr& cs, 
 	const CmdDescMap& cdm, 
 	std::ostream& os )
@@ -949,10 +949,11 @@ bool printHelpMessage(
 				os );
 		}
 		catch ( const std::out_of_range& exc ) {
-			return false;
+			os << '\''
+				<< cs.getCommandParameter(0)
+				<< "' is not a command.\n";
 		}
 	}
-	return true;
 }
 
 } // clp

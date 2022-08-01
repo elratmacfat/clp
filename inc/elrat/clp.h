@@ -127,6 +127,9 @@ using OptionDescriptor = OptDesc;
 // intended usage and datatype.
 //
 
+// Parameter Descriptor Interface
+class ParamDesc;
+
 // N = Natural number (including zero).
 class ParamDescNumN;          
 using NumN = ParamDescNumN; 
@@ -144,6 +147,9 @@ using Identifier = ParamDescIdentifier;
 
 class ParamDescString;        
 using String = ParamDescString;
+
+// Interface for constraints that can be attached to parameters.
+class Constraint;
 
 // 
 using ConstraintPtr = std::shared_ptr<Constraint>;
@@ -752,7 +758,7 @@ private:
 //	help --long     - Prints an extended description of all commands.
 //	help x --long   - Prints description of command "x" only
 //
-bool printHelpMessage( 
+void printHelpMessage( 
 	const CmdStr& cs, 
 	const CmdDescMap& cdm, 
 	std::ostream& osDest );
