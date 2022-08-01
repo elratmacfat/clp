@@ -1,154 +1,135 @@
-
+//
+// project.......: command line processor (clp)
+// file..........: src/example.cpp
+// author........: elratmacfat
+// description...: demonstration of possible library usage 
+//                 
+//                 global variables are used to keep the example simple.
+//                 
+//                 in a more complex context, the commands should proberbly
+//                 be realized in classes implementing a command interface.
+//                 All required data (that is global in this example), could
+//                 be passed to the constructor of the concrete command.
+//                
 #include <elrat/clp.h>
 
 using namespace elrat::clp;
 using namespace std;
 
-// Setting up the command descriptors is busy work, but it's got to be done.
-// I'd recommend creating a separate *.cpp file for this purpose, but as for
-// this example, the implementation is done right below main().
-CommandDescriptorMap initialize_command_descriptors();
 
 
-// All command function need the same function header. Instead of passing
-// several arguments individually, we declare a structure, that contains
-// all the information relevant to the application logic.
-typedef struct ApplicationData {
-	ApplicationData( ostream& osDest, ostream& osErr, istream& isSrc, CmdDescMap& cdm )
-	: os_dest{osDest}
-	, os_err{osErr}
-	, is_src{isSrc}
-	, cmd_desc_map{cdm}
-	{
-		// work done in member initializer list
-	}
-	
-	ostream& os_dest;
-	ostream& os_err;	
-	istream& is_src;
-	// The help-command needs access to the command descriptors.
-	CmdDescMap& cmd_desc_map;
-	
-	// The parsed command line
-	CommandStrings cmd_str;		
-} AppData;
+// --- 1. Setting up command descriptions -------------------------------------
+//
+// - "dummy" does nothing. There won't even be an implemented function to it.
+// - "sum" will add two numbers.
+// - Note that a 'help' command description doesn't need to defined. 
+//   It will be added automatically.
+//
+CommandDescriptorMap cmdDescMap("Available commands", {
+	command("dummy"),
+	command("sum", 
+		"Calculates the sum of two numbers.", {
+		parameter<NumR>("a",
+			"First number",
+			Mandatory),
+		parameter<NumR>("b",
+			"Second number",
+			Mandatory, {
+				constraint<Min,double>(10)
+			})
+		}
+	)
+});
 
-// All our command function will return a boolean (true for success,
-// otherwise false). They expect a reference to the application data, where
-// they find the command line input as well as the output stream etc etc...
-typedef bool(*Callback)( AppData& );
+// --- 2. Defining function, that correspond to the commands ------------------
+//
+// Implementation of commands. A uniform interface is required. In this
+// example we define declare a function signature to be the interface.
+// The parsed command line object has to be passed to the function.
+using Callback = void(*)( const CommandStrings& );
 
-// These are our own Command.
-// Make a sum of two doubles. Descriptor and command implementation below main
-bool makesum( AppData& app_data );
+// The implementation is located below main().
+void sum( const CommandStrings& );
+void help( const CommandStrings& ); // wraps around the built-in help generator
 
-// Wraps around the library's pre-implemented printHelpMessage()-function to 
-// match our function header.
-bool help( AppData& app_data );		 
+// 
+CommandMap<Callback> cmdMap;
+
 
 int main( int argc, char* argv[] )
 {
-	//
-	//	Initialization
-	//
-	CmdDescMap cmd_desc_map{ initialize_command_descriptors() };
+	cmdMap.add("help",help);
+	cmdMap.add("sum",sum);
 
-	ApplicationData app_data(cout,cerr,cin,cmd_desc_map);
-
-	CmdMap<Callback> cmd_map;
-	cmd_map.add("help",help);
-	cmd_map.add("makesum",makesum);
-
-	// At this point the initialization is complete.
+//
 	// Assume we get some command lines from stdin, a file, a script, ...
 	vector<string> vszCmd {
 		"help",			// OK
 		"help makesum --long",	// OK
-		"makesum -5.2 15.9",	// OK
-		"makesum -5.2 2.1",	// FAILS, invalid argument. 
+		"Do something",		// FAILS, invalid Command
+		"sum -5.2 15.9",	// OK
+		"sum -5.2 2.1",		// FAILS, invalid argument. 
 					// 2nd argument must be >= 10.0 
 					// see descriptor below
 		"dummy",		// OK, but does nothing
-		"Do something."		// FAILS, invalid Command
 	};
 
-	// Go over the command lines and try to call the respective functions 
-	// from the command map.
 	for( auto& szCmd : vszCmd ) {
 		
 		// Echo the command, as if we typed it ourselves.
-		cout << "> " << szCmd << "\n";
+		cout << "\n> " << szCmd << "\n";
 		
-		// The CommandStrings class parses the elements following the 
-		// syntax rules documented in 'elrat/clp.h'
-		app_data.cmd_str = CommandStrings( szCmd );
+// --- 3. Parse input ---------------------------------------------------------
+//
+		// The CommandStrings class parses the elements, separating
+		// the command from its parameters and options.
+		CommandStrings cmdStr( szCmd );
 
-		// Pass the CommandStrings object to our CommandDescriptorMap,
-		// and check if the issued command matches one of the 
-		// descriptors.
-		ErrorCode ec = cmd_desc_map.validate( app_data.cmd_str );
+// --- 4. Validating the input ------------------------------------------------ 
+//
+		ErrorCode ec = cmdDescMap.validate( cmdStr );
 		if ( ec == SUCCESS ) {
 
-			// It is up to the application programmer what to do 
-			// next. He/She can either make use of the callback 
-			// mechanism provided by CommandMap, or handle the 
-			// execution of a response directly. In any case, at 
-			// this point it is known that the CommandStrings
-			// object does yield values meeting the requirements 
-			// defined in the command descriptor.
-			Callback cbFunc = cmd_map.get( 
-				app_data.cmd_str.getCommandName() );
-			if ( cbFunc )
-				cbFunc( app_data );
-			else
-				// No command attached, but we still know, 
-				// that the issued command is valid and the
-				// CommandStrings object yields validated 
-				// values for options and parameters.
-				cout << "OK\n";
+// --- 5.+6. Retrieve corresponding function and invoke it --------------------
+//
+			Callback cb = cmdMap.get(cmdStr.getCommandName());
+			if ( cb ) {
+				cb( cmdStr );
+			}
+			else {
+				// The 'dummy' command would end up here,
+				// because it is a valid command, but there's
+				// no function mapped to it. 
+				cout << "Command is valid, but no function "
+					"is attached.\n";
+			}
 		}
-		else
+		else {
+			// the input does not satisfy any of the command
+			// descriptors.
 			cout << "Error: " << ec << "\n";
+		}
 	}
-	cout << "End of example program\n";
 	return 0;
 }
 
-CommandDescriptorMap initialize_command_descriptors()
+void sum( const CommandStrings& cmdStr )
 {
-	// The "help" command is added automatically
-	return CommandDescriptorMap("Available commands",
-		{
-		command(
-			"makesum", "Calculates the sum of two numbers.",
-			{
-			parameter<NumR>("a","First number",
-				Mandatory),
-			parameter<NumR>("b","Second number",
-				Mandatory,
-				{
-				constraint<Min,double>(10)
-				})
-			}
-		),
-		// Dummy command, that does nothing, but exist
-		command("dummy")
-		});
+	// If the steps 1. - 6. have been followed properly,
+	// it is safe to assume, that the accessed elements
+	// exist.
+	//
+	double a = cmdStr.getParameterAs<double>(0,0);
+	double b = cmdStr.getParameterAs<double>(0,1);
+	std::cout << a << " + " << b << " = " << a+b << "\n";
 }
 
-bool makesum( AppData& app_data )
+void help( const CommandStrings& cmdStr )
 {
-	double a = app_data.cmd_str.getParameterAs<double>(0,0);
-	double b = app_data.cmd_str.getParameterAs<double>(0,1);
-	app_data.os_dest << a << " + " << b << " = " << a+b << "\n";
-	return true;
-}
-
-bool help( AppData& app_data )
-{
-	return printHelpMessage(
-		app_data.cmd_str,
-		app_data.cmd_desc_map,
-		app_data.os_dest );
+	printHelpMessage( 
+		cmdStr, 
+		cmdDescMap,
+		std::cout 
+	);
 }
 
