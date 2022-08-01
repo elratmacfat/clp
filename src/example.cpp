@@ -44,7 +44,7 @@ CommandDescriptorMap cmdDescMap("Available commands", {
 // --- 2. Defining function, that correspond to the commands ------------------
 //
 // Implementation of commands. A uniform interface is required. In this
-// example we define declare a function signature to be the interface.
+// example we declare a function signature to be the interface.
 // The parsed command line object has to be passed to the function.
 using Callback = void(*)( const CommandStrings& );
 
@@ -52,7 +52,9 @@ using Callback = void(*)( const CommandStrings& );
 void sum( const CommandStrings& );
 void help( const CommandStrings& ); // wraps around the built-in help generator
 
-// 
+// Command map
+// key   = command name (string)
+// value = callable (function pointer in this case) 
 CommandMap<Callback> cmdMap;
 
 
@@ -61,7 +63,6 @@ int main( int argc, char* argv[] )
 	cmdMap.add("help",help);
 	cmdMap.add("sum",sum);
 
-//
 	// Assume we get some command lines from stdin, a file, a script, ...
 	vector<string> vszCmd {
 		"help",			// OK
@@ -70,10 +71,12 @@ int main( int argc, char* argv[] )
 		"sum -5.2 15.9",	// OK
 		"sum -5.2 2.1",		// FAILS, invalid argument. 
 					// 2nd argument must be >= 10.0 
-					// see descriptor below
+					// see descriptor above.
 		"dummy",		// OK, but does nothing
 	};
 
+	// For each command line...
+	//
 	for( auto& szCmd : vszCmd ) {
 		
 		// Echo the command, as if we typed it ourselves.
@@ -112,6 +115,9 @@ int main( int argc, char* argv[] )
 	}
 	return 0;
 }
+
+// Implementation of commands
+//
 
 void sum( const CommandStrings& cmdStr )
 {
