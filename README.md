@@ -1,4 +1,4 @@
-# clp
+# command line processor (clp)
 
 A command line parser with additional functionality:
 - Allows the application programmer to describe commands.
