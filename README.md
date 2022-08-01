@@ -3,8 +3,8 @@
 A command line parser with additional functionality:
 - Allows the application programmer to describe commands.
 - A command descriptor serves two purposes. The information stored in a descriptor...
-	1. ... is used to automatically generate a human readable *help* message
-	2. ... is used to determine if an issued command line is to be considered valid.
+	- ... is used to automatically generate a human readable *help* message
+	- ... is used to determine if an issued command line is to be considered valid.
 -
 
 ## Build
