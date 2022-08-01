@@ -1,13 +1,13 @@
-# clp
+## command line processor (clp)
 
 A command line parser with additional functionality:
 - Allows the application programmer to describe commands.
-- A command descriptor serves two purposes. The information stored in a descriptor...
-	1. ... is used to automatically generate a human readable *help* message
-	2. ... is used to determine if an issued command line is to be considered valid.
+- A command descriptor serves two purposes. The information stored in a descriptor is used to
+	- automatically generate a human readable *help* message
+	- determine if an issued command line is to be considered valid.
 -
 
-## Build
+### Build
 
 - Requirements
 	- Compiler support for C++11
@@ -15,7 +15,7 @@ A command line parser with additional functionality:
 	- `Boost.Test` is needed to compile the test executable.
 	- `CMake` and `make` do not have to be used. The library can be compiled by hand as well.
 
-### Manual
+#### Manual
 
 - Header `elrat/clp.h` must be found in the compiler's search directories, i.e. add `inc` folder.
 - To create library from the object code, it must be compiled into position-independent-code (PIC).
@@ -26,7 +26,7 @@ g++ -shared -I"inc" -o libclp.so clp.o
 ``` 
 
 
-### CMake
+#### CMake
 
 The root directory contains a `CMakeLists.txt` defining build targets `clp`, `unittest` and `example`.
 
