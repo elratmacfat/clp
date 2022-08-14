@@ -9,7 +9,7 @@
 #include <memory>
 #include <regex>
 
-#include <elrat/clp.h>
+#include <elrat/clp.hpp>
 
 // Runtime assert with message.
 //

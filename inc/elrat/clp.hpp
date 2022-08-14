@@ -1,6 +1,6 @@
 //
 // project.......: command line processor (clp)
-// file..........: inc/elrat/clp.h
+// file..........: inc/elrat/clp.hpp
 // author........: elratmacfat
 // description...: user input command line processing library. 
 //                 - processing input commands to validate their correctness
@@ -45,8 +45,8 @@
 // 	parameter.
 //
 //
-#ifndef ELRAT_CLP_H
-#define ELRAT_CLP_H
+#ifndef ELRAT_CLP_HPP
+#define ELRAT_CLP_HPP
 
 #include <iomanip>
 #include <iostream>

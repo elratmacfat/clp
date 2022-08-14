@@ -1,4 +1,4 @@
-#include <elrat/clp.h>
+#include <elrat/clp.hpp>
 #include <cstdio>
 
 int main() {

@@ -11,7 +11,7 @@
 //                 All required data (that is global in this example), could
 //                 be passed to the constructor of the concrete command.
 //                
-#include <elrat/clp.h>
+#include <elrat/clp.hpp>
 
 using namespace elrat::clp;
 using namespace std;

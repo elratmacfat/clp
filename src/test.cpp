@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE clp test module
 #include <boost/test/included/unit_test.hpp>
 
-#include <elrat/clp.h>
+#include <elrat/clp.hpp>
 using namespace elrat::clp;
 
 #include <stdexcept>
