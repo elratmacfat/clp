@@ -8,41 +8,31 @@ SET( CMAKE_CXX_STANDARD 17 )
 # Library
 #
 
-### Parser
+SET( PublicHeader
+    inc/elrat/clp.hpp
+    inc/elrat/clp/parser_interface.hpp 
+    inc/elrat/clp/parser.hpp
+    inc/elrat/clp/input_interface.hpp
+    inc/elrat/clp/input.hpp
+)
 
-ADD_LIBRARY( parser SHARED
+SET( IncludeFiles 
+    inc/elrat/clp/common.hpp
+)
+
+SET( SourceFiles 
+    src/clp.cpp
+    src/common.cpp
     src/parser.cpp
     src/input.cpp
-    inc/elrat/clp/input.hpp
-    inc/elrat/clp/input_interface.hpp
-    inc/elrat/clp/parser.hpp
-    inc/elrat/clp/parser_interface.hpp )
-
-TARGET_INCLUDE_DIRECTORIES( parser PUBLIC inc )
-
-### CLP
+)
 
 ADD_LIBRARY( clp SHARED 
-    src/clp.cpp )
+    ${PublicHeader}
+    ${IncludeFiles}
+    ${SourceFiles} )
+
 TARGET_INCLUDE_DIRECTORIES( clp	PUBLIC inc )
-TARGET_LINK_LIBRARIES( clp PUBLIC parser )
-
-#
-# Install
-#
-SET_TARGET_PROPERTIES( parser PROPERTIES
-    PUBLIC_HEADER inc/elrat/clp/input.hpp
-    PUBLIC_HEADER inc/elrat/clp/input_interface.hpp
-    PUBLIC_HEADER inc/elrat/clp/parser.hpp
-    PUBLIC_HEADER inc/elrat/clp/parser_interface.hpp )
-
-SET_TARGET_PROPERTIES( clp PROPERTIES 
-    PUBLIC_HEADER 
-        inc/elrat/clp.hpp )
-
-INSTALL( TARGETS parser clp 
-	LIBRARY DESTINATION lib 
-	PUBLIC_HEADER DESTINATION include/elrat )
 
 #
 # Example
@@ -69,7 +59,7 @@ IF ( Boost_FOUND )
 	ADD_TEST( NAME oldtest COMMAND unittest )
     
     ADD_EXECUTABLE( parsertest src/test/parser_test.cpp )
-    TARGET_LINK_LIBRARIES( parsertest PUBLIC parser )
+    TARGET_LINK_LIBRARIES( parsertest PUBLIC clp )
 	TARGET_INCLUDE_DIRECTORIES( parsertest PUBLIC Boost_INCLUDE_DIRS )
 
 ELSE()

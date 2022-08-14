@@ -26,6 +26,8 @@ public:
     // ParserInterface
     //
 
+    std::string_view getSyntaxDescription() const;
+
     void parse(const std::string& chunk);
     
     bool done() const;
@@ -35,15 +37,17 @@ public:
 private:
 
     enum class State {
-        CMD,        // waiting for command
-        CMD_PARAM,  // command has been set, awaiting cmd param or option
-        OPT_PARAM,  // option has been passed, next opt param or another option
-        LOCKED
+        Empty,          
+        ParsedCommand, 
+        ParsedOption, 
+        Locked
     };
 
     std::shared_ptr<InputInterface> _result;
 
     State _state;
+
+    static const std::string _syntax;
 };
 
 

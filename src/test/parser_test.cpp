@@ -3,6 +3,7 @@
 
 #include "elrat/clp/input.hpp"
 #include "elrat/clp/parser.hpp"
+
 using namespace elrat::clp;
 
 struct InputFixture
@@ -20,8 +21,8 @@ struct InputFixture
 };
 
 
-
 BOOST_AUTO_TEST_SUITE( Input_Test )
+    
     BOOST_AUTO_TEST_CASE( default_constructed )
     {
         InputFixture f;
@@ -29,11 +30,16 @@ BOOST_AUTO_TEST_SUITE( Input_Test )
         f.input.setCommand("Hello");
         BOOST_CHECK( f.input );
     }
-    BOOST_AUTO_TEST_CASE( blah )
+    
+    BOOST_AUTO_TEST_CASE( set_and_get )
     {
         std::shared_ptr<InputInterface> i = Input::MakeShared();
         
+        // Write stuff into the Input object like the parser
+        // would to.
+        //
         // "do_something a b --row param --force"
+        //
         i->setCommand("do_something");
         i->addOption("row");
         i->addOption("force");
@@ -41,6 +47,10 @@ BOOST_AUTO_TEST_SUITE( Input_Test )
         i->addCommandParameter("b");
         i->addOptionParameter("row","param");
 
+        // Strip the 'setter' off. The parser returns this read-only
+        // version of the object.
+        // Check if the elements are in place as expected.
+        //
         std::shared_ptr<InputReaderInterface> j = i;
 
         BOOST_CHECK_EQUAL( j->getCommand(), "do_something" );
@@ -56,11 +66,13 @@ BOOST_AUTO_TEST_SUITE( Input_Test )
         
         BOOST_CHECK( j->optionExists("force") );
         BOOST_CHECK_EQUAL( j->getOptionParameterCount("force"), 0 );
-
-
-
-
     }
+
+    BOOST_AUTO_TEST_CASE( provoke_exceptions )
+    {
+        
+    }
+
 BOOST_AUTO_TEST_SUITE_END(); // InputData_Test
 
 

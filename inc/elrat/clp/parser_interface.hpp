@@ -17,6 +17,8 @@ public:
         // nothing
     }
 
+    virtual std::string_view getSyntaxDescription() const = 0;
+
     virtual void parse(const std::string& chunk) = 0;
 
     virtual bool done() const = 0;
