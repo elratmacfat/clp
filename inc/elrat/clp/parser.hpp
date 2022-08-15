@@ -1,55 +1,57 @@
+// Project......: Command Line Processor (clp)
+// File.........: inc/elrat/clp/parser.hpp
+// Author.......: elratmacfat
+// Description..:
+//
 #ifndef ELRAT_CLP_PARSER_HPP
 #define ELRAT_CLP_PARSER_HPP
 
-#include "elrat/clp/parser_interface.hpp"
+#include <functional>
+#include <memory>
+#include <string_view>
+#include <vector>
 
 namespace elrat {
 namespace clp {
 
-class Parser : public ParserInterface
+class Parser
 {
 public:
-    
-    Parser( std::shared_ptr<InputInterface> );
-    
-    Parser(const Parser&)=delete;
-    
-    Parser(Parser&&)=default;
-    
-    ~Parser()=default;
-    
-    Parser& operator=(const Parser&)=delete;
-    
-    Parser& operator=(Parser&&)=default;
+    using Data = std::vector<std::vector<std::string>>;
+    using Strategy = Data(*)(const std::string&);
 
+    Parser( Strategy = Parser::DefaultStrategy );
+    Parser(const Parser&) = default;
+    Parser(Parser&&) = default;
+    ~Parser() = default;
+    Parser& operator=(const Parser&) = default;
+    Parser& operator=(Parser&&) = default;
 
-    // ParserInterface
-    //
+    bool parse(const std::string&);
+    void clear();
+    std::string_view getLastError() const;
 
-    std::string_view getSyntaxDescription() const;
+    operator bool() const;
 
-    void parse(const std::string& chunk);
+    int getCommandParameterCount() const;
+    int getOptionCount() const;
+    int getOptionIndex(const std::string&) const;
+    int getOptionParameterCount(int) const;
     
-    bool done() const;
-    
-    std::shared_ptr<InputReaderInterface> getResult();
+    std::string_view getCommand() const;
+    std::string_view getCommandParameter(int=0) const;
+    std::string_view getOption(int=0) const;
+    std::string_view getOptionParameter(int,int=0) const;
 
+    const Data& data() const;
 private:
-
-    enum class State {
-        Empty,          
-        ParsedCommand, 
-        ParsedOption, 
-        Locked
-    };
-
-    std::shared_ptr<InputInterface> _result;
-
-    State _state;
-
-    static const std::string _syntax;
+    std::string _errmsg;
+    Data _data;
+    Strategy _strategy;
+    static Data DefaultStrategy(const std::string&); 
 };
 
+std::ostream& operator<<(std::ostream&,const Parser&);
 
 } // namespace clp
 } // namespace elrat
