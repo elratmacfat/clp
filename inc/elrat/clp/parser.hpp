@@ -14,23 +14,40 @@
 namespace elrat {
 namespace clp {
 
+// ------ Parser (Top-Level class) --------------------------------------------
 class Parser
 {
 public:
-    using Data = std::vector<std::vector<std::string>>;
-    using Strategy = Data(*)(const std::string&);
+    
+    class Algorithm;    // Interface (Strategy pattern)
+    class AlgWrapper;   // Wraps around a stateless algorithm function
+    class Alg20;        //
+    class Alg22;        //
+    
+    class Error;
 
-    Parser( Strategy = Parser::DefaultStrategy );
+    using Data = std::vector<std::vector<std::string>>;
+    using Function = Data(*)(const std::string&);
+
+private:
+    static Data LegacyFunction(const std::string&); 
+
+public:
+
+    Parser( std::unique_ptr<Algorithm>&& );
+
+    Parser( Function=Parser::LegacyFunction,
+        const std::string& ="<cmd> [<param>]* [<[--option>|<-o>][<param>]*]*");
+    
     Parser(const Parser&) = default;
     Parser(Parser&&) = default;
     ~Parser() = default;
     Parser& operator=(const Parser&) = default;
     Parser& operator=(Parser&&) = default;
 
-    bool parse(const std::string&);
+    Error parse(const std::string&);
     void clear();
-    std::string_view getLastError() const;
-
+    std::string_view getSyntaxDescription() const;
     operator bool() const;
 
     int getCommandParameterCount() const;
@@ -45,13 +62,89 @@ public:
 
     const Data& data() const;
 private:
-    std::string _errmsg;
     Data _data;
-    Strategy _strategy;
-    static Data DefaultStrategy(const std::string&); 
+    std::unique_ptr<Algorithm> _algorithm;
 };
 
+
+// ------ Parser::Algorithm (Interface, Strategy Pattern ) --------------------
+class Parser::Algorithm
+{
+public:
+    template <class A, class...Args>
+    static std::unique_ptr<Algorithm> Use(Args...args) 
+    {
+        return std::make_unique<A>(args...);
+    }
+
+    virtual ~Algorithm() { }
+    virtual std::string_view syntax() const = 0;
+    virtual Parser::Data parse( const std::string&, Parser::Error& ) = 0;
+};
+
+// ------ Parser::AlgWrapper (Concrete Strategy) ------------------------------
+class Parser::AlgWrapper : public Parser::Algorithm
+{
+public:
+    AlgWrapper( Parser::Function, const std::string& );
+    virtual std::string_view syntax() const;
+    virtual Parser::Data parse( const std::string&, Parser::Error& );
+private:
+    Parser::Function _function;
+    const std::string _syntax;
+};
+
+// ------ Parser::Alg20 (Algorithm, Concrete Strategy) ------------------------
+class Parser::Alg20 : public Parser::Algorithm
+{
+public:
+    std::string_view syntax() const;
+    Parser::Data parse( const std::string&, Parser::Error& );
+private:
+    static const std::string _syntax;
+};
+
+// ------ Parser::Alg22 (Algorithm, Concrete Strategy) ------------------------
+class Parser::Alg22 : public Parser::Algorithm
+{
+public:
+    std::string_view syntax() const;
+    Parser::Data parse( const std::string&, Parser::Error& );
+private:
+    static const std::string _syntax;
+};
+
+// ------ Parser::Error -------------------------------------------------------
+class Parser::Error
+{
+public:
+    Error() = default;
+    Error(const std::string&);
+
+    operator bool() const;
+    
+    std::string_view source() const;
+    std::string_view what() const;
+    std::string_view expression() const;
+    
+    void clear();
+    void source(const std::string&);
+    void set(
+        const std::string& what, 
+        const std::string& expression = std::string());
+    
+private:
+    std::string _source;
+    std::string _expression;
+    std::string _what;
+};
+
+
+// ------------------ Free Functions ------------------------------------------
+
 std::ostream& operator<<(std::ostream&,const Parser&);
+
+std::ostream& operator<<(std::ostream&,const Parser::Error&);
 
 } // namespace clp
 } // namespace elrat

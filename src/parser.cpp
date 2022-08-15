@@ -10,35 +10,42 @@
 namespace elrat {
 namespace clp {
 
-Parser::Parser( Strategy s )
-: _strategy{s}
+// ------ Parser (Top-Level class) --------------------------------------------
+
+Parser::Parser( std::unique_ptr<Algorithm>&& a )
+: _algorithm{ std::move(a) }
 {
 }
 
-bool Parser::parse(const std::string& s)
+Parser::Parser( Parser::Function f, const std::string& s )
+: _algorithm{Parser::Algorithm::Use<AlgWrapper>(f,s)}
 {
+}
+
+Parser::Error Parser::parse(const std::string& s)
+{
+    Parser::Error e(s);
     try {
-        _data = _strategy(s);
-        return true;
+        _data = _algorithm->parse( s, e );
+        return e;
     }
-    catch( std::exception& e ) {
-        _errmsg = e.what();
+    catch( std::exception& exc ) {
+        e.set(exc.what());
     }
     catch(...) {
-        _errmsg = "Caught unknown exception!";
+        e.set("Caught unknown exception!");
     }
-    return false;
+    return e;
 }
 
 void Parser::clear()
 {
     _data.clear();
-    _errmsg.clear();
 }
 
-std::string_view Parser::getLastError() const 
+std::string_view Parser::getSyntaxDescription() const 
 {
-    return _errmsg;
+    return _algorithm->syntax();
 }
 
 Parser::operator bool() const
@@ -99,7 +106,7 @@ const Parser::Data& Parser::data() const
     return _data;
 }
 
-Parser::Data Parser::DefaultStrategy(const std::string& s)
+Parser::Data Parser::LegacyFunction(const std::string& s)
 {
     auto is_option = [](const std::string& s) {
         return std::regex_match( s, std::regex("^(--?[_a-zA-Z]+)$"));
@@ -139,6 +146,128 @@ Parser::Data Parser::DefaultStrategy(const std::string& s)
     return result;
 }
 
+// ------ Parser::AlgWrapper (Concrete Strategy) ------------------------------
+
+Parser::AlgWrapper::AlgWrapper( Parser::Function f, const std::string& s )
+: _function{f}
+, _syntax{s}
+{
+
+}
+
+std::string_view Parser::AlgWrapper::syntax() const 
+{
+    return _syntax;
+}
+
+Parser::Data Parser::AlgWrapper::parse(const std::string& s, Parser::Error& e)
+{
+    Parser::Data result{};
+    e.source(s);
+    if (!_function)
+    {
+        e.set("nullptr");
+        return result;
+    }
+    
+    try {
+        result = _function(s);
+        e.clear();
+    }
+    catch(std::exception& exc) {
+        e.set(exc.what());
+    }
+    catch(...) {
+        e.set("caught unknown exception");
+    }
+    return result;
+}
+
+// ------ Parser::Alg20 (Algorithm, Concrete Strategy) ------------------------
+
+const std::string Parser::Alg20::_syntax("ALG20 syntax description");
+
+std::string_view Parser::Alg20::syntax() const 
+{
+    return _syntax;
+}
+
+Parser::Data Parser::Alg20::parse( const std::string& s, Parser::Error& e )
+{
+    Parser::Data result{};
+
+
+    
+    return result;
+}
+
+
+
+
+// ------ Parser::Alg22 (Algorithm, Concrete Strategy) ------------------------
+
+const std::string Parser::Alg22::_syntax("ALG22 syntax description");
+
+std::string_view Parser::Alg22::syntax() const 
+{
+    return _syntax;
+}
+
+Parser::Data Parser::Alg22::parse( const std::string& s, Parser::Error& e )
+{
+    Parser::Data result{};
+
+    return result;
+}
+
+// ------ Parser::Error -------------------------------------------------------
+
+Parser::Error::Error(const std::string& s)
+: _source{s}
+{
+
+}
+
+Parser::Error::operator bool() const 
+{
+    return static_cast<bool>(_what.size());
+}
+
+std::string_view Parser::Error::source() const 
+{
+    return _source;
+}
+
+std::string_view Parser::Error::what() const
+{
+    return _what;
+}
+
+std::string_view Parser::Error::expression() const 
+{
+    return _expression;
+}
+
+void Parser::Error::clear()
+{
+    _source.clear();
+    _what.clear();
+    _expression.clear();
+}
+
+void Parser::Error::source(const std::string& s)
+{
+    _source = s;
+}
+
+void Parser::Error::set(const std::string& w, const std::string& e)
+{
+    _what = w;
+    _expression = e;
+}
+
+// ------------------ Free Functions ------------------------------------------
+
 std::ostream& operator<<(std::ostream& os, const Parser& p)
 {
     auto& data = p.data();
@@ -157,6 +286,21 @@ std::ostream& operator<<(std::ostream& os, const Parser& p)
         {
             os << "   #" << k << ": [" << p.getOptionParameter(i,k) << "]\n";
         }
+    }
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os,const Parser::Error& e)
+{
+    if ( !e ) {
+        return os;
+    }
+    os << "Error: \"" << e.what() << "\"\n";
+    if ( e.source().size() ) {
+        os << "-> source = \"" << e.source() << "\"\n";
+    }
+    if ( e.expression().size() ) {
+        os << "-> expression =  \"" << e.expression() << "\"\n";
     }
     return os;
 }

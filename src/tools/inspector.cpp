@@ -12,14 +12,12 @@ int main() {
 	do {
 		std::cout << "> ";
 		std::getline( std::cin, s );
-
         Parser p;
-        bool success = p.parse( s );
-        if (!success)
-            std::cout << p.getLastError() << '\n';
-
-        std::cout << p << '\n';
-
+        auto err = p.parse( s );
+        std::cout 
+            << err // will do nothing if no error was reported.
+            << p
+            << '\n';
 	} while( s != szQuit );
 
 	return 0;
