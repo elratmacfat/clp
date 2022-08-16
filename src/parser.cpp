@@ -5,107 +5,238 @@
 //
 #include "elrat/clp/parser.hpp"
 
+#include <algorithm>
 #include <regex>
 
-namespace elrat {
-namespace clp {
+using namespace elrat;
 
-// ------ Parser (Top-Level class) --------------------------------------------
-
-Parser::Parser( std::unique_ptr<Algorithm>&& a )
-: _algorithm{ std::move(a) }
+clp::parser::error::error(
+    const std::string& msg,
+    const std::string& xpr,
+    const std::string& src )
+: _msg{msg}
+, _xpr{xpr}
+, _src{src}
 {
+
 }
 
-Parser::Parser( Parser::Function f, const std::string& s )
-: _algorithm{Parser::Algorithm::Use<AlgWrapper>(f,s)}
+clp::parser::error::operator bool() const 
 {
+    return ( _msg.size() > 0 );
 }
 
-Parser::Error Parser::parse(const std::string& s)
+std::string_view clp::parser::error::source() const 
 {
-    Parser::Error e(s);
+    return _src;
+}
+
+std::string_view clp::parser::error::message() const
+{
+    return _msg;
+}
+
+std::string_view clp::parser::error::expression() const 
+{
+    return _xpr;
+}
+
+clp::parser_wrapper::parser_wrapper( 
+    clp::parser_wrapper::function f,
+    const std::string& s )
+: _function{f}
+, _syntax{s}
+{
+
+}
+
+clp::data clp::parser_wrapper::parse(
+    const std::string& s, 
+    clp::parser::error& err)
+{
     try {
-        _data = _algorithm->parse( s, e );
-        return e;
+        return _function(s,err);
     }
     catch( std::exception& exc ) {
-        e.set(exc.what());
+        err = clp::parser::error( exc.what() );
     }
     catch(...) {
-        e.set("Caught unknown exception!");
+        err = parser::error("parser_wrapper::parse() -> unknown exception");
     }
-    return e;
+    return clp::data(); // default constructed empty data object.
 }
 
-void Parser::clear()
+std::string_view clp::parser_wrapper::syntax() const 
 {
-    _data.clear();
+    return _syntax;
 }
 
-std::string_view Parser::getSyntaxDescription() const 
+clp::data clp::default_parser::parse(
+    const std::string& s, 
+    clp::parser::error& err)
 {
-    return _algorithm->syntax();
-}
+    auto rgxmatch{[](const std::string& token, const char rgx[]) {
+        return std::regex_match(token,std::regex(rgx));
+    }};
+    auto is_identplus{[&](const std::string& token ) {
+        return rgxmatch(token,"^([a-zA-Z_][\\w\\-]*)$");
+    }};
+    auto is_opt{[&](const std::string& token){
+        return rgxmatch(token,"^(--[_a-zA-Z][\\w\\-]*)$");
+    }};
+    auto is_opt_pack{[&](const std::string& token){
+        return rgxmatch(token,"^(-[a-zA-Z]+)$");
+    }};
+    auto is_equal_sign{[&](const std::string& token){
+        return rgxmatch(token,"^([=])$");
+    }};
+    auto add_opt{[](clp::data::structure& d, const std::string& token){
+        auto ss = token.substr(2,token.size());
+        for( auto it = d.begin()+1; it != d.end(); it++ )
+            if ( it->at(0) == ss )
+                return false;
+        d.push_back({ss});
+        return true;
+    }};
+    auto add_opt_pack{[](clp::data::structure& d, const std::string& token) {
+        for( auto it = token.begin() + 1; it != token.end(); it++ ) {
+            std::string ss(1,*it);
+            for ( auto it2 = d.begin()+1; it2 != d.end(); it2++ )
+                if ( it2->at(0) == ss )
+                    return false;
+            d.push_back({ss});
+        }
+        return true;
+    }};
+    auto add_opt_param{[](clp::data::structure& d, const std::string& token) {
+        d.back().push_back(token);
+    }};
+    auto add_param{[](clp::data::structure& d, const std::string& token) {
+        d.at(0).push_back(token);
+    }};
 
-Parser::operator bool() const
-{
-    return static_cast<bool>(_data.size());
-}
+    clp::data::structure raw_data{};
+    
+    if ( !s.size() )
+        return clp::data();
 
-int Parser::getCommandParameterCount() const
-{
-    return _data.at(0).size() - 1;
-}
+    std::regex rgx("(\".+\")|([^\\s=]+)|(=)");
+    auto begin{std::sregex_iterator( s.begin(), s.end(), rgx )};
+    auto end{std::sregex_iterator()};
 
+    std::vector<std::string> elements;
+    for( auto it{begin}; it!=end; it++ )
+        elements.push_back( it->str() );
 
-int Parser::getOptionCount() const
-{
-    if (!(*this))
-        throw std::out_of_range("Out Of Range: Parser::getOptionCount()");
-    return _data.size() - 1;
-}
+    if ( !elements.size() )
+        throw std::runtime_error("Failed parsing input.");
 
-int Parser::getOptionIndex(const std::string& s) const
-{
-    for( int i{1}; i < _data.size(); i++ )
+    int state{0};
+    for ( auto& e : elements )
     {
-        if( _data.at(i).at(0) == s )
-            return i-1;
+        switch ( state )
+        {
+        // First iteration. Accept 'command'
+        case 0:
+            if ( !is_identplus(e) ) 
+            {
+                err = clp::parser::error("Invalid 'command' token", e, s );
+                return clp::data();
+            }    
+            raw_data.push_back({e});
+            state = 1;
+            break;
+        
+        // Previously added 'command', a 'parameter' or an 'optionpack'
+        // Accepting 'option', 'optionpack' and 'parameter'
+        case 1:
+            if ( is_opt(e) ) 
+            {
+                if (!add_opt(raw_data,e)) {
+                    err = clp::parser::error("option already configured");
+                    return clp::data();
+                }
+                state = 2;
+            }
+            else if ( is_opt_pack(e) )
+            {
+                if (!add_opt_pack(raw_data,e)) {
+                    err = clp::parser::error("option already configured");
+                    return clp::data();
+                }
+                state = 1;
+            }
+            else // parameter
+            {
+                if ( is_equal_sign(e) )
+                {
+                    err = clp::parser::error("Illegal token.", e, s );
+                    return clp::data();
+                }
+                raw_data.at(0).push_back(e);
+                state = 1;
+            }
+            break;
+        
+        // a single option preceeded by a double-dash was the previous token
+        // accepting equal sign, command parameter or options
+        case 2: 
+            if ( is_equal_sign(e) )
+            {
+                state = 3;
+            }
+            else if ( is_opt(e) ) 
+            {
+                if (!add_opt(raw_data,e)) {
+                    err = clp::parser::error("option already configured");
+                    return clp::data();
+                }
+                state = 2;
+            }
+            else if ( is_opt_pack(e) )
+            {
+                if (!add_opt_pack(raw_data,e)) {
+                    err = clp::parser::error("option already configured");
+                    return clp::data();
+                }
+                state = 1;
+            }
+            else 
+            {
+                raw_data.at(0).push_back(e);
+                state = 1;
+            }
+            break;
+
+        // option assignment (=) was previous. Now accepting 'parameter'
+        case 3:
+            raw_data.back().push_back( e );
+            state = 1;
+            break;
+
+        default:
+            err = clp::parser::error("Invalid token", e, s );
+            return clp::data();
+        }
     }
-    return 0;
-}
-
-int Parser::getOptionParameterCount(int i) const
-{
-    return _data.at(i+1).size() - 1;
-}
     
-std::string_view Parser::getCommand() const
-{
-    return _data.at(0).at(0);
-}
-    
-std::string_view Parser::getCommandParameter(int i) const
-{   
-    return _data.at(0).at(i+1);
-}
-   
-std::string_view Parser::getOption(int i) const 
-{
-    return _data.at(i+1).at(0);
+
+    return clp::data( std::move(raw_data) );
 }
 
-std::string_view Parser::getOptionParameter(int i,int k) const
+std::string_view clp::default_parser::syntax() const 
 {
-    return _data.at(i+1).at(k+1);
+    return _syntax;
 }
 
-const Parser::Data& Parser::data() const 
-{
-    return _data;
-}
+const std::string clp::default_parser::_syntax(
+    "<cmd> "
+    "[-<option-pack>] "
+    "[--<long-option> [ = <option-parameter>]] "
+    "[<cmd-parameter>]"); 
 
+
+/*
 Parser::Data Parser::LegacyFunction(const std::string& s)
 {
     auto is_option = [](const std::string& s) {
@@ -145,166 +276,5 @@ Parser::Data Parser::LegacyFunction(const std::string& s)
     }
     return result;
 }
-
-// ------ Parser::AlgWrapper (Concrete Strategy) ------------------------------
-
-Parser::AlgWrapper::AlgWrapper( Parser::Function f, const std::string& s )
-: _function{f}
-, _syntax{s}
-{
-
-}
-
-std::string_view Parser::AlgWrapper::syntax() const 
-{
-    return _syntax;
-}
-
-Parser::Data Parser::AlgWrapper::parse(const std::string& s, Parser::Error& e)
-{
-    Parser::Data result{};
-    e.source(s);
-    if (!_function)
-    {
-        e.set("nullptr");
-        return result;
-    }
-    
-    try {
-        result = _function(s);
-        e.clear();
-    }
-    catch(std::exception& exc) {
-        e.set(exc.what());
-    }
-    catch(...) {
-        e.set("caught unknown exception");
-    }
-    return result;
-}
-
-// ------ Parser::Alg20 (Algorithm, Concrete Strategy) ------------------------
-
-const std::string Parser::Alg20::_syntax("ALG20 syntax description");
-
-std::string_view Parser::Alg20::syntax() const 
-{
-    return _syntax;
-}
-
-Parser::Data Parser::Alg20::parse( const std::string& s, Parser::Error& e )
-{
-    Parser::Data result{};
-
-
-    
-    return result;
-}
-
-
-
-
-// ------ Parser::Alg22 (Algorithm, Concrete Strategy) ------------------------
-
-const std::string Parser::Alg22::_syntax("ALG22 syntax description");
-
-std::string_view Parser::Alg22::syntax() const 
-{
-    return _syntax;
-}
-
-Parser::Data Parser::Alg22::parse( const std::string& s, Parser::Error& e )
-{
-    Parser::Data result{};
-
-    return result;
-}
-
-// ------ Parser::Error -------------------------------------------------------
-
-Parser::Error::Error(const std::string& s)
-: _source{s}
-{
-
-}
-
-Parser::Error::operator bool() const 
-{
-    return static_cast<bool>(_what.size());
-}
-
-std::string_view Parser::Error::source() const 
-{
-    return _source;
-}
-
-std::string_view Parser::Error::what() const
-{
-    return _what;
-}
-
-std::string_view Parser::Error::expression() const 
-{
-    return _expression;
-}
-
-void Parser::Error::clear()
-{
-    _source.clear();
-    _what.clear();
-    _expression.clear();
-}
-
-void Parser::Error::source(const std::string& s)
-{
-    _source = s;
-}
-
-void Parser::Error::set(const std::string& w, const std::string& e)
-{
-    _what = w;
-    _expression = e;
-}
-
-// ------------------ Free Functions ------------------------------------------
-
-std::ostream& operator<<(std::ostream& os, const Parser& p)
-{
-    auto& data = p.data();
-    if (!p) 
-        return os;
-
-    os << "Command...: [" << p.getCommand() << "]\n";
-    for( int i{0}; i < p.getCommandParameterCount(); i++ )
-    {
-        os << "   #" << i << ": [" << p.getCommandParameter(0) << "]\n";
-    }
-    for( int i{0}; i < p.getOptionCount(); i++ )
-    {
-        os << "- Option..: [" << p.getOption(i) << "]\n";
-        for( int k{0}; k < p.getOptionParameterCount(i); k++ ) 
-        {
-            os << "   #" << k << ": [" << p.getOptionParameter(i,k) << "]\n";
-        }
-    }
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os,const Parser::Error& e)
-{
-    if ( !e ) {
-        return os;
-    }
-    os << "Error: \"" << e.what() << "\"\n";
-    if ( e.source().size() ) {
-        os << "-> source = \"" << e.source() << "\"\n";
-    }
-    if ( e.expression().size() ) {
-        os << "-> expression =  \"" << e.expression() << "\"\n";
-    }
-    return os;
-}
-
-} // namespace clp
-} // namespace elrat
+*/
 

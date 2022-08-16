@@ -1,0 +1,17 @@
+// Project......: Command Line Processor (clp)
+// File.........: 
+// Author.......: elratmacfat
+// Description..:
+//
+#ifndef ELRAT_CLP_DATA_HPP
+#define ELRAT_CLP_DATA_HPP
+
+namespace elrat {
+namespace clp {
+
+
+
+} // namespace clp
+} // namespace elrat
+
+#endif // include guard

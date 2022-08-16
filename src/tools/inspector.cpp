@@ -1,22 +1,27 @@
 #include <elrat/clp/parser.hpp>
+#include <elrat/clp/text.hpp>
 
 #include <iostream>
-
 #include <cstdio>
 
 int main() {
-	using namespace elrat::clp;
+	using namespace elrat;
 	const std::string szQuit("q");
-	std::cout << "Type 'q' to quit.\n";	
+    auto p = clp::parser::make<clp::default_parser>();
+    std::cout << "Syntax:\n   "
+        << p->syntax()
+        << "\nType '"
+        << szQuit
+        << "' to quit.\n";
 	std::string s;
 	do {
+        clp::parser::error err;
 		std::cout << "> ";
 		std::getline( std::cin, s );
-        Parser p;
-        auto err = p.parse( s );
+        auto data{ p->parse(s,err) };
         std::cout 
             << err // will do nothing if no error was reported.
-            << p
+            << data
             << '\n';
 	} while( s != szQuit );
 

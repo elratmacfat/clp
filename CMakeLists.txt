@@ -11,11 +11,17 @@ SET( CMAKE_CXX_STANDARD 17 )
 SET( HeaderFiles
     inc/elrat/clp.hpp
     inc/elrat/clp/parser.hpp
+    inc/elrat/clp/data.hpp
+    inc/elrat/clp/text.hpp
+    inc/elrat/clp/desc.hpp
 )
 
 SET( SourceFiles 
     src/clp.cpp
     src/parser.cpp
+    src/data.cpp
+    src/text.cpp
+    src/desc.cpp
 )
 
 ADD_LIBRARY( clp SHARED ${PublicHeader} ${SourceFiles} )
