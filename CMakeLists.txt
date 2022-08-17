@@ -36,14 +36,20 @@ TARGET_LINK_LIBRARIES( inspector PUBLIC clp )
 #
 # Test
 #
-FIND_PACKAGE( Boost )
+
+FIND_PACKAGE( Boost COMPONENTS unit_test_framework REQUIRED )
+
 IF ( Boost_FOUND )
 
 	INCLUDE(CTest)
     
-    ADD_EXECUTABLE( parser_t src/test/parser_t.cpp )
-    TARGET_LINK_LIBRARIES( parser_t PUBLIC clp )
-	TARGET_INCLUDE_DIRECTORIES( parser_t PUBLIC Boost_INCLUDE_DIRS )
+    ADD_EXECUTABLE( unittest 
+        src/test/main_t.cpp
+        src/test/desc_t.cpp
+        src/test/parser_t.cpp )
+    TARGET_LINK_LIBRARIES( unittest 
+        PUBLIC clp 
+        PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}  )
 
 ELSE()
 	MESSAGE( WARNING "Could not find 'Boost'. Skip compiling the test executable." )

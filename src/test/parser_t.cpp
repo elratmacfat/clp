@@ -3,17 +3,12 @@
 // Author.......: elratmacfat
 // Description..:
 //
-#define BOOST_TEST_MODULE parser_t
-
-#include <boost/test/included/unit_test.hpp>
+#define BOOST_TEST_DYN_LINK
+#include <boost/test/unit_test.hpp>
 
 #include "elrat/clp/parser.hpp"
 
 using namespace elrat;
-
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
 
 struct clp_data_fixture {
     clp_data_fixture()
