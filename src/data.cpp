@@ -19,6 +19,11 @@ bool clp::data::empty() const
     return ( _s.size() == 0 );
 }
 
+clp::data::operator bool() const 
+{
+    return (_s.size() > 0 );
+}
+
 int clp::data::cmd_param_count() const
 {
     return _s.at(0).size() - 1;

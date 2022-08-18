@@ -1,21 +1,49 @@
 // Project......: Command Line Processor (clp)
 // File.........: inc/elrat/clp/data.hpp
 // Author.......: elratmacfat
-// Description..: 
+// Description..: The 'data' class encapsulates the parsed elements of an 
+//                input command line, and provides access through a meaningful
+//                interface.
 //
-// - The command itself is the first word of the input.
-// - The command can have zero or more parameters.
-// - The command can have zero or more options.
-// - An option can have zero or more parameters.
+//                How an issued command line is interpreted is completely up
+//                the concrete 'parser'-class, but the following presumptions
+//                about the general structure of a command line are made (to
+//                be able to provide a semantical interface):
 //
-// Note that indexing starts with 1, not zero!
+//                - The command can have zero or more parameters.
+//                - The command can have zero or more options.
+//                - An option can have zero or more parameters.
 //
-//      int n = data.cmd_param_count(); // n = 2
-//      auto p1 = data.cmd_param(1);
-//      auto p2 = data.cmd_param(2);
+//                A few notes to consider when using the 'data' class:
 //
-//      int m = data.opt_count(); // m = 1;
-//      auto opt_name = data.opt(1); //
+//                => Accessing non-existent elements will result in a 
+//                   std::out_of_range exception. Therefore, boundaries should
+//                   be checked first using 
+//                      data::empty()
+//                      data::cmd_param_count()
+//                      data::opt_count()
+//                      data::opt_param_count(opt_index)
+//
+//                   In addition the bool operator is overloaded, which 
+//                   is an alternative to the empty() member, but checks
+//                   the other way round:
+//                      
+//                      if ( data ) {
+//                          std::cout << data.cmd(); // OK
+//                          // Still need to test for parameter
+//                          // and option count
+//                      }
+//
+//                => The indices of command parameters, options and option's 
+//                   parameters start at 1 (not zero, as would naturally be 
+//                   expected):
+//
+//                      int n = data.cmd_param_count(); // n = 2
+//                      auto p1 = data.cmd_param(1);
+//                      auto p2 = data.cmd_param(2);
+//
+//                      int m = data.opt_count(); // m = 1;
+//                      auto opt_name = data.opt(1); //
 //
 #ifndef ELRAT_CLP_DATA_HPP
 #define ELRAT_CLP_DATA_HPP
@@ -40,6 +68,7 @@ public:
 
     void clear();
     bool empty() const;
+    operator bool() const;
 
     int cmd_param_count() const;
     int opt_count() const;
