@@ -9,7 +9,6 @@ SET( CMAKE_CXX_STANDARD 17 )
 #
 
 SET( HeaderFiles
-    inc/elrat/clp.hpp
     inc/elrat/clp/parser.hpp
     inc/elrat/clp/data.hpp
     inc/elrat/clp/text.hpp
@@ -18,7 +17,6 @@ SET( HeaderFiles
 )
 
 SET( SourceFiles 
-    src/clp.cpp
     src/parser.cpp
     src/data.cpp
     src/text.cpp
