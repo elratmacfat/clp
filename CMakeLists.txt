@@ -14,6 +14,7 @@ SET( HeaderFiles
     inc/elrat/clp/data.hpp
     inc/elrat/clp/text.hpp
     inc/elrat/clp/desc.hpp
+    inc/elrat/clp/util.hpp
 )
 
 SET( SourceFiles 
@@ -43,13 +44,22 @@ IF ( Boost_FOUND )
 
 	INCLUDE(CTest)
     
-    ADD_EXECUTABLE( unittest 
-        src/test/main_t.cpp
-        src/test/desc_t.cpp
-        src/test/parser_t.cpp )
-    TARGET_LINK_LIBRARIES( unittest 
+    ADD_EXECUTABLE( class-level-test 
+        src/tests/class-level-test/clt-main.cpp
+        src/tests/class-level-test/clt-desc.cpp
+        src/tests/class-level-test/clt-util.cpp
+        src/tests/class-level-test/clt-default_parser.cpp )
+    TARGET_LINK_LIBRARIES( class-level-test
         PUBLIC clp 
         PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}  )
+    ADD_TEST( NAME class-level-test COMMAND class-level-test )
+
+    ADD_EXECUTABLE( component-test
+        src/tests/component-test/ct-main.cpp )
+    TARGET_LINK_LIBRARIES( component-test
+        PUBLIC clp
+        PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
+    ADD_TEST( NAME component-test COMMAND component-test )
 
 ELSE()
 	MESSAGE( WARNING "Could not find 'Boost'. Skip compiling the test executable." )

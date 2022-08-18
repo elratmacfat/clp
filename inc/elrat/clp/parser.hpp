@@ -34,22 +34,32 @@ std::unique_ptr<parser> parser::make(Args...args)
 class parser::error 
 {
 public:
+    enum class code 
+    {
+        success,
+        failure,
+        no_input,
+        exception,
+        syntax,
+        redundant   // indicates multiple use of the same option.
+    };
+
     error(
-        const std::string& msg = "", 
-        const std::string& xpr = "",
+        code c = code::success,
+        const std::string& msg = "",
         const std::string& src = "");
     error(const error&) = default;
     error(error&&) = default;
     ~error() = default;
     error& operator=(const error&) = default;
     error& operator=(error&&) = default;
+    code operator()() const;
     std::string_view message() const;
-    std::string_view expression() const;
     std::string_view source() const;
     operator bool() const;
 private:
+    code _code;
     std::string _msg;
-    std::string _xpr;
     std::string _src;
 };
 

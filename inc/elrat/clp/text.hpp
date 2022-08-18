@@ -13,6 +13,7 @@
 
 std::ostream& operator<<(std::ostream&,const elrat::clp::data&);
 std::ostream& operator<<(std::ostream&,const elrat::clp::parser::error&);
+std::ostream& operator<<(std::ostream&,const elrat::clp::parser::error::code&);
 
 #endif 
 

@@ -16,6 +16,8 @@
 #include <string_view>
 #include <vector>
 
+#include <elrat/clp/util.hpp>
+
 namespace elrat {
 namespace clp {
 
@@ -60,6 +62,7 @@ namespace parameter_type
     bool natural_number(std::string_view);
     bool whole_number(std::string_view);
     bool real_number(std::string_view);
+    bool name(std::string_view);
     bool identifier(std::string_view);
 }
 
@@ -240,7 +243,7 @@ public:
     using one_argument<T>::one_argument;
     bool check(std::string_view s) const 
     {
-        return true;
+        return (util::convert<T>(s) > this->_t);
     }
 
     std::string_view string() const 
@@ -258,7 +261,7 @@ public:
     using one_argument<T>::one_argument;
     bool check(std::string_view s) const 
     {
-        return true;
+        return (util::convert<T>(s) < this->_t);
     }
 
     std::string_view string() const 
@@ -276,7 +279,7 @@ public:
     using one_argument<T>::one_argument;
     bool check(std::string_view s) const 
     {
-        return true;
+        return (util::convert<T>(s) != this->_t);
     }
 
     std::string_view string() const 
@@ -295,7 +298,8 @@ public:
     using two_arguments<T>::two_arguments;
     bool check(std::string_view s) const 
     {
-        return true;
+        T x = util::convert<T>(s);
+        return ( x >= this->_t1 && x <= this->_t2 );
     }
 
     std::string_view string() const 
@@ -313,12 +317,16 @@ public:
     using many_arguments<T>::many_arguments;
     bool check(std::string_view s) const 
     {
-        return true;
+        T x = util::convert<T>(s);
+        for( auto& t : this->_vt ) 
+            if ( x == t ) 
+                return true;
+        return false;
     }
 
     std::string_view string() const 
     {
-        return "";
+    return "";
     }
 };
 
@@ -327,31 +335,31 @@ param_constraint_ptr constraint::at_least(const T& t)
 {
     return std::make_shared<constraint_at_least<T>>(t);
 }
- 
+
 template <class T> 
 param_constraint_ptr constraint::at_most(T&& t)
 {
     return std::make_shared<constraint_at_most<T>>(std::move(t));
 }
-    
+
 template <class T> 
 param_constraint_ptr constraint::in_range(T&& t1, T&& t2)
 {
     return std::make_shared<constraint_in_range<T>>(t1,t2);
 }
-    
+
 template <class T> 
 param_constraint_ptr constraint::is_not(T&& t)
 {
     return std::make_shared<constraint_is_not<T>>(std::move(t));
 }
-    
+
 template <class T, class...TT> 
 param_constraint_ptr constraint::in(TT...t)
 {
     return std::make_shared<constraint_in<T>>(t...);
 }
-    
+
 
 } // namespace clp
 } // namespace elrat

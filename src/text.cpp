@@ -41,19 +41,35 @@ std::ostream& operator<<(std::ostream& os, const elrat::clp::data& data )
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os,const elrat::clp::parser::error& err)
+std::ostream& operator<<(
+    std::ostream& os,
+    const elrat::clp::parser::error& err)
 {
     if ( !err ) {
         return os;
     }
-    os     << "Error: \"" << err.message() << "\"\n";
-    if ( err.source().size() ) {
-        os << "=> Source: \"" << err.source() << "\"\n";
-    }
-    if ( err.expression().size() ) {
-        os << "=> Expression: \"" << err.expression() << "\"\n";
-    }
+    os << err();
+    if ( err.message().size() )
+        os << ": [" << err.message() << "]";
+    if ( err.source().size() )
+        os << " in \"" << err.source() << "\"";
+    os << '\n';
     return os;
 }
 
-
+std::ostream& operator<<(
+    std::ostream& os,
+    const elrat::clp::parser::error::code& c)
+{
+    using code = elrat::clp::parser::error::code;
+    switch (c) 
+    {
+    case code::success: os << "success"; break;
+    case code::failure: os << "undefined failure"; break;
+    case code::syntax: os << "syntax error"; break;
+    case code::redundant: os << "redundant option"; break;
+    default:
+        os << "unknown error";
+    }
+    return os;
+}

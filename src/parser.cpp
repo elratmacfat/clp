@@ -11,11 +11,11 @@
 using namespace elrat;
 
 clp::parser::error::error(
+    code c,
     const std::string& msg,
-    const std::string& xpr,
     const std::string& src )
-: _msg{msg}
-, _xpr{xpr}
+: _code{c}
+, _msg{msg}
 , _src{src}
 {
 
@@ -26,9 +26,9 @@ clp::parser::error::operator bool() const
     return ( _msg.size() > 0 );
 }
 
-std::string_view clp::parser::error::source() const 
+clp::parser::error::code clp::parser::error::operator()() const
 {
-    return _src;
+    return _code;
 }
 
 std::string_view clp::parser::error::message() const
@@ -36,34 +36,30 @@ std::string_view clp::parser::error::message() const
     return _msg;
 }
 
-std::string_view clp::parser::error::expression() const 
+std::string_view clp::parser::error::source() const 
 {
-    return _xpr;
+    return _src;
 }
 
-clp::parser_wrapper::parser_wrapper( 
-    clp::parser_wrapper::function f,
-    const std::string& s )
+clp::parser_wrapper::parser_wrapper( function f, const std::string& s )
 : _function{f}
 , _syntax{s}
 {
 
 }
 
-clp::data clp::parser_wrapper::parse(
-    const std::string& s, 
-    clp::parser::error& err)
+clp::data clp::parser_wrapper::parse( const std::string& s, error& err)
 {
     try {
         return _function(s,err);
     }
     catch( std::exception& exc ) {
-        err = clp::parser::error( exc.what() );
+        err = error( error::code::exception, exc.what() );
     }
     catch(...) {
-        err = parser::error("parser_wrapper::parse() -> unknown exception");
+        err = error( error::code::exception, "unknown" );
     }
-    return clp::data(); // default constructed empty data object.
+    return data(); // default constructed empty data object.
 }
 
 std::string_view clp::parser_wrapper::syntax() const 
@@ -73,7 +69,7 @@ std::string_view clp::parser_wrapper::syntax() const
 
 clp::data clp::default_parser::parse(
     const std::string& s, 
-    clp::parser::error& err)
+    error& err)
 {
     auto rgxmatch{[](const std::string& token, const char rgx[]) {
         return std::regex_match(token,std::regex(rgx));
@@ -90,7 +86,7 @@ clp::data clp::default_parser::parse(
     auto is_equal_sign{[&](const std::string& token){
         return rgxmatch(token,"^([=])$");
     }};
-    auto add_opt{[](clp::data::structure& d, const std::string& token){
+    auto add_opt{[](data::structure& d, const std::string& token){
         auto ss = token.substr(2,token.size());
         for( auto it = d.begin()+1; it != d.end(); it++ )
             if ( it->at(0) == ss )
@@ -98,7 +94,7 @@ clp::data clp::default_parser::parse(
         d.push_back({ss});
         return true;
     }};
-    auto add_opt_pack{[](clp::data::structure& d, const std::string& token) {
+    auto add_opt_pack{[](data::structure& d, const std::string& token) {
         for( auto it = token.begin() + 1; it != token.end(); it++ ) {
             std::string ss(1,*it);
             for ( auto it2 = d.begin()+1; it2 != d.end(); it2++ )
@@ -108,17 +104,20 @@ clp::data clp::default_parser::parse(
         }
         return true;
     }};
-    auto add_opt_param{[](clp::data::structure& d, const std::string& token) {
+    auto add_opt_param{[](data::structure& d, const std::string& token) {
         d.back().push_back(token);
     }};
-    auto add_param{[](clp::data::structure& d, const std::string& token) {
+    auto add_param{[](data::structure& d, const std::string& token) {
         d.at(0).push_back(token);
     }};
 
-    clp::data::structure raw_data{};
+    data::structure raw_data{};
     
-    if ( !s.size() )
-        return clp::data();
+    if ( !s.size() ) 
+    {
+        err = error(error::code::no_input );
+        return data();
+    }
 
     std::regex rgx("(\".+\")|([^\\s=]+)|(=)");
     auto begin{std::sregex_iterator( s.begin(), s.end(), rgx )};
@@ -129,7 +128,10 @@ clp::data clp::default_parser::parse(
         elements.push_back( it->str() );
 
     if ( !elements.size() )
-        throw std::runtime_error("Failed parsing input.");
+    {
+        err = error(error::code::failure);
+        return data();
+    }
 
     int state{0};
     for ( auto& e : elements )
@@ -140,8 +142,8 @@ clp::data clp::default_parser::parse(
         case 0:
             if ( !is_identplus(e) ) 
             {
-                err = clp::parser::error("Invalid 'command' token", e, s );
-                return clp::data();
+                err = error(error::code::syntax, e, s );
+                return data();
             }    
             raw_data.push_back({e});
             state = 1;
@@ -153,16 +155,16 @@ clp::data clp::default_parser::parse(
             if ( is_opt(e) ) 
             {
                 if (!add_opt(raw_data,e)) {
-                    err = clp::parser::error("option already configured");
-                    return clp::data();
+                    err = error(error::code::redundant, e, s );
+                    return data();
                 }
                 state = 2;
             }
             else if ( is_opt_pack(e) )
             {
                 if (!add_opt_pack(raw_data,e)) {
-                    err = clp::parser::error("option already configured");
-                    return clp::data();
+                    err = error(error::code::redundant, e, s);
+                    return data();
                 }
                 state = 1;
             }
@@ -170,8 +172,8 @@ clp::data clp::default_parser::parse(
             {
                 if ( is_equal_sign(e) )
                 {
-                    err = clp::parser::error("Illegal token.", e, s );
-                    return clp::data();
+                    err = error(error::code::syntax, e, s);
+                    return data();
                 }
                 raw_data.at(0).push_back(e);
                 state = 1;
@@ -188,16 +190,16 @@ clp::data clp::default_parser::parse(
             else if ( is_opt(e) ) 
             {
                 if (!add_opt(raw_data,e)) {
-                    err = clp::parser::error("option already configured");
-                    return clp::data();
+                    err = error( error::code::redundant, e, s );
+                    return data();
                 }
                 state = 2;
             }
             else if ( is_opt_pack(e) )
             {
                 if (!add_opt_pack(raw_data,e)) {
-                    err = clp::parser::error("option already configured");
-                    return clp::data();
+                    err = error(error::code::redundant, e, s );
+                    return data();
                 }
                 state = 1;
             }
@@ -215,13 +217,13 @@ clp::data clp::default_parser::parse(
             break;
 
         default:
-            err = clp::parser::error("Invalid token", e, s );
-            return clp::data();
+            err = error(error::code::syntax, e, s );
+            return data();
         }
     }
     
 
-    return clp::data( std::move(raw_data) );
+    return data( std::move(raw_data) );
 }
 
 std::string_view clp::default_parser::syntax() const 
@@ -234,47 +236,4 @@ const std::string clp::default_parser::_syntax(
     "[-<option-pack>] "
     "[--<long-option> [ = <option-parameter>]] "
     "[<cmd-parameter>]"); 
-
-
-/*
-Parser::Data Parser::LegacyFunction(const std::string& s)
-{
-    auto is_option = [](const std::string& s) {
-        return std::regex_match( s, std::regex("^(--?[_a-zA-Z]+)$"));
-                    
-    };
-    
-    auto is_identifier = [](const std::string& s) {
-        return std::regex_match( s, std::regex("^([_a-zA-Z]+)$"));
-    };
-
-    if ( !s.size() )
-        return Data();
-
-    std::regex rgx("(\".+\")|([^=\\s]+)");
-    auto begin{std::sregex_iterator( s.begin(), s.end(), rgx )};
-    auto end{std::sregex_iterator()};
-
-    std::vector<std::string> elements;
-    for( auto it{begin}; it!=end; it++ )
-        elements.push_back( it->str() );
-
-    if ( !elements.size() )
-        throw std::runtime_error("Failed parsing input.");
-
-    if ( !is_identifier(elements[0]))
-        throw std::invalid_argument("First expression must be an identifier");
-    
-    Data result;
-    result.push_back( { elements[0] } );
-    for( int i{1}; i < elements.size(); i++ )
-    {
-        if ( is_option(elements[i]) )
-            result.push_back( { elements[i] } );
-        else
-            result.back().push_back( elements[i] );
-    }
-    return result;
-}
-*/
 

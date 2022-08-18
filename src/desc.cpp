@@ -1,4 +1,10 @@
+// Project......: Command Line Processor (clp)
+// File.........: inc/elrat/clp/desc.hpp
+// Author.......: elratmacfat
+// Description..: 
+//
 #include <elrat/clp/desc.hpp>
+#include <regex>
 
 using namespace elrat;
 using namespace elrat::clp;
@@ -8,7 +14,7 @@ const bool parameter_properties::optional{false};
 
 bool parameter_type::any(std::string_view s)
 {
-    return true;
+    return (s.size() > 0);
 }
 
 bool parameter_type::natural_number(std::string_view s)
@@ -22,6 +28,11 @@ bool parameter_type::whole_number(std::string_view s)
 }
 
 bool parameter_type::real_number(std::string_view s)
+{
+    return true;
+}
+
+bool parameter_type::name(std::string_view s)
 {
     return true;
 }
