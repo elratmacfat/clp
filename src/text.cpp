@@ -5,8 +5,9 @@
 //
 #include <elrat/clp/text.hpp>
 
-
-std::ostream& operator<<(std::ostream& os, const elrat::clp::data& data )
+std::ostream& operator<<(
+    std::ostream& os, 
+    const elrat::clp::parser::data& data)
 {
     if (data.empty()) 
         return os;

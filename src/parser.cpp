@@ -1,7 +1,15 @@
 // Project......: Command Line Processor (clp)
 // File.........: src/parser.cpp
 // Author.......: elratmacfat
-// Description..:
+// Description..: Implementation of parser interface's nested classes
+//                - data 
+//                - error
+//
+//                Implementation of the library's own parser
+//                - native_parser
+//
+//                Implementation of the parser wrapper
+//                - parser_wrapper
 //
 #include "elrat/clp/parser.hpp"
 
@@ -9,6 +17,81 @@
 #include <regex>
 
 using namespace elrat;
+
+//-----------------------------------------------------------------------------
+//
+// data
+//
+//
+
+clp::parser::data::data( clp::parser::data::structure&& s )
+: _s{ std::move(s) }
+{
+}
+
+bool clp::parser::data::empty() const
+{
+    return ( _s.size() == 0 );
+}
+
+clp::parser::data::operator bool() const 
+{
+    return (_s.size() > 0 );
+}
+
+int clp::parser::data::cmd_param_count() const
+{
+    return _s.at(0).size() - 1;
+}
+
+
+int clp::parser::data::opt_count() const
+{
+    if (this->empty())
+        throw std::out_of_range("Out Of Range: parser::data::opt_count()");
+    return _s.size() - 1;
+}
+
+int clp::parser::data::opt_exists(const std::string& s) const
+{
+    for( int i{1}; i < _s.size(); i++ )
+    {
+        if( _s.at(i).at(0) == s )
+            return i;
+    }
+    return 0;
+}
+
+int clp::parser::data::opt_param_count(int i) const
+{
+    return _s.at(i).size() - 1;
+}
+    
+std::string_view clp::parser::data::cmd() const
+{
+    return _s.at(0).at(0);
+}
+    
+std::string_view clp::parser::data::cmd_param(int i) const
+{   
+    return _s.at(0).at(i);
+}
+   
+std::string_view clp::parser::data::opt(int i) const 
+{
+    return _s.at(i).at(0);
+}
+
+std::string_view clp::parser::data::opt_param(int i,int k) const
+{
+    return _s.at(i).at(k);
+}
+
+//-----------------------------------------------------------------------------
+// 
+// error
+//
+//
 
 clp::parser::error::error(
     code c,
@@ -41,14 +124,20 @@ std::string_view clp::parser::error::source() const
     return _src;
 }
 
-clp::parser_wrapper::parser_wrapper( function f, const std::string& s )
+//-----------------------------------------------------------------------------
+//
+// parser_wrapper
+//
+//
+
+clp::parser_wrapper::parser_wrapper(function f, const std::string& s)
 : _function{f}
 , _syntax{s}
 {
 
 }
 
-clp::data clp::parser_wrapper::parse( const std::string& s, error& err)
+clp::parser::data clp::parser_wrapper::parse(const std::string& s, error& err)
 {
     try {
         return _function(s,err);
@@ -67,7 +156,13 @@ std::string_view clp::parser_wrapper::syntax() const
     return _syntax;
 }
 
-clp::data clp::default_parser::parse(
+//-----------------------------------------------------------------------------
+//
+// native_parser
+//
+//
+
+clp::parser::data clp::default_parser::parse(
     const std::string& s, 
     error& err)
 {
@@ -110,6 +205,8 @@ clp::data clp::default_parser::parse(
     auto add_param{[](data::structure& d, const std::string& token) {
         d.at(0).push_back(token);
     }};
+
+    using data = parser::data;
 
     data::structure raw_data{};
     
