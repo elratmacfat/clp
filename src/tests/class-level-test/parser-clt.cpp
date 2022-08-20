@@ -1,8 +1,8 @@
 // Project......: Command Line Processor (clp)
-// File.........: src/tests/class-level-test/clt-default_parser.cpp
+// File.........: src/tests/class-level-test/clt-native_parser.cpp
 // Author.......: elratmacfat
 // Description..: Class-Level-Test
-//                - default_parser
+//                - native_parser
 // 
 //
 #define BOOST_TEST_DYN_LINK
@@ -13,15 +13,15 @@
 using namespace elrat::clp;
 
 
-// default_parser
+// native_parser
 //
 // ->
 // ->
 //
-BOOST_AUTO_TEST_SUITE( ts_default_parser )
+BOOST_AUTO_TEST_SUITE( ts_native_parser )
 
     // auto => std::unique_ptr<parser>
-    auto t{ parser::make<default_parser>() };
+    auto t{ parser::make<native_parser>() };
     using error = parser::error;
     error err;
 
@@ -112,5 +112,5 @@ BOOST_AUTO_TEST_SUITE( ts_default_parser )
         }
     }
 
-BOOST_AUTO_TEST_SUITE_END(); // default_parser
+BOOST_AUTO_TEST_SUITE_END(); // native_parser
 

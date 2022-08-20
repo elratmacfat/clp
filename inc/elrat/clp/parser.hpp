@@ -4,6 +4,15 @@
 // Description..: The Parser disassembles an issued command line into its
 //                logical pieces (command, options and parameter).
 //
+//                This file contains the parser interface, which can be used 
+//                by the application programmer to define custom parsers with
+//                custom syntax rules.
+//
+//                Each parser class has to write its results into a
+//                parser::data object. If an error occurs while parsing 
+//                a command line, the parser::error class can be used to 
+//                communicate the error type back the application.
+//
 #ifndef ELRAT_CLP_PARSER_HPP
 #define ELRAT_CLP_PARSER_HPP
 
@@ -110,7 +119,7 @@ private:
     const function      _function;
 };
 
-class default_parser 
+class native_parser 
 : public parser
 {
 public:

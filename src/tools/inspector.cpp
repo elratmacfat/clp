@@ -7,7 +7,7 @@
 int main() {
 	using namespace elrat;
 	const std::string szQuit("q");
-    auto p = clp::parser::make<clp::default_parser>();
+    auto p = clp::parser::make<clp::native_parser>();
     std::cout << "Syntax:\n   "
         << p->syntax()
         << "\nType '"

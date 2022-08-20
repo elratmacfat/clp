@@ -162,7 +162,7 @@ std::string_view clp::parser_wrapper::syntax() const
 //
 //
 
-clp::parser::data clp::default_parser::parse(
+clp::parser::data clp::native_parser::parse(
     const std::string& s, 
     error& err)
 {
@@ -323,12 +323,12 @@ clp::parser::data clp::default_parser::parse(
     return data( std::move(raw_data) );
 }
 
-std::string_view clp::default_parser::syntax() const 
+std::string_view clp::native_parser::syntax() const 
 {
     return _syntax;
 }
 
-const std::string clp::default_parser::_syntax(
+const std::string clp::native_parser::_syntax(
     "<cmd> "
     "[-<option-pack>] "
     "[--<long-option> [ = <option-parameter>]] "
