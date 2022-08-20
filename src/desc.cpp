@@ -4,7 +4,7 @@
 // Description..: 
 //
 #include <elrat/clp/desc.hpp>
-#include <regex>
+#include <elrat/clp/regex.hpp>
 
 using namespace elrat;
 using namespace elrat::clp;
@@ -12,34 +12,36 @@ using namespace elrat::clp;
 const bool parameter_properties::mandatory{true};
 const bool parameter_properties::optional{false};
 
-bool parameter_type::any(std::string_view s)
+bool parameter_type::any(const std::string& s)
 {
     return (s.size() > 0);
 }
 
-bool parameter_type::natural_number(std::string_view s)
+bool parameter_type::natural_number(const std::string& s)
 {
-    return true;
+    return regex::is_positive_decimal(s) ||
+        regex::is_hexadecimal(s);
 }
 
-bool parameter_type::whole_number(std::string_view s)
-{
-    return true;
+bool parameter_type::whole_number(const std::string& s)
+{   
+    return regex::is_decimal(s) 
+        || regex::is_hexadecimal(s);
 }
 
-bool parameter_type::real_number(std::string_view s)
+bool parameter_type::real_number(const std::string& s)
 {
-    return true;
+    return regex::is_floating_point(s);
 }
 
-bool parameter_type::name(std::string_view s)
+bool parameter_type::name(const std::string& s)
 {
-    return true;
+    return regex::is_name(s);
 }
 
-bool parameter_type::identifier(std::string_view s)
+bool parameter_type::identifier(const std::string& s)
 {
-    return true;
+    return regex::is_identifier(s);
 }
 
 

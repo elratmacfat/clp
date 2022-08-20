@@ -14,6 +14,7 @@ SET( HeaderFiles
     inc/elrat/clp/text.hpp
     inc/elrat/clp/desc.hpp
     inc/elrat/clp/util.hpp
+    inc/elrat/clp/regex.hpp
 )
 
 SET( SourceFiles 
@@ -21,6 +22,7 @@ SET( SourceFiles
     src/data.cpp
     src/text.cpp
     src/desc.cpp
+    src/regex.cpp
 )
 
 ADD_LIBRARY( clp SHARED ${PublicHeader} ${SourceFiles} )
@@ -43,10 +45,10 @@ IF ( Boost_FOUND )
 	INCLUDE(CTest)
     
     ADD_EXECUTABLE( class-level-test 
-        src/tests/class-level-test/clt-main.cpp
-        src/tests/class-level-test/clt-desc.cpp
-        src/tests/class-level-test/clt-util.cpp
-        src/tests/class-level-test/clt-default_parser.cpp )
+        src/tests/class-level-test/main-clt.cpp
+        src/tests/class-level-test/desc-clt.cpp
+        src/tests/class-level-test/util-clt.cpp
+        src/tests/class-level-test/parser-clt.cpp )
     TARGET_LINK_LIBRARIES( class-level-test
         PUBLIC clp 
         PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}  )

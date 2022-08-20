@@ -28,9 +28,8 @@ BOOST_AUTO_TEST_SUITE( parametertype )
             "0xab"
         };
         for( auto& c : candidates ) {
-            BOOST_CHECK( clp::parameter_type::natural_number( c ) );
-            BOOST_CHECK( clp::parameter_type::whole_number( c ) );
-            BOOST_CHECK( clp::parameter_type::real_number( c ) );
+            BOOST_CHECK_MESSAGE( clp::parameter_type::natural_number( c ), "candidate \"" << c << "\" failed." );
+            BOOST_CHECK_MESSAGE( clp::parameter_type::whole_number( c ), "candidate \"" << c << "\" failed." );
         }
     }
 
@@ -39,7 +38,6 @@ BOOST_AUTO_TEST_SUITE( parametertype )
         std::vector<std::string> candidates{
             "-1337", // negatives
             "1.0",   // real number
-            "0787",  // erroneous octal
             "0xABH", //     "     hex
             ""       // empty
         };
@@ -65,7 +63,6 @@ BOOST_AUTO_TEST_SUITE( parametertype )
         std::vector<std::string> candidates{
             "-1.0",
             "+13.37", 
-            "0778",     // octal
             ""
         };
         for( auto& c : candidates ) {
@@ -95,20 +92,37 @@ BOOST_AUTO_TEST_SUITE( parametertype )
             BOOST_CHECK( !clp::parameter_type::real_number( c ) );
         }
     }
-
+    
     BOOST_AUTO_TEST_CASE( name )
     {
         std::vector<std::string> candidates{
             "__name",
             "__command-name",
+            "option-name",
+            "opt_name",
+            "opt-1337",
+            "opt_13-37",
+            "cmd-1337-opt"
+        };
+        for( auto& c : candidates ) {
+            BOOST_CHECK_MESSAGE( clp::parameter_type::name(c), c );
+        }
+
+    }
+
+    BOOST_AUTO_TEST_CASE( identifier )
+    {
+        std::vector<std::string> candidates{
+            "__name",
+            "__command_name",
             "option_name",
             "opt_name",
             "opt1337",
             "opt_1337",
-            "cmd1337opt--"
+            "cmd1337opt"
         };
         for( auto& c : candidates ) {
-            BOOST_CHECK( !clp::parameter_type::name( c ) );
+            BOOST_CHECK_MESSAGE( clp::parameter_type::identifier(c), c );
         }
 
     }

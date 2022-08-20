@@ -36,7 +36,7 @@ class param_desc;
 using param_desc_ptr = std::shared_ptr<param_desc>;
 using param_desc_vec = std::vector<param_desc_ptr>;
 
-using param_type_checker = std::function<bool(std::string_view)>;
+using param_type_checker = std::function<bool(const std::string&)>;
 
 class param_constraint;
 using param_constraint_ptr = std::shared_ptr<param_constraint>;
@@ -58,12 +58,12 @@ namespace parameter_properties
 
 namespace parameter_type 
 {
-    bool any(std::string_view);
-    bool natural_number(std::string_view);
-    bool whole_number(std::string_view);
-    bool real_number(std::string_view);
-    bool name(std::string_view);
-    bool identifier(std::string_view);
+    bool any(const std::string&);
+    bool natural_number(const std::string&);
+    bool whole_number(const std::string&);
+    bool real_number(const std::string&);
+    bool name(const std::string&);
+    bool identifier(const std::string&);
 }
 
 namespace constraint
