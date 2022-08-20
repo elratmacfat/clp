@@ -67,7 +67,9 @@ public:
     std::string_view cmd_param(int=1) const;
     std::string_view opt(int=1) const;
     std::string_view opt_param(int=1,int=1) const;
-
+    
+    const std::vector<std::string>& cmd_param_vec() const;
+    const std::vector<std::string>& opt_param_vec(int i) const;
 private:
     structure _s;
 };

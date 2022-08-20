@@ -17,6 +17,7 @@
 #include <string_view>
 #include <vector>
 
+#include <elrat/clp/parser.hpp>
 #include <elrat/clp/util.hpp>
 
 namespace elrat {
@@ -85,6 +86,15 @@ namespace constraint
     param_constraint_ptr in(T...);
 }
 
+enum class vcode 
+{
+     match          // OK
+    ,cmd_invalid    // command name does not match 
+    ,param_invalid  // Parameter type or value mismatch, or too many parameters
+    ,param_missing  // Required parameter is missing
+    ,opt_invalid    // Option provided that does not exist.
+};
+
 cmd_desc_ptr command(
     const std::string& name,
     const std::string& description = "",
@@ -136,7 +146,7 @@ public:
     bool required() const;
     param_type_checker type_checker() const;
     const param_constraint_vec& constraints() const;
-    
+    vcode validate(const std::string&);
 private:
     bool                    _requirement;
     param_type_checker      _type_checker;
@@ -152,8 +162,10 @@ public:
         const std::string&,
         const param_desc_vec& );
     const param_desc_vec& parameters() const;
+    vcode validate( const std::vector<std::string>& );
 protected:
-    param_desc_vec          _parameters;
+    param_desc_vec  _parameters;
+    int             _n_required;
 };
 
 class cmd_desc
@@ -167,6 +179,7 @@ public:
         const opt_desc_vec& );
     const opt_desc_vec& options() const;
     
+    vcode validate( const parser::data& );
 private:
     opt_desc_vec            _options;
 };

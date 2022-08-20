@@ -87,6 +87,17 @@ std::string_view clp::parser::data::opt_param(int i,int k) const
     return _s.at(i).at(k);
 }
 
+
+const std::vector<std::string>& clp::parser::data::cmd_param_vec() const
+{
+    return _s.at(0);
+}
+
+const std::vector<std::string>& clp::parser::data::opt_param_vec(int i) const
+{
+    return _s.at(i);
+}
+
 //-----------------------------------------------------------------------------
 // 
 // error
