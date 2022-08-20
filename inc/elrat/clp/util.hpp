@@ -13,7 +13,7 @@ namespace clp {
 namespace util {
 
 template <class T>
-T convert(std::string_view arg) 
+T convert(const std::string& arg) 
 {
     std::stringstream ss(arg);
     T t;

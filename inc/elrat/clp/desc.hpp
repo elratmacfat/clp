@@ -3,6 +3,7 @@
 // Author.......: elratmacfat
 // Description..: Contains the complete descriptor class hierarchy, including
 //                parameter type and constraints.
+//                
 //
 //
 //
@@ -135,6 +136,7 @@ public:
     bool required() const;
     param_type_checker type_checker() const;
     const param_constraint_vec& constraints() const;
+    
 private:
     bool                    _requirement;
     param_type_checker      _type_checker;
@@ -164,89 +166,65 @@ public:
         const param_desc_vec&,
         const opt_desc_vec& );
     const opt_desc_vec& options() const;
+    
 private:
     opt_desc_vec            _options;
 };
 
+// 
 class param_constraint
 {
 public:
     virtual ~param_constraint() {}
-    virtual bool check(std::string_view) const = 0;
-    virtual std::string_view string() const = 0;
+    virtual bool validate(const std::string&) const = 0;
+    virtual const std::string& to_string() const = 0;
 };
 
+// Base class for concrete parameter constraints
+//
+// Provides a constructor that takes an arbitrary amount of arguments of the
+// same type. Subclasses can access the protected elements with:
+//    this->values.at(i)
+//
 template <class T>
-class one_argument
-{
-public:
-    one_argument( const T& t )
-    : _t{t}
-    {
-    }
-    virtual ~one_argument() 
-    {
-    }
-protected:
-    T _t;
-};
-
-template <class T>
-class two_arguments
-{
-public:
-    two_arguments( const T& t1, const T& t2 )
-    : _t1{t1}
-    , _t2{t2}
-    {
-    }
-    virtual ~two_arguments()
-    {
-    }
-protected:
-    T _t1;
-    T _t2;
-};
-
-template <class T>
-class many_arguments
+class args_t
 {
 public:
     template <class TT, class...Args>
-    many_arguments( const TT& first, Args...args )
+    args_t( const TT& first, Args...args )
     {
         init( first, args... );
     }
-    virtual ~many_arguments()
+    virtual ~args_t()
     {
     }
 private:
     template <class TT, class...Args>
     void init( const TT& first, Args...args ) {
-        _vt.push_back(first);
+        values.push_back(first);
         return init( args... );
     }
     template <class TT>
     void init( const TT& last ) {
-        _vt.push_back(last);
+        values.push_back(last);
     }
 protected:
-    std::vector<T> _vt;
+    std::vector<T> values;
 };
 
 template <class T>
 class constraint_at_least
 : public param_constraint
-, public one_argument<T>
+, public args_t<T>
 {
 public:
-    using one_argument<T>::one_argument;
-    bool check(std::string_view s) const 
+    using args_t<T>::args_t;
+    bool validate(const std::string& s) const 
     {
-        return (util::convert<T>(s) > this->_t);
+        return (util::convert<T>(s) >= this->values.at(0));
     }
 
-    std::string_view string() const 
+    const std::string& to_string() const 
     {
         return "";
     }
@@ -255,16 +233,16 @@ public:
 template <class T>
 class constraint_at_most
 : public param_constraint
-, public one_argument<T>
+, public args_t<T>
 {
 public:
-    using one_argument<T>::one_argument;
-    bool check(std::string_view s) const 
+    using args_t<T>::args_t;
+    bool validate(const std::string& s) const 
     {
-        return (util::convert<T>(s) < this->_t);
+        return (util::convert<T>(s) <= this->values.at(0));
     }
 
-    std::string_view string() const 
+    const std::string& to_string() const 
     {
         return "";
     }
@@ -273,16 +251,16 @@ public:
 template <class T>
 class constraint_is_not
 : public param_constraint
-, public one_argument<T>
+, public args_t<T>
 {
 public:
-    using one_argument<T>::one_argument;
-    bool check(std::string_view s) const 
+    using args_t<T>::args_t;
+    bool validate(const std::string& s) const 
     {
-        return (util::convert<T>(s) != this->_t);
+        return (util::convert<T>(s) != this->values.at(0));
     }
 
-    std::string_view string() const 
+    const std::string& to_string() const 
     {
         return "";
     }
@@ -292,17 +270,19 @@ public:
 template <class T>
 class constraint_in_range
 : public param_constraint
-, public two_arguments<T>
+, public args_t<T>
 {
 public:
-    using two_arguments<T>::two_arguments;
-    bool check(std::string_view s) const 
+    using args_t<T>::args_t;
+    bool validate(const std::string& s) const 
     {
         T x = util::convert<T>(s);
-        return ( x >= this->_t1 && x <= this->_t2 );
+        const T& t1 = this->values.at(0);
+        const T& t2 = this->values.at(1);
+        return ( x >= t1 && x <= t2 );
     }
 
-    std::string_view string() const 
+    const std::string& to_string() const 
     {
         return "";
     }
@@ -311,20 +291,20 @@ public:
 template <class T>
 class constraint_in
 : public param_constraint
-, public many_arguments<T>
+, public args_t<T>
 {
 public:
-    using many_arguments<T>::many_arguments;
-    bool check(std::string_view s) const 
+    using args_t<T>::args_t;
+    bool validate(const std::string& s) const 
     {
         T x = util::convert<T>(s);
-        for( auto& t : this->_vt ) 
+        for( auto& t : this->values ) 
             if ( x == t ) 
                 return true;
         return false;
     }
 
-    std::string_view string() const 
+    const std::string& to_string() const 
     {
     return "";
     }
@@ -355,9 +335,9 @@ param_constraint_ptr constraint::is_not(T&& t)
 }
 
 template <class T, class...TT> 
-param_constraint_ptr constraint::in(TT...t)
+param_constraint_ptr constraint::in(T first, TT...rest)
 {
-    return std::make_shared<constraint_in<T>>(t...);
+    return std::make_shared<constraint_in<T>>(first, rest...);
 }
 
 
