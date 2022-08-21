@@ -14,6 +14,9 @@ SET( HeaderFiles
     inc/elrat/clp/desc.hpp
     inc/elrat/clp/util.hpp
     inc/elrat/clp/regex.hpp
+    inc/elrat/clp/context.hpp
+    inc/elrat/clp/proc.hpp
+    inc/elrat/clp/cmd.hpp
 )
 
 SET( SourceFiles 
@@ -21,6 +24,9 @@ SET( SourceFiles
     src/text.cpp
     src/desc.cpp
     src/regex.cpp
+    src/context.cpp
+    src/proc.cpp
+    src/cmd.cpp
 )
 
 ADD_LIBRARY( clp SHARED ${PublicHeader} ${SourceFiles} )
@@ -42,22 +48,17 @@ IF ( Boost_FOUND )
 
 	INCLUDE(CTest)
     
-    ADD_EXECUTABLE( class-level-test 
-        src/tests/class-level-test/main-clt.cpp
-        src/tests/class-level-test/desc-clt.cpp
-        src/tests/class-level-test/util-clt.cpp
-        src/tests/class-level-test/parser-clt.cpp )
-    TARGET_LINK_LIBRARIES( class-level-test
+    ADD_EXECUTABLE( lowlevel-test src/tests/test1-lowlevel.cpp )
+    TARGET_LINK_LIBRARIES( lowlevel-test
         PUBLIC clp 
         PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}  )
-    ADD_TEST( NAME class-level-test COMMAND class-level-test )
+    ADD_TEST( NAME lowlevel COMMAND lowlevel-test )
 
-    ADD_EXECUTABLE( component-test
-        src/tests/component-test/ct-main.cpp )
+    ADD_EXECUTABLE( component-test src/tests/test2-component.cpp )
     TARGET_LINK_LIBRARIES( component-test
         PUBLIC clp
         PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
-    ADD_TEST( NAME component-test COMMAND component-test )
+    ADD_TEST( NAME component COMMAND component-test )
 
 ELSE()
 	MESSAGE( WARNING "Could not find 'Boost'. Skip compiling the test executable." )
