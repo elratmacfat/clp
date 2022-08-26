@@ -77,26 +77,26 @@ param_desc_ptr clp::parameter(
 
 //-----------------------------------------------------------------------------
 
-desc::desc( const std::string& i, const std::string& d ) 
-: _name{i}
-, _description{d}
+has_name::has_name( const std::string& s ) 
+: _name{s}
 {
-
 }
 
-std::string_view desc::name() const 
+std::string_view has_name::name() const 
 {
-    return _name;
+    return this->_name;
 }
 
-std::string_view desc::description() const
+//-----------------------------------------------------------------------------
+
+has_description::has_description(const std::string& s)
+: _description{s}
+{
+}
+
+std::string_view has_description::description() const
 {
     return _description;
-}
-
-bool operator<(const desc& lhs, const desc& rhs) 
-{
-    return ( lhs.name().compare( rhs.name() ) < 0 );
 }
 
 //-----------------------------------------------------------------------------
@@ -107,7 +107,8 @@ param_desc::param_desc(
     bool r,
     param_type_checker c,
     param_constraint_vec vc )
-: desc(n,d)
+: has_name(n)
+, has_description(d)
 , _requirement{r}
 , _type_checker{c}
 , _constraints{vc}
@@ -146,7 +147,8 @@ opt_desc::opt_desc(
     const std::string& n,
     const std::string& d,
     const param_desc_vec& vp)
-: desc(n,d)
+: has_name(n)
+, has_description(d)
 , _parameters{vp}
 {
     // Ensure that an optional parameter is not followed by one that is 

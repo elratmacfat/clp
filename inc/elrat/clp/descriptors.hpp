@@ -100,27 +100,29 @@ param_desc_ptr parameter(
 
 //-----------------------------------------------------------------------------
 
-class desc 
+class has_name
 {
 public:
-    desc() = delete;
-    desc(const std::string&, const std::string&);
-    desc(const desc&) = default;
-    desc(desc&&) = default;
-    ~desc() = default;
-    desc& operator=(const desc&) = default;
-    desc& operator=(desc&&) = default;
+    has_name(const std::string&);
     std::string_view name() const;
-    std::string_view description() const;
 private:
     std::string _name;
+};
+
+class has_description
+{
+public:
+    has_description(const std::string&);
+    std::string_view description() const;
+private:
     std::string _description;
 };
 
 //-----------------------------------------------------------------------------
 
 class param_desc 
-: public desc
+: public has_name
+, public has_description
 {
 public:
     param_desc(
@@ -142,7 +144,8 @@ private:
 //-----------------------------------------------------------------------------
 
 class opt_desc 
-: public desc
+: public has_name
+, public has_description
 {
 public:
     opt_desc(
