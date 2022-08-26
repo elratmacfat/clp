@@ -1,5 +1,4 @@
 #include <elrat/clp/parser.hpp>
-#include <elrat/clp/text.hpp>
 
 #include <iostream>
 #include <cstdio>

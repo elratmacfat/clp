@@ -3,43 +3,43 @@
 // Author.......: elratmacfat
 // Description..: 
 //
-#include <elrat/clp/desc.hpp>
+#include <elrat/clp/descriptors.hpp>
 #include <elrat/clp/regex.hpp>
 
 using namespace elrat;
 using namespace elrat::clp;
 
-const bool parameter_properties::mandatory{true};
-const bool parameter_properties::optional{false};
+const bool mandatory{true};
+const bool optional{false};
 
-bool parameter_type::any(const std::string& s)
+bool clp::any(const std::string& s)
 {
     return (s.size() > 0);
 }
 
-bool parameter_type::natural_number(const std::string& s)
+bool clp::natural_number(const std::string& s)
 {
     return regex::is_positive_decimal(s) ||
         regex::is_hexadecimal(s);
 }
 
-bool parameter_type::whole_number(const std::string& s)
+bool clp::whole_number(const std::string& s)
 {   
     return regex::is_decimal(s) 
         || regex::is_hexadecimal(s);
 }
 
-bool parameter_type::real_number(const std::string& s)
+bool clp::real_number(const std::string& s)
 {
     return regex::is_floating_point(s);
 }
 
-bool parameter_type::name(const std::string& s)
+bool clp::name(const std::string& s)
 {
     return regex::is_name(s);
 }
 
-bool parameter_type::identifier(const std::string& s)
+bool clp::identifier(const std::string& s)
 {
     return regex::is_identifier(s);
 }
@@ -92,6 +92,11 @@ std::string_view desc::name() const
 std::string_view desc::description() const
 {
     return _description;
+}
+
+bool operator<(const desc& lhs, const desc& rhs) 
+{
+    return ( lhs.name().compare( rhs.name() ) < 0 );
 }
 
 //-----------------------------------------------------------------------------

@@ -8,16 +8,16 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "elrat/clp/desc.hpp"
+#include "elrat/clp/descriptors.hpp"
 #include "elrat/clp/parser.hpp"
+
+using namespace elrat::clp;
 
 
 // parameter descriptor -> parameter type 
 //
 //
 BOOST_AUTO_TEST_SUITE( parameter_type_validation )
-    
-    using namespace elrat::clp::parameter_type;
     
     const std::vector<std::string> v_positive_integers{
         "0", "1", "89",             // regular natural numbers
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_SUITE( constraint_validation )
 
     BOOST_AUTO_TEST_CASE( at_least_c )
     {
-        auto p = constraint::at_least(10);
+        auto p = at_least(10);
         BOOST_CHECK( !p->validate("9") );
         BOOST_CHECK( p->validate("10") );
         BOOST_CHECK( p->validate("11") );
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_SUITE( constraint_validation )
 
     BOOST_AUTO_TEST_CASE( at_most_c )
     {
-        auto p = constraint::at_most(10);
+        auto p = at_most(10);
         BOOST_CHECK( !p->validate("11"));
         BOOST_CHECK( p->validate("10"));
         BOOST_CHECK( p->validate("9"));
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_SUITE( constraint_validation )
     
     BOOST_AUTO_TEST_CASE( range_c )
     {
-        auto p = constraint::in_range(5,10);
+        auto p = in_range(5,10);
         BOOST_CHECK( !p->validate("4") );
         BOOST_CHECK( p->validate("5") );
         BOOST_CHECK( p->validate("10") );
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_SUITE( constraint_validation )
 
     BOOST_AUTO_TEST_CASE( is_not_c )
     {
-        auto p = constraint::is_not(5);
+        auto p = is_not(5);
         BOOST_CHECK( p->validate("4") );
         BOOST_CHECK( !p->validate("5") );
         BOOST_CHECK( p->validate("6") );
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_SUITE( constraint_validation )
 
     BOOST_AUTO_TEST_CASE( in_c )
     {
-        auto p = constraint::in(1,3,5);
+        auto p = in(1,3,5);
         BOOST_CHECK( p->validate("1") );
         BOOST_CHECK( p->validate("3") );
         BOOST_CHECK( p->validate("5") );

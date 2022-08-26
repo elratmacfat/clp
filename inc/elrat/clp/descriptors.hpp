@@ -1,5 +1,5 @@
 // Project......: Command Line Processor (clp)
-// File.........: inc/elrat/clp/desc.hpp
+// File.........: inc/elrat/clp/descriptors.hpp
 // Author.......: elratmacfat
 // Description..: Contains the complete descriptor class hierarchy, including
 //                parameter type and constraints.
@@ -8,8 +8,8 @@
 //
 //
 //
-#ifndef ELRAT_CLP_DESC_HPP
-#define ELRAT_CLP_DESC_HPP
+#ifndef ELRAT_CLP_DESCRIPTORS_HPP
+#define ELRAT_CLP_DESCRIPTORS_HPP
 
 #include <functional>
 #include <memory>
@@ -52,39 +52,21 @@ using param_constraint_vec = std::vector<param_constraint_ptr>;
 //
 //-----------------------------------------------------------------------------
 
-namespace parameter_properties 
-{
-    extern const bool mandatory;
-    extern const bool optional;
-}
+extern const bool mandatory;
+extern const bool optional;
 
-namespace parameter_type 
-{
-    bool any(const std::string&);
-    bool natural_number(const std::string&);
-    bool whole_number(const std::string&);
-    bool real_number(const std::string&);
-    bool name(const std::string&);
-    bool identifier(const std::string&);
-}
+bool any(const std::string&);
+bool natural_number(const std::string&);
+bool whole_number(const std::string&);
+bool real_number(const std::string&);
+bool name(const std::string&);
+bool identifier(const std::string&);
 
-namespace constraint
-{
-    template <class T> 
-    param_constraint_ptr at_least(const T&);
-    
-    template <class T> 
-    param_constraint_ptr at_most(const T&);
-    
-    template <class T> 
-    param_constraint_ptr in_range(const T&, const T&);
-    
-    template <class T> 
-    param_constraint_ptr is_not(const T&);
-    
-    template <class...T> 
-    param_constraint_ptr in(T...);
-}
+template <class T> param_constraint_ptr at_least(const T&);
+template <class T> param_constraint_ptr at_most(const T&);
+template <class T> param_constraint_ptr in_range(const T&, const T&);
+template <class T> param_constraint_ptr is_not(const T&);
+template <class...T> param_constraint_ptr in(T...);
 
 enum class vcode 
 {
@@ -111,10 +93,12 @@ opt_desc_ptr option(
 param_desc_ptr parameter(
     const std::string& name,
     const std::string& description = "",
-    bool requirement = parameter_properties::mandatory,
-    param_type_checker type_checker = parameter_type::any,
+    bool requirement = mandatory,
+    param_type_checker type_checker = any,
     param_constraint_vec constraints = {}
 );
+
+//-----------------------------------------------------------------------------
 
 class desc 
 {
@@ -132,6 +116,8 @@ private:
     std::string _name;
     std::string _description;
 };
+
+//-----------------------------------------------------------------------------
 
 class param_desc 
 : public desc
@@ -153,6 +139,8 @@ private:
     param_constraint_vec    _constraints;
 };
 
+//-----------------------------------------------------------------------------
+
 class opt_desc 
 : public desc
 {
@@ -167,6 +155,8 @@ protected:
     param_desc_vec  _parameters;
     int             _n_required;
 };
+
+//-----------------------------------------------------------------------------
 
 class cmd_desc
 : public opt_desc
@@ -184,7 +174,8 @@ private:
     opt_desc_vec            _options;
 };
 
-// 
+//-----------------------------------------------------------------------------
+
 class param_constraint
 {
 public:
@@ -324,31 +315,31 @@ public:
 };
 
 template <class T> 
-param_constraint_ptr constraint::at_least(const T& t) 
+param_constraint_ptr at_least(const T& t) 
 {
     return std::make_shared<constraint_at_least<T>>(t);
 }
 
 template <class T> 
-param_constraint_ptr constraint::at_most(T&& t)
+param_constraint_ptr at_most(T&& t)
 {
     return std::make_shared<constraint_at_most<T>>(std::move(t));
 }
 
 template <class T> 
-param_constraint_ptr constraint::in_range(T&& t1, T&& t2)
+param_constraint_ptr in_range(T&& t1, T&& t2)
 {
     return std::make_shared<constraint_in_range<T>>(t1,t2);
 }
 
 template <class T> 
-param_constraint_ptr constraint::is_not(T&& t)
+param_constraint_ptr is_not(T&& t)
 {
     return std::make_shared<constraint_is_not<T>>(std::move(t));
 }
 
 template <class T, class...TT> 
-param_constraint_ptr constraint::in(T first, TT...rest)
+param_constraint_ptr in(T first, TT...rest)
 {
     return std::make_shared<constraint_in<T>>(first, rest...);
 }
