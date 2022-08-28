@@ -1,8 +1,18 @@
-#include "elrat/clp/regex.hpp"
-
 #include <regex>
 
-namespace elrat::clp::regex 
+#include "regex.hpp"
+
+RegEx::RegEx(const std::string& regular_expression)
+: regex(regular_expression)
+{
+}
+
+bool RegEx::operator()(const std::string& candidate) const
+{
+    return std::regex_match( candidate, this->regex );
+}
+
+/*
 {
 static bool rgx( const std::string& s, const std::string& r )
 {
@@ -43,7 +53,6 @@ bool is_identifier( const std::string& s )
 {
     return rgx(s,"[_a-zA-Z]\\w+");
 }
+*/
 
 
-
-} // namespace

@@ -1,418 +1,194 @@
 // Project......: Command Line Processor (clp)
 // File.........: src/parser.cpp
 // Author.......: elratmacfat
-// Description..: Implementation of parser interface's nested classes
-//                - data 
-//                - error
-//
-//                Implementation of the library's own parser
-//                - native_parser
-//
-//                Implementation of the parser wrapper
-//                - parser_wrapper
-//
-#include "elrat/clp/parser.hpp"
-
-#include <algorithm>
-#include <regex>
-
-using namespace elrat;
-
-//-----------------------------------------------------------------------------
-//
-// data
-//
+// Description..: 
 //
 
-clp::parser::data::data( clp::parser::data::structure&& s )
-: _s{ std::move(s) }
+#include <stdexcept>
+
+#include <elrat/clp.hpp>
+
+#include "parser.hpp"
+
+using elrat::clp::CommandLine;
+using elrat::clp::Parser;
+using elrat::clp::ParserWrapper;
+using elrat::clp::NativeParser;
+
+Parser::~Parser()
 {
+
 }
 
-bool clp::parser::data::empty() const
+ParserWrapper::ParserWrapper( ParsingFunction func, const std::string& desc )
+: parsing_function{func}
+, syntax_description{desc}
 {
-    return ( _s.size() == 0 );
-}
-
-clp::parser::data::operator bool() const 
-{
-    return (_s.size() > 0 );
-}
-
-int clp::parser::data::cmd_param_count() const
-{
-    return _s.at(0).size() - 1;
-}
-
-
-int clp::parser::data::opt_count() const
-{
-    if (this->empty())
-        throw std::out_of_range("Out Of Range: parser::data::opt_count()");
-    return _s.size() - 1;
-}
-
-int clp::parser::data::opt_exists(const std::string& s) const
-{
-    for( int i{1}; i < _s.size(); i++ )
-    {
-        if( _s.at(i).at(0) == s )
-            return i;
-    }
-    return 0;
-}
-
-int clp::parser::data::opt_param_count(int i) const
-{
-    return _s.at(i).size() - 1;
-}
     
-std::string_view clp::parser::data::cmd() const
+}
+
+CommandLine ParserWrapper::parse(const std::string& input) const
 {
-    return _s.at(0).at(0);
+    if ( parsing_function )
+        return parsing_function(input);
+    return CommandLine{};
 }
-    
-std::string_view clp::parser::data::cmd_param(int i) const
-{   
-    return _s.at(0).at(i);
-}
-   
-std::string_view clp::parser::data::opt(int i) const 
+
+const std::string& ParserWrapper::getSyntaxDescription() const
 {
-    return _s.at(i).at(0);
+    return syntax_description;
 }
 
-std::string_view clp::parser::data::opt_param(int i,int k) const
-{
-    return _s.at(i).at(k);
-}
-
-
-const std::vector<std::string>& clp::parser::data::cmd_param_vec() const
-{
-    return _s.at(0);
-}
-
-const std::vector<std::string>& clp::parser::data::opt_param_vec(int i) const
-{
-    return _s.at(i);
-}
-
-//-----------------------------------------------------------------------------
-// 
-// error
-//
-//
-
-clp::parser::error::error(
-    code c,
-    const std::string& msg,
-    const std::string& src )
-: _code{c}
-, _msg{msg}
-, _src{src}
-{
-
-}
-
-clp::parser::error::operator bool() const 
-{
-    return ( _msg.size() > 0 );
-}
-
-clp::parser::error::code clp::parser::error::operator()() const
-{
-    return _code;
-}
-
-std::string_view clp::parser::error::message() const
-{
-    return _msg;
-}
-
-std::string_view clp::parser::error::source() const 
-{
-    return _src;
-}
-
-//-----------------------------------------------------------------------------
-//
-// parser_wrapper
-//
-//
-
-clp::parser_wrapper::parser_wrapper(function f, const std::string& s)
-: _function{f}
-, _syntax{s}
-{
-
-}
-
-clp::parser::data clp::parser_wrapper::parse(const std::string& s, error& err)
-{
-    try {
-        return _function(s,err);
-    }
-    catch( std::exception& exc ) {
-        err = error( error::code::exception, exc.what() );
-    }
-    catch(...) {
-        err = error( error::code::exception, "unknown" );
-    }
-    return data(); // default constructed empty data object.
-}
-
-std::string_view clp::parser_wrapper::syntax() const 
-{
-    return _syntax;
-}
-
-//-----------------------------------------------------------------------------
-//
-// native_parser
-//
-//
-
-clp::parser::data clp::native_parser::parse(
-    const std::string& s, 
-    error& err)
-{
-    auto rgxmatch{[](const std::string& token, const char rgx[]) {
-        return std::regex_match(token,std::regex(rgx));
-    }};
-    auto is_identplus{[&](const std::string& token ) {
-        return rgxmatch(token,"^([a-zA-Z_][\\w\\-]*)$");
-    }};
-    auto is_opt{[&](const std::string& token){
-        return rgxmatch(token,"^(--[_a-zA-Z][\\w\\-]*)$");
-    }};
-    auto is_opt_pack{[&](const std::string& token){
-        return rgxmatch(token,"^(-[a-zA-Z]+)$");
-    }};
-    auto is_equal_sign{[&](const std::string& token){
-        return rgxmatch(token,"^([=])$");
-    }};
-    auto add_opt{[](data::structure& d, const std::string& token){
-        auto ss = token.substr(2,token.size());
-        for( auto it = d.begin()+1; it != d.end(); it++ )
-            if ( it->at(0) == ss )
-                return false;
-        d.push_back({ss});
-        return true;
-    }};
-    auto add_opt_pack{[](data::structure& d, const std::string& token) {
-        for( auto it = token.begin() + 1; it != token.end(); it++ ) {
-            std::string ss(1,*it);
-            for ( auto it2 = d.begin()+1; it2 != d.end(); it2++ )
-                if ( it2->at(0) == ss )
-                    return false;
-            d.push_back({ss});
-        }
-        return true;
-    }};
-    auto add_opt_param{[](data::structure& d, const std::string& token) {
-        d.back().push_back(token);
-    }};
-    auto add_param{[](data::structure& d, const std::string& token) {
-        d.at(0).push_back(token);
-    }};
-
-    using data = parser::data;
-
-    data::structure raw_data{};
-    
-    if ( !s.size() ) 
-    {
-        err = error(error::code::no_input );
-        return data();
-    }
-
-    std::regex rgx("(\".+\")|([^\\s=]+)|(=)");
-    auto begin{std::sregex_iterator( s.begin(), s.end(), rgx )};
-    auto end{std::sregex_iterator()};
-
-    std::vector<std::string> elements;
-    for( auto it{begin}; it!=end; it++ )
-        elements.push_back( it->str() );
-
-    if ( !elements.size() )
-    {
-        err = error(error::code::failure);
-        return data();
-    }
-
-    int state{0};
-    for ( auto& e : elements )
-    {
-        switch ( state )
-        {
-        // First iteration. Accept 'command'
-        case 0:
-            if ( !is_identplus(e) ) 
-            {
-                err = error(error::code::syntax, e, s );
-                return data();
-            }    
-            raw_data.push_back({e});
-            state = 1;
-            break;
-        
-        // Previously added 'command', a 'parameter' or an 'optionpack'
-        // Accepting 'option', 'optionpack' and 'parameter'
-        case 1:
-            if ( is_opt(e) ) 
-            {
-                if (!add_opt(raw_data,e)) {
-                    err = error(error::code::redundant, e, s );
-                    return data();
-                }
-                state = 2;
-            }
-            else if ( is_opt_pack(e) )
-            {
-                if (!add_opt_pack(raw_data,e)) {
-                    err = error(error::code::redundant, e, s);
-                    return data();
-                }
-                state = 1;
-            }
-            else // parameter
-            {
-                if ( is_equal_sign(e) )
-                {
-                    err = error(error::code::syntax, e, s);
-                    return data();
-                }
-                raw_data.at(0).push_back(e);
-                state = 1;
-            }
-            break;
-        
-        // a single option preceeded by a double-dash was the previous token
-        // accepting equal sign, command parameter or options
-        case 2: 
-            if ( is_equal_sign(e) )
-            {
-                state = 3;
-            }
-            else if ( is_opt(e) ) 
-            {
-                if (!add_opt(raw_data,e)) {
-                    err = error( error::code::redundant, e, s );
-                    return data();
-                }
-                state = 2;
-            }
-            else if ( is_opt_pack(e) )
-            {
-                if (!add_opt_pack(raw_data,e)) {
-                    err = error(error::code::redundant, e, s );
-                    return data();
-                }
-                state = 1;
-            }
-            else 
-            {
-                raw_data.at(0).push_back(e);
-                state = 1;
-            }
-            break;
-
-        // option assignment (=) was previous. Now accepting 'parameter'
-        case 3:
-            raw_data.back().push_back( e );
-            state = 1;
-            break;
-
-        default:
-            err = error(error::code::syntax, e, s );
-            return data();
-        }
-    }
-    
-
-    return data( std::move(raw_data) );
-}
-
-std::string_view clp::native_parser::syntax() const 
-{
-    return _syntax;
-}
-
-const std::string clp::native_parser::_syntax(
-    "<cmd> "
+const std::string NativeParser::SyntaxDescription(
+    "<command> "
     "[-<option-pack>] "
-    "[--<long-option> [ = <option-parameter>]] "
-    "[<cmd-parameter>]"); 
+    "[--<option> [ = <option-parameter>]] "
+    "[<command-parameter>]"); 
 
-
-// ----------------------------------------------------------------------------
-//
-// operator<<
-//
-//
-
-std::ostream& operator<<( std::ostream& os, const clp::parser::data& data)
+CommandLine NativeParser::parse(const std::string& input) const 
 {
-    if (data.empty()) 
-        return os;
+    auto tokens{ tokenize(input) };
+    CommandLine result{};
+    TokenHandlerFactory factory(&result);
+
+    TokenHandler::State current_state{ TokenHandler::State::Expecting_Command };
     
-    os << "Command............: \""
-        << data.cmd() 
-        << "\"\n";
-    for( int i{1}; i < 1+data.cmd_param_count(); i++ )
+    auto tokenHandler{ factory.create( current_state ) };
+    
+    for (auto it = tokens.begin(); it != tokens.end(); ++it) 
     {
-        os << "-> Parameter #" 
-            << i 
-            << "....: \"" 
-            << data.cmd_param(i) 
-            << "\"\n";
-    }
-    for( int i{1}; i < 1+data.opt_count(); i++ )
-    {        
-        os << "-> Option #" 
-            << i
-            << ".......: \""
-            << data.opt(i) 
-            << "\"\n";
-        for( int k{1}; k < 1+data.opt_param_count(i); k++ ) 
+        auto next_state = tokenHandler->handle(*it);
+        if ( next_state != current_state ) 
         {
-            os << "  -> Parameter #" 
-                << k 
-                << "..: \"" 
-                << data.opt_param(i,k) 
-                << "\"\n";
+            tokenHandler = factory.create(next_state);
+            current_state = next_state;
         }
     }
-    return os;
+    return result;
 }
 
-std::ostream& operator<<(std::ostream& os, const clp::parser::error& err)
+const std::string& NativeParser::getSyntaxDescription() const 
 {
-    if ( !err ) {
-        return os;
-    }
-    os << err();
-    if ( err.message().size() )
-        os << ": [" << err.message() << "]";
-    if ( err.source().size() )
-        os << " in \"" << err.source() << "\"";
-    os << '\n';
-    return os;
+    return SyntaxDescription;
 }
 
-std::ostream& operator<<(std::ostream& os,const clp::parser::error::code& c)
+TokenHandler::TokenHandler(CommandLine* p)
+: target{p}
 {
-    using code = clp::parser::error::code;
-    switch (c) 
+    // done
+}
+
+TokenHandler::~TokenHandler()
+{
+    // done
+}
+
+TokenHandler::State TH_Command::handle(const std::string& token)
+{
+    if ( !IsIdentifierPlus(token) )
     {
-    case code::success: os << "success"; break;
-    case code::failure: os << "undefined failure"; break;
-    case code::syntax: os << "syntax error"; break;
-    case code::redundant: os << "redundant option"; break;
-    default:
-        os << "unknown error";
+        return TokenHandler::State::Received_Invalid_Token;
     }
-    return os;
+    target->command = token;
+    return TokenHandler::State::Expecting_CommandParameter_Option;
+}
+
+TokenHandler::State TH_CommandParameter::handle(const std::string& token)
+{
+    target->parameters.push_back(token);
+    return TokenHandler::State::Expecting_CommandParameter_Option;
+}
+
+TokenHandler::State TH_OptionParameter::handle(const std::string& token)
+{
+    auto& opt = target->options.back();
+    opt.second.push_back(token);
+    return TokenHandler::State::Expecting_CommandParameter_Option;
+}
+
+TokenHandler::State TH_CommandParameter_Option::handle(const std::string& token)
+{
+    if ( IsOptionPack(token) )
+    {
+        add_option_pack(this->target, token);
+        return TokenHandler::State::Expecting_CommandParameter_Option;
+    }
+    if ( IsOption(token) )
+    {
+        add_option(this->target, token);
+        return TokenHandler::State::Expecting_CommandParameter_Option_EqualSign;
+    }
+    return TH_CommandParameter::handle(token);
+}
+
+TokenHandler::State TH_CommandParameter_Option_EqualSign::handle(const std::string& token)
+{
+    if ( IsEqualSign(token) )
+    {
+        return TokenHandler::State::Expecting_OptionParameter;
+    }
+    return TH_CommandParameter_Option::handle(token);
+}
+
+
+std::vector<std::string> tokenize(const std::string& input)
+{
+    std::vector<std::string> result{};
+    std::regex separating_regex("(\".+\")|([^\\s=]+)|(=)");
+    auto begin{ std::sregex_iterator(input.begin(), input.end(), separating_regex) };
+    auto end{ std::sregex_iterator() };
+    for( auto it{begin}; it!=end; it++ )
+        result.push_back( it->str() );
+    return result;
+}
+
+TokenHandlerFactory::TokenHandlerFactory(elrat::clp::CommandLine* p)
+: target{p}
+{
+}
+
+std::unique_ptr<TokenHandler> TokenHandlerFactory::create(TokenHandler::State state)
+{
+    switch(state)
+    {
+    case TokenHandler::State::Expecting_Command:
+        return std::make_unique<TH_Command>(target);
+
+    case TokenHandler::State::Expecting_CommandParameter_Option:
+        return std::make_unique<TH_CommandParameter_Option>(target);
+
+    case TokenHandler::State::Expecting_OptionParameter:
+        return std::make_unique<TH_OptionParameter>(target);
+
+    case TokenHandler::State::Expecting_CommandParameter_Option_EqualSign:
+        return std::make_unique<TH_CommandParameter_Option_EqualSign>(target);
+
+    default:
+        throw std::logic_error("Invalid State");
+    }
+
+    return nullptr;
+}
+
+
+const RegEx IsIdentifierPlus("[a-zA-Z_][\\w\\-]*");
+const RegEx IsOption("--[_a-zA-Z][\\w\\-]*");
+const RegEx IsOptionPack("-[a-zA-Z]+");
+const RegEx IsEqualSign("[=]");
+
+void add_option(CommandLine* p, const std::string& token)
+{
+    static const int preceeding_dashes = 2;
+    p->options.push_back( 
+        std::make_pair(token.substr(preceeding_dashes), std::vector<std::string>{}) );
+}
+
+void add_option_pack(CommandLine* p, const std::string& token)
+{
+    for( int i{1}; i < token.size(); i++ ) // omit the single preceeding dash
+    {
+        p->options.push_back( 
+            std::make_pair(std::string(1,token[i]), std::vector<std::string>{}) );
+    }
 }
 
