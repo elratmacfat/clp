@@ -51,7 +51,7 @@ CommandLine NativeParser::parse(const std::string& input) const
     CommandLine result{};
     TokenHandlerFactory factory(&result);
 
-    TokenHandler::State current_state{ TokenHandler::State::Expecting_Command };
+    State current_state{ State::Expecting_Command };
     
     auto tokenHandler{ factory.create( current_state ) };
     
@@ -83,51 +83,51 @@ TokenHandler::~TokenHandler()
     // done
 }
 
-TokenHandler::State TH_Command::handle(const std::string& token)
+State TokenHandlerExpectingCommand::handle(const std::string& token)
 {
     if ( !IsIdentifierPlus(token) )
     {
-        return TokenHandler::State::Received_Invalid_Token;
+        return State::Received_Invalid_Token;
     }
     target->command = token;
-    return TokenHandler::State::Expecting_CommandParameter_Option;
+    return State::Received_Anything_Else;
 }
 
-TokenHandler::State TH_CommandParameter::handle(const std::string& token)
+State TokenHandlerForCommandParameter::handle(const std::string& token)
 {
     target->parameters.push_back(token);
-    return TokenHandler::State::Expecting_CommandParameter_Option;
+    return State::Received_Anything_Else;
 }
 
-TokenHandler::State TH_OptionParameter::handle(const std::string& token)
+State TokenHandlerForOptionParameter::handle(const std::string& token)
 {
     auto& opt = target->options.back();
     opt.second.push_back(token);
-    return TokenHandler::State::Expecting_CommandParameter_Option;
+    return State::Received_Anything_Else;
 }
 
-TokenHandler::State TH_CommandParameter_Option::handle(const std::string& token)
+State TokenHandlerForAnythingElse::handle(const std::string& token)
 {
     if ( IsOptionPack(token) )
     {
         add_option_pack(this->target, token);
-        return TokenHandler::State::Expecting_CommandParameter_Option;
+        return State::Received_Anything_Else;
     }
     if ( IsOption(token) )
     {
         add_option(this->target, token);
-        return TokenHandler::State::Expecting_CommandParameter_Option_EqualSign;
+        return State::Received_Option;
     }
-    return TH_CommandParameter::handle(token);
+    return TokenHandlerForCommandParameter::handle(token);
 }
 
-TokenHandler::State TH_CommandParameter_Option_EqualSign::handle(const std::string& token)
+State TokenHandlerOnOptionReception::handle(const std::string& token)
 {
     if ( IsEqualSign(token) )
     {
-        return TokenHandler::State::Expecting_OptionParameter;
+        return State::Received_EqualSign;
     }
-    return TH_CommandParameter_Option::handle(token);
+    return TokenHandlerForAnythingElse::handle(token);
 }
 
 
@@ -147,21 +147,21 @@ TokenHandlerFactory::TokenHandlerFactory(elrat::clp::CommandLine* p)
 {
 }
 
-std::unique_ptr<TokenHandler> TokenHandlerFactory::create(TokenHandler::State state)
+std::unique_ptr<TokenHandler> TokenHandlerFactory::create(State state)
 {
     switch(state)
     {
-    case TokenHandler::State::Expecting_Command:
-        return std::make_unique<TH_Command>(target);
+    case State::Expecting_Command:
+        return std::make_unique<TokenHandlerExpectingCommand>(target);
 
-    case TokenHandler::State::Expecting_CommandParameter_Option:
-        return std::make_unique<TH_CommandParameter_Option>(target);
+    case State::Received_Option:
+        return std::make_unique<TokenHandlerOnOptionReception>(target);
 
-    case TokenHandler::State::Expecting_OptionParameter:
-        return std::make_unique<TH_OptionParameter>(target);
+    case State::Received_EqualSign:
+        return std::make_unique<TokenHandlerForOptionParameter>(target);
 
-    case TokenHandler::State::Expecting_CommandParameter_Option_EqualSign:
-        return std::make_unique<TH_CommandParameter_Option_EqualSign>(target);
+    case State::Received_Anything_Else:
+        return std::make_unique<TokenHandlerForAnythingElse>(target);
 
     default:
         throw std::logic_error("Invalid State");

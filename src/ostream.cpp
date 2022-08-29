@@ -12,7 +12,7 @@ std::ostream& operator<<(std::ostream& os, const elrat::clp::CommandLine& cl)
                 os << "-> Parameter #" << i;
                 if (!indent)
                     os << "..";
-                os << "....: \"" << vec[i] << "\"\n";
+                os << "..: \"" << vec[i] << "\"\n";
             }
         }
     };
@@ -27,7 +27,7 @@ std::ostream& operator<<(std::ostream& os, const elrat::clp::CommandLine& cl)
     for( auto& opt : cl.options )
     {        
         os << "-> Option" 
-            << ".........: \""
+            << "..........: \""
             << opt.first 
             << "\"\n";
         print_parameters(true, opt.second);

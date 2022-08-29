@@ -18,18 +18,18 @@
 
 std::vector<std::string> tokenize(const std::string& input);
 
+enum class State
+{
+    Expecting_Command,
+    Received_Invalid_Token,
+    Received_Option,        
+    Received_EqualSign,    
+    Received_Anything_Else
+};
 
 class TokenHandler
 {
 public:
-    enum class State 
-    {
-       Received_Invalid_Token = 0,
-       Expecting_Command,
-       Expecting_CommandParameter_Option,
-       Expecting_OptionParameter,
-       Expecting_CommandParameter_Option_EqualSign
-    };
     TokenHandler(elrat::clp::CommandLine*);
     virtual ~TokenHandler();
     virtual State handle( const std::string& token ) = 0;
@@ -37,51 +37,51 @@ protected:
     elrat::clp::CommandLine* target;
 };
 
-class TH_Command
+class TokenHandlerExpectingCommand
 : public TokenHandler
 {
 public:
     using TokenHandler::TokenHandler;
-    virtual TokenHandler::State handle(const std::string& token);
+    virtual State handle(const std::string& token);
 };
 
-class TH_CommandParameter
+class TokenHandlerForCommandParameter
 : public TokenHandler
 {
 public:
     using TokenHandler::TokenHandler;
-    virtual TokenHandler::State handle(const std::string& token);
+    virtual State handle(const std::string& token);
 };
 
-class TH_CommandParameter_Option
-: public TH_CommandParameter
+class TokenHandlerForAnythingElse
+: public TokenHandlerForCommandParameter
 {
 public:
-    using TH_CommandParameter::TH_CommandParameter;
-    virtual TokenHandler::State handle(const std::string& token);
+    using TokenHandlerForCommandParameter::TokenHandlerForCommandParameter;
+    virtual State handle(const std::string& token);
 };
 
-class TH_OptionParameter
+class TokenHandlerForOptionParameter
 : public TokenHandler
 {
 public:
     using TokenHandler::TokenHandler;
-    virtual TokenHandler::State handle(const std::string& token);
+    virtual State handle(const std::string& token);
 };
 
-class TH_CommandParameter_Option_EqualSign
-: public TH_CommandParameter_Option
+class TokenHandlerOnOptionReception
+: public TokenHandlerForAnythingElse
 {
 public:
-    using TH_CommandParameter_Option::TH_CommandParameter_Option;
-    virtual TokenHandler::State handle(const std::string& token);
+    using TokenHandlerForAnythingElse::TokenHandlerForAnythingElse;
+    virtual State handle(const std::string& token);
 };
 
 class TokenHandlerFactory
 {
 public:
     TokenHandlerFactory(elrat::clp::CommandLine*);
-    std::unique_ptr<TokenHandler> create( TokenHandler::State );
+    std::unique_ptr<TokenHandler> create( State );
 private:
     elrat::clp::CommandLine* target;
 };
