@@ -16,8 +16,17 @@ namespace clp {
     
     struct CommandLine
     {
+    public:
         using Parameters = std::vector<std::string>;
         using Options = std::vector<std::pair<std::string,Parameters>>;
+        const std::string& getCommand() const;
+        bool optionExists(const std::string&) const;
+        int getOptionCount() const;
+        const std::string& getOption(int) const;
+        const Parameters& getCommandParameters() const;
+        const Parameters& getOptionParameters(const std::string&) const;
+        const Parameters& getOptionParameters(int) const;
+    protected:
         std::string command;
         Parameters  parameters;
         Options     options;
@@ -47,7 +56,6 @@ namespace clp {
     : public Parser
     {
     public:
-        class Exception;
         virtual CommandLine parse( const std::string& ) const;
         virtual const std::string& getSyntaxDescription() const;
     private:

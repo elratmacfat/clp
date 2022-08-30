@@ -24,33 +24,26 @@ const RegEx IsOption("--[_a-zA-Z][\\w\\-]*");
 const RegEx IsOptionPack("-[a-zA-Z]+");
 const RegEx IsEqualSign("[=]");
 
-bool option_exists(elrat::clp::CommandLine* p, const std::string& option)
+bool option_exists(ModifiableCommandLine* p, const std::string& option)
 {
-    for( auto& existing_option : p->options )
-    {
-        if ( existing_option.first == option )
-            return true;
-    }   
-    return false;
+    return p->optionExists(option);
 }
 
-void add_option(CommandLine* p, const std::string& option)
+void add_option(ModifiableCommandLine* p, const std::string& option)
 {
     if (option_exists( p, option ))
         throw_invalid_token();
-    p->options.push_back( 
-        std::make_pair(option, std::vector<std::string>{}) 
-    );
+    p->addOption(option);
 }
 
-void add_long_option(CommandLine* p, const std::string& token)
+void add_long_option(ModifiableCommandLine* p, const std::string& token)
 {
     static const int preceeding_dashes = 2;
     auto option{ token.substr(preceeding_dashes) };
     add_option(p,option);
 }
 
-void add_option_pack(CommandLine* p, const std::string& token)
+void add_option_pack(ModifiableCommandLine* p, const std::string& token)
 {
     for( int i{1}; i < token.size(); i++ ) // omit the single preceeding dash
     {
@@ -75,7 +68,7 @@ void throw_invalid_state()
 }
 
 
-TokenHandler::TokenHandler(CommandLine* p)
+TokenHandler::TokenHandler(ModifiableCommandLine* p)
 : target{p}
 {
     // done
@@ -92,20 +85,19 @@ State TokenHandlerExpectingCommand::handle(const std::string& token)
     {
         return State::Received_Invalid_Token;
     }
-    target->command = token;
+    target->setCommand(token);
     return State::Received_Anything_Else;
 }
 
 State TokenHandlerForCommandParameter::handle(const std::string& token)
 {
-    target->parameters.push_back(token);
+    target->addParameter(token);
     return State::Received_Anything_Else;
 }
 
 State TokenHandlerForOptionParameter::handle(const std::string& token)
 {
-    auto& opt = target->options.back();
-    opt.second.push_back(token);
+    target->addOptionParameter(token);
     return State::Received_Anything_Else;
 }
 
@@ -149,7 +141,7 @@ std::vector<std::string> tokenize(const std::string& input)
     return result;
 }
 
-TokenHandlerFactory::TokenHandlerFactory(elrat::clp::CommandLine* p)
+TokenHandlerFactory::TokenHandlerFactory(ModifiableCommandLine* p)
 : target{p}
 {
 }
@@ -219,7 +211,7 @@ CommandLine NativeParser::parse(const std::string& input) const
     if ( !tokens.size() )
         throw_invalid_argument("Empty input");
 
-    CommandLine result{};
+    ModifiableCommandLine result{};
     TokenHandlerFactory factory(&result);
 
     State current_state{ State::Expecting_Command };

@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "modifiablecommandline.hpp"
 #include <elrat/clp.hpp>
 
 #include "regex.hpp"
@@ -22,10 +23,10 @@ extern const RegEx IsOptionPack;
 extern const RegEx IsEqualSign;
 
 std::vector<std::string> tokenize(const std::string& input);
-bool option_exists(elrat::clp::CommandLine*, const std::string& option);
-void add_option(elrat::clp::CommandLine*, const std::string& option);
-void add_long_option(elrat::clp::CommandLine*, const std::string& token);
-void add_option_pack(elrat::clp::CommandLine*, const std::string& token);
+bool option_exists(ModifiableCommandLine*, const std::string& option);
+void add_option(ModifiableCommandLine*, const std::string& option);
+void add_long_option(ModifiableCommandLine*, const std::string& token);
+void add_option_pack(ModifiableCommandLine*, const std::string& token);
 void throw_invalid_argument(const char*);
 void throw_invalid_token();
 void throw_invalid_state();
@@ -42,11 +43,11 @@ enum class State
 class TokenHandler
 {
 public:
-    TokenHandler(elrat::clp::CommandLine*);
+    TokenHandler(ModifiableCommandLine*);
     virtual ~TokenHandler();
     virtual State handle( const std::string& token ) = 0;
 protected:
-    elrat::clp::CommandLine* target;
+    ModifiableCommandLine* target;
 };
 
 class TokenHandlerExpectingCommand
@@ -92,10 +93,10 @@ public:
 class TokenHandlerFactory
 {
 public:
-    TokenHandlerFactory(elrat::clp::CommandLine*);
+    TokenHandlerFactory(ModifiableCommandLine*);
     std::unique_ptr<TokenHandler> create( State );
 private:
-    elrat::clp::CommandLine* target;
+    ModifiableCommandLine* target;
 };
 
 #endif

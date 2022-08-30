@@ -28,11 +28,13 @@ SET( HeaderFiles
 
 SET( IncludeFiles
     "${IncludeDir}/parser.hpp"
+    "${IncludeDir}/modifiablecommandline.hpp"
     "${IncludeDir}/regex.hpp"
 )
 
 SET( SourceFiles 
     "${SourceDir}/parser.cpp"
+    "${SourceDir}/commandline.cpp"
     "${SourceDir}/regex.cpp"
     "${SourceDir}/ostream.cpp"
 )

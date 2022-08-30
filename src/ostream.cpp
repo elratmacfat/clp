@@ -16,21 +16,22 @@ std::ostream& operator<<(std::ostream& os, const elrat::clp::CommandLine& cl)
             }
         }
     };
-    if (!cl.command.size()) 
+    if (!cl.getCommand().size()) 
         return os;
     
     os << "Command............: \""
-        << cl.command
+        << cl.getCommand()
         << "\"\n";
-    print_parameters( false, cl.parameters );
+    print_parameters( false, cl.getCommandParameters() );
     
-    for( auto& opt : cl.options )
+    int count = cl.getOptionCount();
+    for( int i{0}; i < count; i++ )
     {        
         os << "-> Option" 
             << "..........: \""
-            << opt.first 
+            << cl.getOption(i)
             << "\"\n";
-        print_parameters(true, opt.second);
+        print_parameters(true, cl.getOptionParameters(i));
     }
     return os;
 }

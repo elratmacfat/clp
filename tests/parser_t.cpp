@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_SUITE( ParserTestSuite )
         for( auto& input : valid_input::commands_only )
         {
             clp::CommandLine cmdline{ t.parse(input) };
-            BOOST_CHECK_EQUAL( cmdline.command, input );
+            BOOST_CHECK_EQUAL( cmdline.getCommand(), input );
         }
     }
 
