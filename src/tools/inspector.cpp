@@ -20,8 +20,13 @@ int main() {
     do {
         std::cout << "> ";
         std::getline( std::cin, s );
-        CommandLine data{ parser.parse(s) };
-        std::cout << data << '\n';
+        try {    
+            CommandLine data{ parser.parse(s) };
+            std::cout << data << '\n';
+        }
+        catch( std::invalid_argument& exc ) {
+            std::cout << exc.what() << "\n";
+        }
     } while( s != szQuit );
 
     return 0;

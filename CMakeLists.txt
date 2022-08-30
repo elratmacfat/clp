@@ -16,10 +16,11 @@ SET( IncludeDir
     "${CMAKE_CURRENT_SOURCE_DIR}/inc" 
 )
 
-###############################################################################
-#
-# Library
-#
+SET( TestSourceDir
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+)
+
+### L I B R A R Y #############################################################
 
 SET( HeaderFiles
     "${HeaderDir}/elrat/clp.hpp" 
@@ -47,10 +48,7 @@ TARGET_INCLUDE_DIRECTORIES( clp
     PRIVATE ${IncludeDir}
 )
 
-###############################################################################
-#
-# Tools
-#
+### T O O L S #################################################################
 
 ADD_EXECUTABLE( inspector 
     "${SourceDir}/tools/inspector.cpp"
@@ -60,10 +58,7 @@ TARGET_LINK_LIBRARIES( inspector
     PUBLIC clp 
 )
 
-###############################################################################
-#
-# Test
-#
+### T E S T ###################################################################
 
 FIND_PACKAGE( Boost 
     COMPONENTS unit_test_framework REQUIRED
@@ -73,22 +68,16 @@ IF ( Boost_FOUND )
 
 	INCLUDE(CTest)
     
-    ADD_EXECUTABLE( lowlevel-test 
-        "${SourceDir}/tests/test1-lowlevel.cpp" 
+    ADD_EXECUTABLE( parser 
+        "${TestSourceDir}/parser_t.cpp" 
     )
     
-    TARGET_LINK_LIBRARIES( lowlevel-test
+    TARGET_LINK_LIBRARIES( parser
         PUBLIC clp 
         PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
     )
     
-    ADD_TEST( NAME lowlevel COMMAND lowlevel-test )
-
-    ADD_EXECUTABLE( component-test src/tests/test2-component.cpp )
-    TARGET_LINK_LIBRARIES( component-test
-        PUBLIC clp
-        PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
-    ADD_TEST( NAME component COMMAND component-test )
+    ADD_TEST( NAME parser COMMAND parser )
 
 ELSE()
 	MESSAGE( WARNING "Could not find 'Boost'. Skip compiling the test executable." )

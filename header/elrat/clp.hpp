@@ -47,6 +47,7 @@ namespace clp {
     : public Parser
     {
     public:
+        class Exception;
         virtual CommandLine parse( const std::string& ) const;
         virtual const std::string& getSyntaxDescription() const;
     private:

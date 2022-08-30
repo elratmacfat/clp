@@ -16,7 +16,19 @@
 
 #include "regex.hpp"
 
+extern const RegEx IsIdentifierPlus;
+extern const RegEx IsOption;
+extern const RegEx IsOptionPack;
+extern const RegEx IsEqualSign;
+
 std::vector<std::string> tokenize(const std::string& input);
+bool option_exists(elrat::clp::CommandLine*, const std::string& option);
+void add_option(elrat::clp::CommandLine*, const std::string& option);
+void add_long_option(elrat::clp::CommandLine*, const std::string& token);
+void add_option_pack(elrat::clp::CommandLine*, const std::string& token);
+void throw_invalid_argument(const char*);
+void throw_invalid_token();
+void throw_invalid_state();
 
 enum class State
 {
@@ -85,14 +97,5 @@ public:
 private:
     elrat::clp::CommandLine* target;
 };
-
-extern const RegEx IsIdentifierPlus;
-extern const RegEx IsOption;
-extern const RegEx IsOptionPack;
-extern const RegEx IsEqualSign;
-
-void add_option(elrat::clp::CommandLine*, const std::string& token);
-void add_option_pack(elrat::clp::CommandLine*, const std::string& token);
-
 
 #endif
