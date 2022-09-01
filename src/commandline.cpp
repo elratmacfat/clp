@@ -1,5 +1,6 @@
+#include <stdexcept>
+
 #include <elrat/clp.hpp>
-#include "modifiablecommandline.hpp"
 
 using elrat::clp::CommandLine;
 using Parameters = elrat::clp::CommandLine::Parameters;
@@ -47,6 +48,29 @@ const Parameters& CommandLine::getOptionParameters(const std::string& option_nam
 const Parameters& CommandLine::getOptionParameters(int index) const 
 {
     return options.at(index).second;
+}
+
+
+void CommandLine::setCommand(const std::string& command_name)
+{
+    command = command_name;
+}
+
+void CommandLine::addCommandParameter(const std::string& parameter)
+{
+    parameters.push_back(parameter);
+}
+
+void CommandLine::addOption(const std::string& option_name)
+{
+    options.push_back( std::make_pair(option_name, Parameters{}) );
+}
+
+void CommandLine::addOptionParameter(const std::string& parameter)
+{
+    if (!options.size())
+        throw std::runtime_error("addOptionParameter: No option added yet.");
+    options.back().second.push_back(parameter);
 }
 
 

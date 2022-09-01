@@ -26,7 +26,11 @@ namespace clp {
         const Parameters& getCommandParameters() const;
         const Parameters& getOptionParameters(const std::string&) const;
         const Parameters& getOptionParameters(int) const;
-    protected:
+        void setCommand(const std::string&);
+        void addCommandParameter(const std::string&);
+        void addOption(const std::string&);
+        void addOptionParameter(const std::string&); // last inserted option
+    private:
         std::string command;
         Parameters  parameters;
         Options     options;

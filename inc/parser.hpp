@@ -17,16 +17,6 @@
 
 #include "regex.hpp"
 
-class ModifiableCommandLine
-: public elrat::clp::CommandLine
-{
-public:
-    void setCommand(const std::string&);
-    void addParameter(const std::string&);
-    void addOption(const std::string&);
-    void addOptionParameter(const std::string&);
-};
-
 enum class State
 {
     Expecting_Command,
@@ -42,9 +32,9 @@ bool is_error(State);
 
 std::vector<std::string> tokenize(const std::string& input);
 
-bool add_option(ModifiableCommandLine*, const std::string& option);
-bool add_long_option(ModifiableCommandLine*, const std::string& token);
-bool add_option_pack(ModifiableCommandLine*, const std::string& token);
+bool add_option(elrat::clp::CommandLine*, const std::string& option);
+bool add_long_option(elrat::clp::CommandLine*, const std::string& token);
+bool add_option_pack(elrat::clp::CommandLine*, const std::string& token);
 
 void throw_runtime_error(const std::string&);
 void throw_invalid_argument(const std::string&);
@@ -58,11 +48,11 @@ extern const RegEx IsEqualSign;
 class TokenHandler
 {
 public:
-    TokenHandler(ModifiableCommandLine*);
+    TokenHandler(elrat::clp::CommandLine*);
     virtual ~TokenHandler();
     virtual State handle( const std::string& token ) = 0;
 protected:
-    ModifiableCommandLine* target;
+    elrat::clp::CommandLine* target;
 };
 
 class TokenHandlerExpectingCommand
@@ -108,10 +98,10 @@ public:
 class TokenHandlerFactory
 {
 public:
-    TokenHandlerFactory(ModifiableCommandLine*);
+    TokenHandlerFactory(elrat::clp::CommandLine*);
     std::unique_ptr<TokenHandler> createTokenHandler( State );
 private:
-    ModifiableCommandLine* target;
+    elrat::clp::CommandLine* target;
 };
 
 #endif

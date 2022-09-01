@@ -18,29 +18,6 @@ using elrat::clp::NativeParser;
 //
 // Implementation of private header "parser.hpp"
 //
-
-void ModifiableCommandLine::setCommand(const std::string& command_name)
-{
-    this->command = command_name;
-}
-
-void ModifiableCommandLine::addParameter(const std::string& parameter)
-{
-    this->parameters.push_back(parameter);
-}
-
-void ModifiableCommandLine::addOption(const std::string& option_name)
-{
-    this->options.push_back( std::make_pair(option_name, Parameters{}) );
-}
-
-void ModifiableCommandLine::addOptionParameter(const std::string& parameter)
-{
-    if (!this->options.size())
-        throw_runtime_error("addOptionParameter: No option added yet.");
-    this->options.back().second.push_back(parameter);
-}
-
 std::string to_string(State state)
 {
     std::string result;
@@ -85,7 +62,7 @@ std::vector<std::string> tokenize(const std::string& input)
     return result;
 }
 
-bool add_option(ModifiableCommandLine* p, const std::string& option)
+bool add_option(CommandLine* p, const std::string& option)
 {
     if (p->optionExists(option))
         return false;
@@ -93,14 +70,14 @@ bool add_option(ModifiableCommandLine* p, const std::string& option)
     return true;
 }
 
-bool add_long_option(ModifiableCommandLine* p, const std::string& token)
+bool add_long_option(CommandLine* p, const std::string& token)
 {
     static const int preceeding_dashes = 2;
     auto option{ token.substr(preceeding_dashes) };
     return add_option(p,option);
 }
 
-bool add_option_pack(ModifiableCommandLine* p, const std::string& token)
+bool add_option_pack(CommandLine* p, const std::string& token)
 {
     for( int i{1}; i < token.size(); i++ ) // omit the single preceeding dash
     {
@@ -147,7 +124,7 @@ const RegEx IsEqualSign(
 );
 
 
-TokenHandler::TokenHandler(ModifiableCommandLine* p)
+TokenHandler::TokenHandler(CommandLine* p)
 : target{p}
 {
     // done
@@ -170,7 +147,7 @@ State TokenHandlerForCommandParameter::handle(const std::string& token)
 {
     if (IsEqualSign(token))
         return State::Received_Invalid_Token;
-    target->addParameter(token);
+    target->addCommandParameter(token);
     return State::Received_Anything_Else;
 }
 
@@ -207,7 +184,7 @@ State TokenHandlerOnOptionReception::handle(const std::string& token)
 }
 
 
-TokenHandlerFactory::TokenHandlerFactory(ModifiableCommandLine* p)
+TokenHandlerFactory::TokenHandlerFactory(CommandLine* p)
 : target{p}
 {
 }
@@ -277,7 +254,7 @@ CommandLine NativeParser::parse(const std::string& input) const
     if ( !tokens.size() )
         throw_invalid_argument("Empty input");
 
-    ModifiableCommandLine result{};
+    CommandLine result{};
     TokenHandlerFactory factory(&result);
 
     State current_state{ State::Expecting_Command };
