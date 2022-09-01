@@ -69,16 +69,21 @@ IF ( Boost_FOUND )
 
 	INCLUDE(CTest)
     
-    ADD_EXECUTABLE( parser 
-        "${TestSourceDir}/parser_t.cpp" 
-    )
-    
-    TARGET_LINK_LIBRARIES( parser
+    ADD_EXECUTABLE( parser_test 
+        "${TestSourceDir}/parser_t.cpp" )
+    TARGET_LINK_LIBRARIES( parser_test
         PUBLIC clp 
-        PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-    )
-    
-    ADD_TEST( NAME parser COMMAND parser )
+        PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
+    ADD_TEST( NAME parser 
+        COMMAND parser_test )
+
+    ADD_EXECUTABLE( descriptors_test
+        "${TestSourceDir}/descriptors_t.cpp" )
+    TARGET_LINK_LIBRARIES( descriptors_test
+        PUBLIC clp
+        PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
+    ADD_TEST( NAME descriptors
+        COMMAND descriptors_test )
 
 ELSE()
 	MESSAGE( WARNING "Could not find 'Boost'. Skip compiling the test executable." )

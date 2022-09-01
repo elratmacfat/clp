@@ -65,7 +65,13 @@ namespace clp {
     private:
         static const std::string SyntaxDescription;
     };
-    
+
+    class Descriptors
+    {
+    public:
+           
+    };
+
 } // clp
 } // elrat
 
