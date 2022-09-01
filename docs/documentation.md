@@ -15,17 +15,13 @@ comes with a predefined parser, named `native_parser`, but the application progr
 can provide a custom implementation meeting the desired syntax rules or performance
 criteria.
 
-![](parser.png)
 
 ### 2. Context
 
-![](context.png)
 
 ### 3. Invoker
 
-![](invoker.png)
 
 ### All together
 
-![](proc.png)
 
