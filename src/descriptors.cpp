@@ -55,7 +55,10 @@ CommandDescriptorPtr clp::Command(
     const OptionDescriptors& options)
 {
     return std::make_shared<CommandDescriptor>(
-        name,description,parameters,options);
+        name,
+        description,
+        parameters,
+        options);
 }
 
 OptionDescriptorPtr clp::Option(
@@ -64,18 +67,24 @@ OptionDescriptorPtr clp::Option(
     const ParameterDescriptors& parameters )
 {
     return std::make_shared<OptionDescriptor>(
-        name,description,parameters);
+        name,
+        description,
+        parameters);
 }
 
 ParameterDescriptorPtr clp::Parameter(
     const std::string& name,
     const std::string& description,
-    bool requirement,
+    bool required,
     TypeChecker type_checker,
     Constraints constraints )
 {
     return std::make_shared<ParameterDescriptor>(
-        name,description,requirement,type_checker,constraints );
+        name,
+        description,
+        required,
+        type_checker,
+        constraints );
 }
 
 //-----------------------------------------------------------------------------
@@ -85,7 +94,7 @@ HasName::HasName( const std::string& s )
 {
 }
 
-std::string_view HasName::getName() const 
+const std::string& HasName::getName() const 
 {
     return name;
 }
@@ -97,7 +106,7 @@ HasDescription::HasDescription(const std::string& s)
 {
 }
 
-std::string_view HasDescription::getDescription() const
+const std::string& HasDescription::getDescription() const
 {
     return description;
 }
@@ -134,18 +143,18 @@ const Constraints& ParameterDescriptor::getConstraints() const
     return constraints;
 }
 
-vcode ParameterDescriptor::validate(const std::string& p) 
+ValidationResult ParameterDescriptor::validate(const std::string& p) 
 {
     if (!type_checker(p))
-        return vcode::param_invalid;
+        return ValidationResult::InvalidParameter;
     for( auto& c : constraints )
     {
         if (!c->validate(p))
         {
-            return vcode::param_invalid;
+            return ValidationResult::InvalidParameter;
         }
     }
-    return vcode::match;
+    return ValidationResult::Valid;
 }
 
 //-----------------------------------------------------------------------------
@@ -158,17 +167,15 @@ OptionDescriptor::OptionDescriptor(
 , HasDescription(description)
 , parameters{parameter_descriptors}
 {
-    // Ensure that an optional parameter is not followed by one that is 
-    // required. Also count the number of required parameters, for future
-    // validation processes.
+    // Ensure that optional parameters are not followed by parameters declared mandatory.
     numberOfRequiredParameters = 0;
-    bool prev_optional{false};
+    bool previousParameterWasOptional{false};
     for( auto& p : parameter_descriptors )
     {
         if (p->parameterIsRequired())
         {
             numberOfRequiredParameters++;
-            if ( prev_optional )
+            if ( previousParameterWasOptional )
                 throw std::invalid_argument(
                     "Optional parameters cannot be followed by one that "
                     "is required. Revisit your command descriptor "
@@ -176,7 +183,7 @@ OptionDescriptor::OptionDescriptor(
         }
         else
         {
-            prev_optional = true;
+            previousParameterWasOptional = true;
         }
     }
 }
@@ -186,20 +193,20 @@ const ParameterDescriptors& OptionDescriptor::getParameters() const
     return parameters;
 }
 
-vcode OptionDescriptor::validate( const std::vector<std::string>& arguments )
+ValidationResult OptionDescriptor::validate( const std::vector<std::string>& arguments )
 {
     if ( arguments.size() < numberOfRequiredParameters )
-        return vcode::param_missing;
+        return ValidationResult::MissingParameter;
     if ( arguments.size() > parameters.size() )
-        return vcode::param_invalid;
+        return ValidationResult::InvalidParameter;
 
     for( int i{0}; i < arguments.size(); i++ )
     {
-        vcode result {parameters[i]->validate(arguments[i])};
-        if ( result != vcode::match )
+        ValidationResult result {parameters[i]->validate(arguments[i])};
+        if ( result != ValidationResult::Valid )
             return result;
     }
-    return vcode::match;
+    return ValidationResult::Valid;
 }
 
 //-----------------------------------------------------------------------------
@@ -219,45 +226,36 @@ const OptionDescriptors& CommandDescriptor::getOptions() const
     return options;
 }
 
-vcode CommandDescriptor::validate( const CommandLine& command_line )
+ValidationResult CommandDescriptor::validate( const CommandLine& command_line )
 {
     if (!command_line)
-        return vcode::cmd_invalid;
+        return ValidationResult::InvalidCommand;
     
-    // Check command and its parameters
-    // (OptionDescriptor refers to the base class here)
-    vcode v{ OptionDescriptor::validate( command_line.getCommandParameters() ) };
-    if ( v != vcode::match ) 
+    // Reminder: OptionDesriptor is the CommandDescriptor's base class!
+    auto& command_parameters{ command_line.getCommandParameters() };
+    ValidationResult result{ OptionDescriptor::validate(command_parameters) };
+    if ( result != ValidationResult::Valid ) 
     {
-        if ( v == vcode::opt_invalid ) 
-            v = vcode::cmd_invalid;
-        return v;
+        if ( result == ValidationResult::InvalidOption ) 
+            result = ValidationResult::InvalidCommand;
+        return result;
     }
 
-    // Each option descriptor gets to see every option passed.
-    //
-    vcode result{};
     for( int i{0}; i < command_line.getOptionCount(); i++ )
     {
-        auto& option_parameter{ command_line.getOptionParameters(i) };
+        auto& option_parameters{ command_line.getOptionParameters(i) };
         for( auto option_descriptor : options )
         {
-            result = option_descriptor->validate( option_parameter );
+            result = option_descriptor->validate( option_parameters );
             
-            // Found a match, abort inner loop, and go on with
-            // the next iteration
-            if ( result == vcode::match )
+            if ( result == ValidationResult::Valid )
                 break;
 
-            // Option name matched, but its parameters didnt fit.
-            // Thus, the validation as a whole has failed.
-            if ( result != vcode::opt_invalid )
+            if ( result != ValidationResult::InvalidOption )
                 return result;
-                
         }
     }
     return result;
 }
 
 
-//-----------------------------------------------------------------------------

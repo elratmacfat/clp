@@ -10,17 +10,12 @@
 #include <memory>
 #include <sstream>
 #include <string>
-#include <string_view>
 #include <vector>
 
 #include <elrat/clp/parser.hpp>
 
 namespace elrat {
 namespace clp {
-
-//-----------------------------------------------------------------------------
-// Forward declaration
-//-----------------------------------------------------------------------------
 
 class CommandDescriptors;
 
@@ -41,20 +36,6 @@ class Constraint;
 using ConstraintPtr = std::shared_ptr<Constraint>;
 using Constraints = std::vector<ConstraintPtr>;
 
-template <class T> ConstraintPtr AtLeast(const T& t);
-template <class T> ConstraintPtr AtMost(T&& t);
-template <class T> ConstraintPtr InRange(T&& t1, T&& t2);
-template <class T> ConstraintPtr IsNot(T&& t);
-template <class T, class...TT> ConstraintPtr In(T first, TT...others);
-
-//-----------------------------------------------------------------------------
-// Factories, aliases and wrapper with the intent of providing a neat interface
-// to the library user (who shall not have to deal with dozens of abbreviations
-// and internals.
-//
-//
-//-----------------------------------------------------------------------------
-
 extern const bool Mandatory;
 extern const bool Optional;
 
@@ -66,13 +47,13 @@ bool Name(const std::string&);
 bool Identifier(const std::string&);
 bool Path(const std::string&);
 
-enum class vcode 
+enum class ValidationResult 
 {
-     match          // OK
-    ,cmd_invalid    // command name does not match 
-    ,param_invalid  // Parameter type or value mismatch, or too many parameters
-    ,param_missing  // Required parameter is missing
-    ,opt_invalid    // Option provided that does not exist.
+     Valid
+    ,InvalidCommand
+    ,InvalidParameter 
+    ,MissingParameter
+    ,InvalidOption 
 };
 
 CommandDescriptorPtr Command(
@@ -96,13 +77,20 @@ ParameterDescriptorPtr Parameter(
     Constraints constraints = {}
 );
 
+template <class T> ConstraintPtr AtLeast(const T& t);
+template <class T> ConstraintPtr AtMost(T&& t);
+template <class T> ConstraintPtr InRange(T&& t1, T&& t2);
+template <class T> ConstraintPtr IsNot(T&& t);
+template <class T, class...TT> ConstraintPtr In(T first, TT...others);
+
+
 //-----------------------------------------------------------------------------
 
 class HasName
 {
 public:
     HasName(const std::string&);
-    std::string_view getName() const;
+    const std::string& getName() const;
 private:
     std::string name;
 };
@@ -111,7 +99,7 @@ class HasDescription
 {
 public:
     HasDescription(const std::string&);
-    std::string_view getDescription() const;
+    const std::string& getDescription() const;
 private:
     std::string description;
 };
@@ -132,7 +120,7 @@ public:
     bool parameterIsRequired() const;
     TypeChecker getTypeChecker() const;
     const Constraints& getConstraints() const;
-    vcode validate(const std::string&);
+    ValidationResult validate(const std::string&);
 private:
     bool        required;
     TypeChecker type_checker;
@@ -151,7 +139,7 @@ public:
         const std::string&,
         const ParameterDescriptors& );
     const ParameterDescriptors& getParameters() const;
-    vcode validate( const std::vector<std::string>& );
+    ValidationResult validate( const std::vector<std::string>& );
 protected:
     ParameterDescriptors    parameters;
     int                     numberOfRequiredParameters;
@@ -170,7 +158,7 @@ public:
         const OptionDescriptors& );
     const OptionDescriptors& getOptions() const;
     
-    vcode validate( const CommandLine& );
+    ValidationResult validate( const CommandLine& );
 private:
     OptionDescriptors options;
 };
