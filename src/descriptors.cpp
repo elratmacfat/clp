@@ -4,163 +4,170 @@
 // Description..: 
 //
 #include <elrat/clp/descriptors.hpp>
-#include <elrat/clp/regex.hpp>
+#include "regex.hpp"
 
 using namespace elrat;
 using namespace elrat::clp;
 
-const bool mandatory{true};
-const bool optional{false};
+const bool clp::Mandatory{true};
+const bool clp::Optional{false};
 
-bool clp::any(const std::string& s)
+bool clp::Any(const std::string& s)
 {
     return (s.size() > 0);
 }
 
-bool clp::natural_number(const std::string& s)
+bool clp::NaturalNumber(const std::string& s)
 {
-    return regex::is_positive_decimal(s) ||
-        regex::is_hexadecimal(s);
+    return IsPositiveDecimal(s) || IsHexaDecimal(s);
 }
 
-bool clp::whole_number(const std::string& s)
+bool clp::WholeNumber(const std::string& s)
 {   
-    return regex::is_decimal(s) 
-        || regex::is_hexadecimal(s);
+    return IsDecimal(s) || IsHexaDecimal(s);
 }
 
-bool clp::real_number(const std::string& s)
+bool clp::RealNumber(const std::string& s)
 {
-    return regex::is_floating_point(s);
+    return IsFloatingPoint(s);
 }
 
-bool clp::name(const std::string& s)
+bool clp::Name(const std::string& s)
 {
-    return regex::is_name(s);
+    return IsName(s);
 }
 
-bool clp::identifier(const std::string& s)
+bool clp::Identifier(const std::string& s)
 {
-    return regex::is_identifier(s);
+    return IsIdentifier(s);
+}
+
+bool clp::Path(const std::string& s)
+{
+    return IsPath(s);
 }
 
 
-cmd_desc_ptr clp::command(
+CommandDescriptorPtr clp::Command(
     const std::string& name,
     const std::string& description,
-    const param_desc_vec& parameters,
-    const opt_desc_vec& options)
+    const ParameterDescriptors& parameters,
+    const OptionDescriptors& options)
 {
-    return std::make_shared<cmd_desc>(
+    return std::make_shared<CommandDescriptor>(
         name,description,parameters,options);
 }
 
-opt_desc_ptr clp::option(
+OptionDescriptorPtr clp::Option(
     const std::string& name,
     const std::string& description,
-    const param_desc_vec& parameters )
+    const ParameterDescriptors& parameters )
 {
-    return std::make_shared<opt_desc>(
+    return std::make_shared<OptionDescriptor>(
         name,description,parameters);
 }
 
-param_desc_ptr clp::parameter(
+ParameterDescriptorPtr clp::Parameter(
     const std::string& name,
     const std::string& description,
     bool requirement,
-    param_type_checker type_checker,
-    param_constraint_vec constraints )
+    TypeChecker type_checker,
+    Constraints constraints )
 {
-    return std::make_shared<param_desc>(
+    return std::make_shared<ParameterDescriptor>(
         name,description,requirement,type_checker,constraints );
 }
 
 //-----------------------------------------------------------------------------
 
-has_name::has_name( const std::string& s ) 
-: _name{s}
+HasName::HasName( const std::string& s ) 
+: name{s}
 {
 }
 
-std::string_view has_name::name() const 
+std::string_view HasName::getName() const 
 {
-    return this->_name;
-}
-
-//-----------------------------------------------------------------------------
-
-has_description::has_description(const std::string& s)
-: _description{s}
-{
-}
-
-std::string_view has_description::description() const
-{
-    return _description;
+    return name;
 }
 
 //-----------------------------------------------------------------------------
 
-param_desc::param_desc(
-    const std::string& n,
-    const std::string& d,
-    bool r,
-    param_type_checker c,
-    param_constraint_vec vc )
-: has_name(n)
-, has_description(d)
-, _requirement{r}
-, _type_checker{c}
-, _constraints{vc}
+HasDescription::HasDescription(const std::string& s)
+: description{s}
+{
+}
+
+std::string_view HasDescription::getDescription() const
+{
+    return description;
+}
+
+//-----------------------------------------------------------------------------
+
+ParameterDescriptor::ParameterDescriptor(
+    const std::string& name,
+    const std::string& description,
+    bool isRequired,
+    TypeChecker typeChecker,
+    Constraints parameter_constraints )
+: HasName(name)
+, HasDescription(description)
+, required{isRequired}
+, type_checker{typeChecker}
+, constraints{parameter_constraints}
 {
 
 }
 
-bool param_desc::required() const
+bool ParameterDescriptor::parameterIsRequired() const
 {
-    return _requirement;
+    return required;
 }
 
-param_type_checker param_desc::type_checker() const
+TypeChecker ParameterDescriptor::getTypeChecker() const
 {
-    return _type_checker;
+    return type_checker;
 }
 
-const param_constraint_vec& param_desc::constraints() const
+const Constraints& ParameterDescriptor::getConstraints() const
 {
-    return _constraints;
+    return constraints;
 }
 
-vcode param_desc::validate(const std::string& p) 
+vcode ParameterDescriptor::validate(const std::string& p) 
 {
-    if (!_type_checker(p))
+    if (!type_checker(p))
         return vcode::param_invalid;
-    for(auto& c : _constraints)
+    for( auto& c : constraints )
+    {
         if (!c->validate(p))
+        {
             return vcode::param_invalid;
+        }
+    }
     return vcode::match;
 }
 
 //-----------------------------------------------------------------------------
 
-opt_desc::opt_desc(
-    const std::string& n,
-    const std::string& d,
-    const param_desc_vec& vp)
-: has_name(n)
-, has_description(d)
-, _parameters{vp}
+OptionDescriptor::OptionDescriptor(
+    const std::string& name,
+    const std::string& description,
+    const ParameterDescriptors& parameter_descriptors )
+: HasName(name)
+, HasDescription(description)
+, parameters{parameter_descriptors}
 {
     // Ensure that an optional parameter is not followed by one that is 
     // required. Also count the number of required parameters, for future
     // validation processes.
-    this->_n_required = 0;
+    numberOfRequiredParameters = 0;
     bool prev_optional{false};
-    for( auto& p : vp )
+    for( auto& p : parameter_descriptors )
     {
-        if (p->required())
+        if (p->parameterIsRequired())
         {
-            _n_required++;
+            numberOfRequiredParameters++;
             if ( prev_optional )
                 throw std::invalid_argument(
                     "Optional parameters cannot be followed by one that "
@@ -174,59 +181,52 @@ opt_desc::opt_desc(
     }
 }
 
-const param_desc_vec& opt_desc::parameters() const
+const ParameterDescriptors& OptionDescriptor::getParameters() const
 {
-    return _parameters;
+    return parameters;
 }
 
-vcode opt_desc::validate( const std::vector<std::string>& params )
+vcode OptionDescriptor::validate( const std::vector<std::string>& arguments )
 {
-    if ( !params.size() || params[0] != this->name() )
-        return vcode::opt_invalid;
-
-    // Check if parameters are missing or too many have been provided.
-    // Note that the first element in 'params' is the option name, hence
-    // the fiddling with +-1.
-    auto param_count{ params.size() - 1 }; 
-    if ( param_count < _n_required )
+    if ( arguments.size() < numberOfRequiredParameters )
         return vcode::param_missing;
-    if ( param_count > _parameters.size() )
+    if ( arguments.size() > parameters.size() )
         return vcode::param_invalid;
 
-    // Let each parameter check for themselves.
-    for( int i{1}; i <= params.size(); i++ )
+    for( int i{0}; i < arguments.size(); i++ )
     {
-        vcode result {_parameters[i-1]->validate(params[i])};
+        vcode result {parameters[i]->validate(arguments[i])};
         if ( result != vcode::match )
             return result;
     }
+    return vcode::match;
 }
 
 //-----------------------------------------------------------------------------
 
-cmd_desc::cmd_desc(
-    const std::string& n,
-    const std::string& d,
-    const param_desc_vec& vp,
-    const opt_desc_vec& vo )
-: opt_desc(n,d,vp)
-, _options{vo}
+CommandDescriptor::CommandDescriptor(
+    const std::string& name,
+    const std::string& description,
+    const ParameterDescriptors& command_parameters,
+    const OptionDescriptors& option_descriptors )
+: OptionDescriptor(name,description,command_parameters)
+, options{option_descriptors}
 {
 }
 
-const opt_desc_vec& cmd_desc::options() const
+const OptionDescriptors& CommandDescriptor::getOptions() const
 {
-    return _options;
+    return options;
 }
 
-vcode cmd_desc::validate( const parser::data& data )
+vcode CommandDescriptor::validate( const CommandLine& command_line )
 {
-    if (!data)
+    if (!command_line)
         return vcode::cmd_invalid;
     
     // Check command and its parameters
-    // (opt_desc refers to the base class here)
-    vcode v{ opt_desc::validate( data.cmd_param_vec() ) };
+    // (OptionDescriptor refers to the base class here)
+    vcode v{ OptionDescriptor::validate( command_line.getCommandParameters() ) };
     if ( v != vcode::match ) 
     {
         if ( v == vcode::opt_invalid ) 
@@ -237,12 +237,12 @@ vcode cmd_desc::validate( const parser::data& data )
     // Each option descriptor gets to see every option passed.
     //
     vcode result{};
-    for( int i{0}; i < data.opt_count(); i++ )
+    for( int i{0}; i < command_line.getOptionCount(); i++ )
     {
-        auto v{ data.opt_param_vec(i+1) };
-        for( auto odesc : _options )
+        auto& option_parameter{ command_line.getOptionParameters(i) };
+        for( auto option_descriptor : options )
         {
-            result = odesc->validate(v);
+            result = option_descriptor->validate( option_parameter );
             
             // Found a match, abort inner loop, and go on with
             // the next iteration

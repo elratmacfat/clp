@@ -1,24 +1,19 @@
 // Project......: Command Line Processor (clp)
-// File.........: inc/elrat/clp/descriptors.hpp
+// File.........: /elrat/clp/descriptors.hpp
 // Author.......: elratmacfat
-// Description..: Contains the complete descriptor class hierarchy, including
-//                parameter type and constraints.
-//                
-//
-//
-//
+// Description..: 
 //
 #ifndef ELRAT_CLP_DESCRIPTORS_HPP
 #define ELRAT_CLP_DESCRIPTORS_HPP
 
 #include <functional>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
 
 #include <elrat/clp/parser.hpp>
-#include <elrat/clp/util.hpp>
 
 namespace elrat {
 namespace clp {
@@ -27,22 +22,30 @@ namespace clp {
 // Forward declaration
 //-----------------------------------------------------------------------------
 
-class cmd_desc;
-using cmd_desc_ptr = std::shared_ptr<cmd_desc>;
+class CommandDescriptors;
 
-class opt_desc;
-using opt_desc_ptr = std::shared_ptr<opt_desc>;
-using opt_desc_vec = std::vector<opt_desc_ptr>;
+class CommandDescriptor;
+using CommandDescriptorPtr = std::shared_ptr<CommandDescriptor>;
 
-class param_desc;
-using param_desc_ptr = std::shared_ptr<param_desc>;
-using param_desc_vec = std::vector<param_desc_ptr>;
+class OptionDescriptor;
+using OptionDescriptorPtr = std::shared_ptr<OptionDescriptor>;
+using OptionDescriptors = std::vector<OptionDescriptorPtr>;
 
-using param_type_checker = std::function<bool(const std::string&)>;
+class ParameterDescriptor;
+using ParameterDescriptorPtr = std::shared_ptr<ParameterDescriptor>;
+using ParameterDescriptors = std::vector<ParameterDescriptorPtr>;
 
-class param_constraint;
-using param_constraint_ptr = std::shared_ptr<param_constraint>;
-using param_constraint_vec = std::vector<param_constraint_ptr>;
+using TypeChecker = std::function<bool(const std::string&)>;
+
+class Constraint;
+using ConstraintPtr = std::shared_ptr<Constraint>;
+using Constraints = std::vector<ConstraintPtr>;
+
+template <class T> ConstraintPtr AtLeast(const T& t);
+template <class T> ConstraintPtr AtMost(T&& t);
+template <class T> ConstraintPtr InRange(T&& t1, T&& t2);
+template <class T> ConstraintPtr IsNot(T&& t);
+template <class T, class...TT> ConstraintPtr In(T first, TT...others);
 
 //-----------------------------------------------------------------------------
 // Factories, aliases and wrapper with the intent of providing a neat interface
@@ -52,21 +55,16 @@ using param_constraint_vec = std::vector<param_constraint_ptr>;
 //
 //-----------------------------------------------------------------------------
 
-extern const bool mandatory;
-extern const bool optional;
+extern const bool Mandatory;
+extern const bool Optional;
 
-bool any(const std::string&);
-bool natural_number(const std::string&);
-bool whole_number(const std::string&);
-bool real_number(const std::string&);
-bool name(const std::string&);
-bool identifier(const std::string&);
-
-template <class T> param_constraint_ptr at_least(const T&);
-template <class T> param_constraint_ptr at_most(const T&);
-template <class T> param_constraint_ptr in_range(const T&, const T&);
-template <class T> param_constraint_ptr is_not(const T&);
-template <class...T> param_constraint_ptr in(T...);
+bool Any(const std::string&);
+bool NaturalNumber(const std::string&);
+bool WholeNumber(const std::string&);
+bool RealNumber(const std::string&);
+bool Name(const std::string&);
+bool Identifier(const std::string&);
+bool Path(const std::string&);
 
 enum class vcode 
 {
@@ -77,115 +75,131 @@ enum class vcode
     ,opt_invalid    // Option provided that does not exist.
 };
 
-cmd_desc_ptr command(
+CommandDescriptorPtr Command(
     const std::string& name,
     const std::string& description = "",
-    const param_desc_vec& parameters = {},
-    const opt_desc_vec& options = {}
+    const ParameterDescriptors& parameters = {},
+    const OptionDescriptors& options = {}
 );
 
-opt_desc_ptr option(
+OptionDescriptorPtr Option(
     const std::string& name,
     const std::string& description = "",
-    const param_desc_vec& parameters = {}
+    const ParameterDescriptors& parameters = {}
 );
 
-param_desc_ptr parameter(
+ParameterDescriptorPtr Parameter(
     const std::string& name,
     const std::string& description = "",
-    bool requirement = mandatory,
-    param_type_checker type_checker = any,
-    param_constraint_vec constraints = {}
+    bool requirement = Mandatory,
+    TypeChecker type_checker = Any,
+    Constraints constraints = {}
 );
 
 //-----------------------------------------------------------------------------
 
-class has_name
+class HasName
 {
 public:
-    has_name(const std::string&);
-    std::string_view name() const;
+    HasName(const std::string&);
+    std::string_view getName() const;
 private:
-    std::string _name;
+    std::string name;
 };
 
-class has_description
+class HasDescription
 {
 public:
-    has_description(const std::string&);
-    std::string_view description() const;
+    HasDescription(const std::string&);
+    std::string_view getDescription() const;
 private:
-    std::string _description;
+    std::string description;
 };
 
 //-----------------------------------------------------------------------------
 
-class param_desc 
-: public has_name
-, public has_description
+class ParameterDescriptor 
+: public HasName
+, public HasDescription
 {
 public:
-    param_desc(
+    ParameterDescriptor(
         const std::string&,
         const std::string&,
         bool,
-        param_type_checker,
-        param_constraint_vec );
-    bool required() const;
-    param_type_checker type_checker() const;
-    const param_constraint_vec& constraints() const;
+        TypeChecker,
+        Constraints );
+    bool parameterIsRequired() const;
+    TypeChecker getTypeChecker() const;
+    const Constraints& getConstraints() const;
     vcode validate(const std::string&);
 private:
-    bool                    _requirement;
-    param_type_checker      _type_checker;
-    param_constraint_vec    _constraints;
+    bool        required;
+    TypeChecker type_checker;
+    Constraints constraints;
 };
 
 //-----------------------------------------------------------------------------
 
-class opt_desc 
-: public has_name
-, public has_description
+class OptionDescriptor 
+: public HasName
+, public HasDescription
 {
 public:
-    opt_desc(
+    OptionDescriptor(
         const std::string&,
         const std::string&,
-        const param_desc_vec& );
-    const param_desc_vec& parameters() const;
+        const ParameterDescriptors& );
+    const ParameterDescriptors& getParameters() const;
     vcode validate( const std::vector<std::string>& );
 protected:
-    param_desc_vec  _parameters;
-    int             _n_required;
+    ParameterDescriptors    parameters;
+    int                     numberOfRequiredParameters;
 };
 
 //-----------------------------------------------------------------------------
 
-class cmd_desc
-: public opt_desc
+class CommandDescriptor
+: public OptionDescriptor
 {
 public:
-    cmd_desc(
+    CommandDescriptor(
         const std::string&,
         const std::string&,
-        const param_desc_vec&,
-        const opt_desc_vec& );
-    const opt_desc_vec& options() const;
+        const ParameterDescriptors&,
+        const OptionDescriptors& );
+    const OptionDescriptors& getOptions() const;
     
-    vcode validate( const parser::data& );
+    vcode validate( const CommandLine& );
 private:
-    opt_desc_vec            _options;
+    OptionDescriptors options;
 };
 
 //-----------------------------------------------------------------------------
 
-class param_constraint
+class CommandDescriptors
+{
+};
+
+//-----------------------------------------------------------------------------
+
+class Constraint
 {
 public:
-    virtual ~param_constraint() {}
+    virtual ~Constraint() {}
     virtual bool validate(const std::string&) const = 0;
     virtual const std::string& to_string() const = 0;
 };
+
+template <class T>
+T convert(const std::string& arg) 
+{
+    std::stringstream ss;
+    ss << arg;
+    T result;
+    ss >> result;
+    return result;
+}
 
 // Base class for concrete parameter constraints
 //
@@ -221,14 +235,14 @@ protected:
 
 template <class T>
 class constraint_at_least
-: public param_constraint
+: public Constraint
 , public args_t<T>
 {
 public:
     using args_t<T>::args_t;
     bool validate(const std::string& s) const 
     {
-        return (util::convert<T>(s) >= this->values.at(0));
+        return (convert<T>(s) >= this->values.at(0));
     }
 
     const std::string& to_string() const 
@@ -239,14 +253,14 @@ public:
 
 template <class T>
 class constraint_at_most
-: public param_constraint
+: public Constraint
 , public args_t<T>
 {
 public:
     using args_t<T>::args_t;
     bool validate(const std::string& s) const 
     {
-        return (util::convert<T>(s) <= this->values.at(0));
+        return (convert<T>(s) <= this->values.at(0));
     }
 
     const std::string& to_string() const 
@@ -257,14 +271,14 @@ public:
 
 template <class T>
 class constraint_is_not
-: public param_constraint
+: public Constraint
 , public args_t<T>
 {
 public:
     using args_t<T>::args_t;
     bool validate(const std::string& s) const 
     {
-        return (util::convert<T>(s) != this->values.at(0));
+        return (convert<T>(s) != this->values.at(0));
     }
 
     const std::string& to_string() const 
@@ -276,14 +290,14 @@ public:
 
 template <class T>
 class constraint_in_range
-: public param_constraint
+: public Constraint
 , public args_t<T>
 {
 public:
     using args_t<T>::args_t;
     bool validate(const std::string& s) const 
     {
-        T x = util::convert<T>(s);
+        T x = convert<T>(s);
         const T& t1 = this->values.at(0);
         const T& t2 = this->values.at(1);
         return ( x >= t1 && x <= t2 );
@@ -297,14 +311,14 @@ public:
 
 template <class T>
 class constraint_in
-: public param_constraint
+: public Constraint
 , public args_t<T>
 {
 public:
     using args_t<T>::args_t;
     bool validate(const std::string& s) const 
     {
-        T x = util::convert<T>(s);
+        T x = convert<T>(s);
         for( auto& t : this->values ) 
             if ( x == t ) 
                 return true;
@@ -318,31 +332,31 @@ public:
 };
 
 template <class T> 
-param_constraint_ptr at_least(const T& t) 
+ConstraintPtr AtLeast(const T& t) 
 {
     return std::make_shared<constraint_at_least<T>>(t);
 }
 
 template <class T> 
-param_constraint_ptr at_most(T&& t)
+ConstraintPtr AtMost(T&& t)
 {
     return std::make_shared<constraint_at_most<T>>(std::move(t));
 }
 
 template <class T> 
-param_constraint_ptr in_range(T&& t1, T&& t2)
+ConstraintPtr InRange(T&& t1, T&& t2)
 {
     return std::make_shared<constraint_in_range<T>>(t1,t2);
 }
 
 template <class T> 
-param_constraint_ptr is_not(T&& t)
+ConstraintPtr IsNot(T&& t)
 {
     return std::make_shared<constraint_is_not<T>>(std::move(t));
 }
 
 template <class T, class...TT> 
-param_constraint_ptr in(T first, TT...rest)
+ConstraintPtr In(T first, TT...rest)
 {
     return std::make_shared<constraint_in<T>>(first, rest...);
 }

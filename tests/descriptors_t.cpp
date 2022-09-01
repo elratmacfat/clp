@@ -9,13 +9,25 @@
 #include <boost/test/unit_test.hpp>
 
 #include <elrat/clp.hpp>
+
 using namespace elrat::clp;
 
-Descriptors descriptors{
+CommandDescriptorPtr cmd_ls = 
+    Command("ls", "list items...", {
+        Parameter("dir","present in the specified directory.",Optional,Path)
+    },{
+        Option("a","include hidden items"),
+        Option("l","print additional details")
+    });
 
+CommandDescriptorPtr cmd_cp = 
+    Command("cp", "copy files", {
+        Parameter("src","source file",Mandatory,Path),
+        Parameter("dest", "destination file or directory",Mandatory,Path)
+    });
 
+CommandDescriptors cmds{ 
 };
-
 
 BOOST_AUTO_TEST_SUITE( DescritorsTestSuite )
     BOOST_AUTO_TEST_CASE( Context )
