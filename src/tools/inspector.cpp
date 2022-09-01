@@ -4,6 +4,7 @@
 #include <cstdio>
 
 int main() {
+    using elrat::clp::Parser;
     using elrat::clp::NativeParser;
     using elrat::clp::CommandLine;
 
@@ -24,7 +25,7 @@ int main() {
             CommandLine data{ parser.parse(s) };
             std::cout << data << '\n';
         }
-        catch( std::invalid_argument& exc ) {
+        catch( std::exception& exc ) {
             std::cout << exc.what() << "\n";
         }
     } while( s != szQuit );

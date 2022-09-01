@@ -28,7 +28,6 @@ SET( HeaderFiles
 
 SET( IncludeFiles
     "${IncludeDir}/parser.hpp"
-    "${IncludeDir}/modifiablecommandline.hpp"
     "${IncludeDir}/regex.hpp"
 )
 
