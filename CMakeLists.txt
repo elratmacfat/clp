@@ -4,21 +4,14 @@ PROJECT( clp CXX )
 
 SET( CMAKE_CXX_STANDARD 17 )
 
-SET( SourceDir 
-    "${CMAKE_CURRENT_SOURCE_DIR}/src" 
-)
+SET( SourceDir "${CMAKE_CURRENT_SOURCE_DIR}/src" )
+SET( HeaderDir "${CMAKE_CURRENT_SOURCE_DIR}/header" )
+SET( IncludeDir "${CMAKE_CURRENT_SOURCE_DIR}/inc" )
+SET( TestSourceDir "${CMAKE_CURRENT_SOURCE_DIR}/tests" )
 
-SET( HeaderDir 
-    "${CMAKE_CURRENT_SOURCE_DIR}/header" 
-)
-
-SET( IncludeDir 
-    "${CMAKE_CURRENT_SOURCE_DIR}/inc" 
-)
-
-SET( TestSourceDir
-    "${CMAKE_CURRENT_SOURCE_DIR}/tests"
-)
+SET( TestOutputDir "${CMAKE_CURRENT_BINARY_DIR}/tests" )
+SET( ToolsOutputDir "${CMAKE_CURRENT_BINARY_DIR}/tools" )
+SET( LibOutputDir "${CMAKE_CURRENT_BINARY_DIR}/lib" )
 
 ### L I B R A R Y #############################################################
 
@@ -49,15 +42,20 @@ TARGET_INCLUDE_DIRECTORIES( clp
     PRIVATE ${IncludeDir}
 )
 
+SET_TARGET_PROPERTIES( clp
+    PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${LibOutputDir}
+    ARCHIVE_OUTPUT_DIRECTORY ${LibOutputDir} )
+
 ### T O O L S #################################################################
 
 ADD_EXECUTABLE( inspector 
-    "${SourceDir}/tools/inspector.cpp"
-)
-
+    "${SourceDir}/tools/inspector.cpp" )
 TARGET_LINK_LIBRARIES( inspector 
-    PUBLIC clp 
-)
+    PUBLIC clp )
+SET_TARGET_PROPERTIES( inspector 
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${ToolsOutputDir} )
 
 ### T E S T ###################################################################
 
@@ -84,6 +82,10 @@ IF ( Boost_FOUND )
         PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
     ADD_TEST( NAME descriptors
         COMMAND descriptors_test )
+
+    SET_TARGET_PROPERTIES( parser_test descriptors_test
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${TestOutputDir} )
 
 ELSE()
 	MESSAGE( WARNING "Could not find 'Boost'. Skip compiling the test executable." )
