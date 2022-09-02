@@ -85,7 +85,7 @@ ParameterDescriptorPtr makeParameterDescriptor(
 template <class T> ConstraintPtr AtLeast(const T& t);
 template <class T> ConstraintPtr AtMost(T&& t);
 template <class T> ConstraintPtr InRange(T&& t1, T&& t2);
-template <class T> ConstraintPtr IsNot(T&& t);
+template <class T> ConstraintPtr Not(T&& t);
 template <class T, class...TT> ConstraintPtr In(T first, TT...others);
 
 
@@ -181,7 +181,6 @@ class Constraint
 public:
     virtual ~Constraint() {}
     virtual bool validate(const std::string&) const = 0;
-    virtual const std::string& to_string() const = 0;
 };
 
 template <class T>
@@ -212,6 +211,10 @@ public:
     virtual ~args_t()
     {
     }
+    T getValue(int i) 
+    {
+        return values.at(i);
+    }
 private:
     template <class TT, class...Args>
     void init( const TT& first, Args...args ) {
@@ -237,11 +240,6 @@ public:
     {
         return (convert<T>(s) >= this->values.at(0));
     }
-
-    const std::string& to_string() const 
-    {
-        return "";
-    }
 };
 
 template <class T>
@@ -255,11 +253,6 @@ public:
     {
         return (convert<T>(s) <= this->values.at(0));
     }
-
-    const std::string& to_string() const 
-    {
-        return "";
-    }
 };
 
 template <class T>
@@ -272,11 +265,6 @@ public:
     bool validate(const std::string& s) const 
     {
         return (convert<T>(s) != this->values.at(0));
-    }
-
-    const std::string& to_string() const 
-    {
-        return "";
     }
 };
 
@@ -295,11 +283,6 @@ public:
         const T& t2 = this->values.at(1);
         return ( x >= t1 && x <= t2 );
     }
-
-    const std::string& to_string() const 
-    {
-        return "";
-    }
 };
 
 template <class T>
@@ -316,11 +299,6 @@ public:
             if ( x == t ) 
                 return true;
         return false;
-    }
-
-    const std::string& to_string() const 
-    {
-        return "";
     }
 };
 
@@ -343,7 +321,7 @@ ConstraintPtr InRange(T&& t1, T&& t2)
 }
 
 template <class T> 
-ConstraintPtr IsNot(T&& t)
+ConstraintPtr Not(T&& t)
 {
     return std::make_shared<constraint_is_not<T>>(std::move(t));
 }

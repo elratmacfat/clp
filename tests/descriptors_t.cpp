@@ -137,35 +137,62 @@ BOOST_AUTO_TEST_SUITE( Constraints_Test_Suite )
             BOOST_CHECK_MESSAGE( !(constraint->validate(candidate)), candidate );
     }
 
-    const Candidates zero_to_nine{ createCandidates(0,9,1) };
-    const Candidates ten_to_nineteen{ createCandidates(10,19,1) };
+    const Candidates range_0_to_9{ createCandidates(0,9,1) };
+    const Candidates range_10_to_19{ createCandidates(10,19,1) };
+    const Candidates range_20_to_29{ createCandidates(20,29,1) };
 
-    BOOST_AUTO_TEST_CASE( At_Least )
+    BOOST_AUTO_TEST_CASE( At_Least_Test_Case )
     {
         auto constraint{ AtLeast(10) };
-        CheckFail( constraint, zero_to_nine );
-        Check( constraint, ten_to_nineteen );
+        CheckFail( constraint, range_0_to_9);
+        Check( constraint, range_10_to_19 );
     }
 
-    BOOST_AUTO_TEST_CASE( At_Most )
+    BOOST_AUTO_TEST_CASE( At_Most_Test_Case )
     {
-        BOOST_CHECK(false);
+        auto constraint{ AtMost(9) };
+        Check( constraint, range_0_to_9 );
+        CheckFail( constraint, range_10_to_19 );
     }
 
-    BOOST_AUTO_TEST_CASE( In_Range )
+    BOOST_AUTO_TEST_CASE( In_Range_Test_Case )
     {
-        BOOST_CHECK(false);
+        auto constraint{ InRange(10,19) };
+        Check( constraint, range_10_to_19 );
+        CheckFail( constraint, range_0_to_9 );
+        CheckFail( constraint, range_20_to_29 );
     }
 
-    BOOST_AUTO_TEST_CASE( Is_Not )
+    BOOST_AUTO_TEST_CASE( Not_Test_Case )
     {
-        BOOST_CHECK(false);
+        auto constraint{ Not(10) };
+        Check( constraint, range_0_to_9 );
+        BOOST_CHECK( !constraint->validate("10") );
     }
 
-    BOOST_AUTO_TEST_CASE( In )
+    BOOST_AUTO_TEST_CASE( In_Test_Case )
     {
-        BOOST_CHECK(false);
+        auto constraint{ In(10,12,14) };
+        BOOST_CHECK( constraint->validate("10") );
+        BOOST_CHECK( constraint->validate("12") );
+        BOOST_CHECK( constraint->validate("14") );
+        BOOST_CHECK( !constraint->validate("11") );
+        BOOST_CHECK( !constraint->validate("13") );
+        BOOST_CHECK( !constraint->validate("15") );
     }
 
 
 BOOST_AUTO_TEST_SUITE_END(); // Constraints_Test_Suite
+
+//
+//
+//
+BOOST_AUTO_TEST_SUITE( Validate_Test_Suite )
+
+    BOOST_AUTO_TEST_CASE( dummy )
+    {   
+        BOOST_CHECK(false);
+    }
+
+BOOST_AUTO_TEST_SUITE_END(); // Validate_Test_Suite
+
