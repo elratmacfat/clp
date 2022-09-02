@@ -39,13 +39,18 @@ using Constraints = std::vector<ConstraintPtr>;
 extern const bool Mandatory;
 extern const bool Optional;
 
-bool Any(const std::string&);
-bool NaturalNumber(const std::string&);
-bool WholeNumber(const std::string&);
-bool RealNumber(const std::string&);
-bool Name(const std::string&);
-bool Identifier(const std::string&);
-bool Path(const std::string&);
+class ParameterType 
+{
+public:
+    static bool Any(const std::string&);
+    static bool NaturalNumber(const std::string&);
+    static bool WholeNumber(const std::string&);
+    static bool RealNumber(const std::string&);
+    static bool Name(const std::string&);
+    static bool Identifier(const std::string&);
+    static bool Path(const std::string&);
+    ParameterType() = delete;
+};
 
 enum class ValidationResult 
 {
@@ -56,24 +61,24 @@ enum class ValidationResult
     ,InvalidOption 
 };
 
-CommandDescriptorPtr Command(
+CommandDescriptorPtr makeCommandDescriptor(
     const std::string& name,
     const std::string& description = "",
     const ParameterDescriptors& parameters = {},
     const OptionDescriptors& options = {}
 );
 
-OptionDescriptorPtr Option(
+OptionDescriptorPtr makeOptionDescriptor(
     const std::string& name,
     const std::string& description = "",
     const ParameterDescriptors& parameters = {}
 );
 
-ParameterDescriptorPtr Parameter(
+ParameterDescriptorPtr makeParameterDescriptor(
     const std::string& name,
     const std::string& description = "",
     bool requirement = Mandatory,
-    TypeChecker type_checker = Any,
+    TypeChecker type_checker = ParameterType::Any,
     Constraints constraints = {}
 );
 

@@ -12,43 +12,43 @@ using namespace elrat::clp;
 const bool clp::Mandatory{true};
 const bool clp::Optional{false};
 
-bool clp::Any(const std::string& s)
+bool ParameterType::Any(const std::string& s)
 {
     return (s.size() > 0);
 }
 
-bool clp::NaturalNumber(const std::string& s)
+bool ParameterType::NaturalNumber(const std::string& s)
 {
     return IsPositiveDecimal(s) || IsHexaDecimal(s);
 }
 
-bool clp::WholeNumber(const std::string& s)
+bool ParameterType::WholeNumber(const std::string& s)
 {   
     return IsDecimal(s) || IsHexaDecimal(s);
 }
 
-bool clp::RealNumber(const std::string& s)
+bool ParameterType::RealNumber(const std::string& s)
 {
     return IsFloatingPoint(s);
 }
 
-bool clp::Name(const std::string& s)
+bool ParameterType::Name(const std::string& s)
 {
     return IsName(s);
 }
 
-bool clp::Identifier(const std::string& s)
+bool ParameterType::Identifier(const std::string& s)
 {
     return IsIdentifier(s);
 }
 
-bool clp::Path(const std::string& s)
+bool ParameterType::Path(const std::string& s)
 {
     return IsPath(s);
 }
 
 
-CommandDescriptorPtr clp::Command(
+CommandDescriptorPtr clp::makeCommandDescriptor(
     const std::string& name,
     const std::string& description,
     const ParameterDescriptors& parameters,
@@ -61,7 +61,7 @@ CommandDescriptorPtr clp::Command(
         options);
 }
 
-OptionDescriptorPtr clp::Option(
+OptionDescriptorPtr clp::makeOptionDescriptor(
     const std::string& name,
     const std::string& description,
     const ParameterDescriptors& parameters )
@@ -72,7 +72,7 @@ OptionDescriptorPtr clp::Option(
         parameters);
 }
 
-ParameterDescriptorPtr clp::Parameter(
+ParameterDescriptorPtr clp::makeParameterDescriptor(
     const std::string& name,
     const std::string& description,
     bool required,

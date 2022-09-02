@@ -10,29 +10,77 @@
 
 #include <elrat/clp.hpp>
 
+using namespace elrat;
 using namespace elrat::clp;
 
-CommandDescriptorPtr cmd_ls = 
-    Command("ls", "list items...", {
-        Parameter("dir","present in the specified directory.",Optional,Path)
-    },{
-        Option("a","include hidden items"),
-        Option("l","print additional details")
-    });
+BOOST_AUTO_TEST_SUITE( Parameter_Type_Test_Suite )
 
-CommandDescriptorPtr cmd_cp = 
-    Command("cp", "copy files", {
-        Parameter("src","source file",Mandatory,Path),
-        Parameter("dest", "destination file or directory",Mandatory,Path)
-    });
+    using Candidates = std::vector<std::string>;
 
-CommandDescriptors cmds{ 
-};
-
-BOOST_AUTO_TEST_SUITE( DescritorsTestSuite )
-    BOOST_AUTO_TEST_CASE( Context )
+    void Check( clp::TypeChecker typechecker, const Candidates& candidates )
     {
-        BOOST_CHECK(true);
+        for( auto& candidate : candidates ) 
+            BOOST_CHECK_MESSAGE( typechecker(candidate), candidate );
     }
-BOOST_AUTO_TEST_SUITE_END();
+
+    void CheckFail( clp::TypeChecker typechecker, const Candidates& candidates )
+    {
+        for ( auto& candidate : candidates )
+            BOOST_CHECK_MESSAGE( !(typechecker(candidate)), candidate );
+    }
+
+    const Candidates positive_zero {
+        "0", "000", "+0", "+000"
+    };
+    const Candidates negative_zero {
+        "-0", "-000"
+    };
+    const Candidates positive_integers {
+        "39", "+39", "1337", "+1337"
+    };
+    const Candidates negative_integers {
+        "-39", "-1337"
+    };
+    const Candidates floating_point_numbers {
+        "0.0", ".0", "+.0", "-.0",
+        "1.337", "-1.337", "+1.337"
+    };
+    const Candidates identifiers {
+        "identifier", "iden_ti_fier", "_identifier_",
+        "a123", "a_123", "_a_123_"
+    };
+    const Candidates names {
+        "names-can-have-dashes--in-between"
+    };
+
+    BOOST_AUTO_TEST_CASE( Natural_Number )
+    {
+        Check( ParameterType::NaturalNumber, positive_zero );
+        Check( ParameterType::NaturalNumber, positive_integers );
+        CheckFail( ParameterType::NaturalNumber, negative_integers );
+        CheckFail( ParameterType::NaturalNumber, floating_point_numbers );
+    }
+
+    BOOST_AUTO_TEST_CASE( Whole_Number )
+    {
+        Check( ParameterType::WholeNumber, positive_zero );
+        Check( ParameterType::WholeNumber, negative_zero );
+        Check( ParameterType::WholeNumber, positive_integers );
+        Check( ParameterType::WholeNumber, negative_integers );
+        CheckFail( ParameterType::WholeNumber, floating_point_numbers );
+    }
+    
+    BOOST_AUTO_TEST_CASE( Real_Number )
+    {
+        Check( ParameterType::RealNumber, positive_zero );
+        Check( ParameterType::RealNumber, negative_zero );
+        Check( ParameterType::RealNumber, positive_integers );
+        Check( ParameterType::RealNumber, negative_integers );
+        Check( ParameterType::RealNumber, floating_point_numbers );
+    }
+
+
+
+
+BOOST_AUTO_TEST_SUITE_END(); // Parameter_Type_Test_Suite
 
