@@ -78,7 +78,11 @@ IF ( Boost_FOUND )
         COMMAND parser_test )
 
     ADD_EXECUTABLE( descriptors_test
-        "${TestSourceDir}/descriptors_t.cpp" )
+        "${TestSourceDir}/descriptors_t.cpp"
+        "${TestSourceDir}/descriptors_t_input.cpp"
+        "${TestSourceDir}/descriptors_t_util.cpp" )
+    TARGET_INCLUDE_DIRECTORIES( descriptors_test
+        PUBLIC ${TestSourceDir} )
     TARGET_LINK_LIBRARIES( descriptors_test
         PUBLIC clp
         PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )

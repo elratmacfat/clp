@@ -10,48 +10,32 @@
 
 #include <elrat/clp.hpp>
 
+#include "descriptors_t_util.hpp"
+#include "descriptors_t_input.hpp"
+
+//
+//
+//
+BOOST_AUTO_TEST_SUITE( UTIL_SELFTEST )
+    BOOST_AUTO_TEST_CASE( CONVERT_INTEGER_RANGE_TO_STRINGS )
+    {
+        std::vector<std::string> integer_strings = convertRangeToStrings(1,6,2);
+        BOOST_REQUIRE_EQUAL( integer_strings.size(), 3 );
+        BOOST_CHECK_EQUAL( integer_strings[0], "1" );
+        BOOST_CHECK_EQUAL( integer_strings[1], "3" );
+        BOOST_CHECK_EQUAL( integer_strings[2], "5" );
+    }
+BOOST_AUTO_TEST_SUITE_END(); // UTIL_SELFTEST
+
+//
+//
+//
 BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
    
     using namespace elrat;
 
     using Candidates = std::vector<std::string>;
-    
-    template <class T>
-    Candidates createCandidates(T from, T to, T increment ) 
-    {
-        Candidates result{};
-        while ( from <= to )
-        {
-            result.push_back(std::to_string(from));
-            from+=increment;
-        }
-        return result;
-    }
-
-    void Check( clp::TypeChecker typechecker, const Candidates& candidates )
-    {
-        for( auto& candidate : candidates ) 
-            BOOST_CHECK_MESSAGE( typechecker(candidate), candidate );
-    }
-
-    void CheckFail( clp::TypeChecker typechecker, const Candidates& candidates )
-    {
-        for ( auto& candidate : candidates )
-            BOOST_CHECK_MESSAGE( !(typechecker(candidate)), candidate );
-    }
-    
-    void Check( clp::ConstraintPtr constraint, const Candidates& candidates )
-    {
-        for( auto& candidate : candidates ) 
-            BOOST_CHECK_MESSAGE( constraint->validate(candidate), candidate );
-    }
-
-    void CheckFail( clp::ConstraintPtr constraint, const Candidates& candidates )
-    {
-        for( auto& candidate : candidates ) 
-            BOOST_CHECK_MESSAGE( !(constraint->validate(candidate)), candidate );
-    }
-
+        
     //
     //
     //
@@ -91,8 +75,8 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
         {
             Check( ParameterType::NaturalNumber, positive_zero );
             Check( ParameterType::NaturalNumber, positive_integers );
-            CheckFail( ParameterType::NaturalNumber, negative_integers );
-            CheckFail( ParameterType::NaturalNumber, floating_point_numbers );
+            FailCheck( ParameterType::NaturalNumber, negative_integers );
+            FailCheck( ParameterType::NaturalNumber, floating_point_numbers );
         }
     
         BOOST_AUTO_TEST_CASE( WHOLE_NUMBER )
@@ -101,7 +85,7 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
             Check( ParameterType::WholeNumber, negative_zero );
             Check( ParameterType::WholeNumber, positive_integers );
             Check( ParameterType::WholeNumber, negative_integers );
-            CheckFail( ParameterType::WholeNumber, floating_point_numbers );
+            FailCheck( ParameterType::WholeNumber, floating_point_numbers );
         }
         
         BOOST_AUTO_TEST_CASE( REAL_NUMBER )
@@ -116,7 +100,7 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
         BOOST_AUTO_TEST_CASE( IDENTIFIER )
         {
             Check( ParameterType::Identifier, identifiers );
-            CheckFail( ParameterType::Identifier, names );
+            FailCheck( ParameterType::Identifier, names );
         }
     
         BOOST_AUTO_TEST_CASE( NAME )
@@ -140,14 +124,14 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
         
         using namespace elrat::clp;
         
-        const Candidates range_0_to_9{ createCandidates(0,9,1) };
-        const Candidates range_10_to_19{ createCandidates(10,19,1) };
-        const Candidates range_20_to_29{ createCandidates(20,29,1) };
+        const Candidates range_0_to_9{ convertRangeToStrings(0,9,1) };
+        const Candidates range_10_to_19{ convertRangeToStrings(10,19,1) };
+        const Candidates range_20_to_29{ convertRangeToStrings(20,29,1) };
     
         BOOST_AUTO_TEST_CASE( AT_LEAST )
         {
             auto constraint{ AtLeast(10) };
-            CheckFail( constraint, range_0_to_9);
+            FailCheck( constraint, range_0_to_9);
             Check( constraint, range_10_to_19 );
         }
     
@@ -155,15 +139,15 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
         {
             auto constraint{ AtMost(9) };
             Check( constraint, range_0_to_9 );
-            CheckFail( constraint, range_10_to_19 );
+            FailCheck( constraint, range_10_to_19 );
         }
     
         BOOST_AUTO_TEST_CASE( IN_RANGE )
         {
             auto constraint{ InRange(10,19) };
             Check( constraint, range_10_to_19 );
-            CheckFail( constraint, range_0_to_9 );
-            CheckFail( constraint, range_20_to_29 );
+            FailCheck( constraint, range_0_to_9 );
+            FailCheck( constraint, range_20_to_29 );
         }
     
         BOOST_AUTO_TEST_CASE( NOT )
@@ -200,7 +184,7 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
         BOOST_AUTO_TEST_CASE( AT_LEAST )
         {
             auto constraint{ AtLeast(0.0f) };
-            CheckFail( constraint, fm10 );
+            FailCheck( constraint, fm10 );
             Check( constraint, f0 );
             Check( constraint, f10 );
         }
@@ -210,13 +194,13 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
             auto constraint{ AtMost(0.0f) };
             Check( constraint, fm10 );
             Check( constraint, f0 );
-            CheckFail( constraint, f10 );
+            FailCheck( constraint, f10 );
         }
 
         BOOST_AUTO_TEST_CASE( IN_RANGE )
         {
             auto constraint{ InRange( 0.0f, 10.0f ) };
-            CheckFail( constraint, fm10 );
+            FailCheck( constraint, fm10 );
             Check( constraint, f0 );
             Check( constraint, f10 );
         }
@@ -225,7 +209,7 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
         {
             auto constraint{ Not( 0.0f ) };
             Check( constraint, fm10 );
-            CheckFail( constraint, f0 );
+            FailCheck( constraint, f0 );
             Check( constraint, f10 );
         }
 
@@ -236,9 +220,9 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
             Check( constraint, f0 );
             Check( constraint, f10 );
             constraint = In( -10.1f, 0.1f, 10.1f );
-            CheckFail( constraint, fm10 );
-            CheckFail( constraint, f0 );
-            CheckFail( constraint, f10 );
+            FailCheck( constraint, fm10 );
+            FailCheck( constraint, f0 );
+            FailCheck( constraint, f10 );
 
         }
 
@@ -250,7 +234,8 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
     BOOST_AUTO_TEST_SUITE( CONSTRAINTS_STRING )
         BOOST_AUTO_TEST_CASE( AT_LEAST )
         {
-
+            BOOST_WARN_MESSAGE( 0, "Test is not implemented" );
+        }
     BOOST_AUTO_TEST_SUITE_END() // CONSTRAINTS_STRING
 
 BOOST_AUTO_TEST_SUITE_END(); // PARAMETER_VALIDATION
@@ -308,35 +293,7 @@ BOOST_AUTO_TEST_SUITE( OPTION_VALIDATION )
         ,Parameters{"99","-10","help"}
     };
 
-    std::string toString(const Parameters& parameters) 
-    {
-        std::string result;
-        std::stringstream ss;
-        for( auto& p : parameters )
-            ss << p << " ";
-        std::getline( ss, result );
-        return result;
-    }
-
-    void Check( clp::OptionDescriptorPtr option, const Parameters& parameters )
-    {
-        bool passed{ option->validate(parameters) == ValidationResult::Valid };
-        if (!passed) 
-            BOOST_CHECK_MESSAGE( passed, toString(parameters) );
-        else 
-            BOOST_CHECK( passed );
-    }
-    
-    void CheckFail( clp::OptionDescriptorPtr option, const Parameters& parameters )
-    {
-        bool passed{ option->validate(parameters) != ValidationResult::Valid };
-        if (!passed) 
-            BOOST_CHECK_MESSAGE( passed, toString(parameters) );
-        else 
-            BOOST_CHECK( passed );
-
-    }
-
+        
     BOOST_AUTO_TEST_CASE( VALID_CANDIDATES )
     {  
         for( auto& candidate : valid_candidates )
@@ -346,8 +303,38 @@ BOOST_AUTO_TEST_SUITE( OPTION_VALIDATION )
     BOOST_AUTO_TEST_CASE( INVALID_CANDIDATES )
     {   
         for( auto& candidate : invalid_candidates )
-            CheckFail( opt_desc, candidate );    
+            FailCheck( opt_desc, candidate );    
     }
 
 BOOST_AUTO_TEST_SUITE_END(); // OPTION_VALIDATION
+
+//
+//
+//
+BOOST_AUTO_TEST_SUITE( COMMAND_VALIDATION )
+
+    using namespace elrat::clp;
+
+    CommandDescriptorPtr cmd_desc = makeCommandDescriptor(
+        "command", "description", {
+            makeParameterDescriptor("parameter")
+        },{
+            makeOptionDescriptor("option")
+        }
+    );
+    
+    BOOST_AUTO_TEST_CASE( VALID )
+    {
+        CommandLine commandLine;
+        commandLine.setCommand("command");
+        commandLine.addCommandParameter("parameter");
+        commandLine.addOption("option");
+
+        Check( cmd_desc, commandLine, ValidationResult::Valid );
+    }
+
+
+
+BOOST_AUTO_TEST_SUITE_END(); // COMMAND_VALIDATION 
+
 

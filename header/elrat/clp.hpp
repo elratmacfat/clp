@@ -11,5 +11,7 @@
 
 std::ostream& operator<<(std::ostream&,const elrat::clp::CommandLine&);
 
+std::ostream& operator<<(std::ostream&,const elrat::clp::ValidationResult&);
+
 #endif
 

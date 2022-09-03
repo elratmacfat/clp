@@ -35,3 +35,29 @@ std::ostream& operator<<(std::ostream& os, const elrat::clp::CommandLine& cl)
     }
     return os;
 }
+
+std::ostream& operator<<(std::ostream& os, const elrat::clp::ValidationResult& v)
+{
+    using namespace elrat::clp;
+    switch( v ) 
+    {
+    case ValidationResult::Valid:
+        os << "Valid";
+        break;
+    case ValidationResult::InvalidCommand:
+        os << "Invalid Command";
+        break;
+    case ValidationResult::InvalidParameter:
+        os << "Invalid Parameter";
+        break;
+    case ValidationResult::MissingParameter:
+        os << "Missing Parameter";
+        break;
+    case ValidationResult::InvalidOption:
+        os << "Invalid Option";
+        break;
+    default:
+        os << "Undefined Validation Result";
+    }
+    return os;
+}
