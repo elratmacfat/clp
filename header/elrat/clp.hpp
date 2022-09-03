@@ -1,7 +1,7 @@
 // Project......: Command Line Processor (clp)
 // File.........: elrat/clp.hpp
 // Author.......: elratmacfat
-// Description..: Convenience header
+// Description..: 
 //
 #ifndef ELRAT_CLP_HPP
 #define ELRAT_CLP_HPP
@@ -12,6 +12,16 @@
 std::ostream& operator<<(std::ostream&,const elrat::clp::CommandLine&);
 
 std::ostream& operator<<(std::ostream&,const elrat::clp::ValidationResult&);
+
+namespace elrat {
+namespace clp {
+
+    class CommandLineProcessor
+    {
+    };
+
+} // clp
+} // elrat
 
 #endif
 
