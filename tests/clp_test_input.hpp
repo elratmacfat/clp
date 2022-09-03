@@ -3,7 +3,7 @@
 
 #include <elrat/clp.hpp>
 
-elrat::clp::CommandLineProcessor createCommandLineProcessor();
+elrat::clp::Processor createProcessor();
 
 #endif
 

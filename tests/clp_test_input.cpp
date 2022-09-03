@@ -3,9 +3,9 @@
 using namespace elrat::clp;
 
 
-CommandLineProcessor createCommandLineProcessor()
+Processor createProcessor()
 {
-    CommandLineProcessor processor;
+    Processor processor;
 
     return processor;
 }

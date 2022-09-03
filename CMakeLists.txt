@@ -17,20 +17,24 @@ SET( LibOutputDir "${CMAKE_CURRENT_BINARY_DIR}/lib" )
 
 SET( HeaderFiles
     "${HeaderDir}/elrat/clp.hpp" 
-    "${HeaderDir}/elrat/clp/parser.hpp"
     "${HeaderDir}/elrat/clp/descriptors.hpp"
+    "${HeaderDir}/elrat/clp/errorhandling.hpp"
+    "${HeaderDir}/elrat/clp/parser.hpp"
 )
 
 SET( IncludeFiles
+    "${IncludeDir}/errorhandling.hpp"
     "${IncludeDir}/parser.hpp"
     "${IncludeDir}/regex.hpp"
 )
 
 SET( SourceFiles 
-    "${SourceDir}/parser.cpp"
+    "${SourceDir}/errorhandling.cpp"
     "${SourceDir}/descriptors.cpp"
-    "${SourceDir}/regex.cpp"
     "${SourceDir}/ostream.cpp"
+    "${SourceDir}/parser.cpp"
+    "${SourceDir}/processor.cpp"
+    "${SourceDir}/regex.cpp"
 )
 
 ADD_LIBRARY( clp SHARED 
