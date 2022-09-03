@@ -32,49 +32,19 @@ BOOST_AUTO_TEST_SUITE_END(); // UTIL_SELFTEST
 //
 BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
    
-    using namespace elrat;
+    using namespace elrat::clp;
 
-    using Candidates = std::vector<std::string>;
-        
     //
     //
     //
     BOOST_AUTO_TEST_SUITE( TYPE )
-        
-        using namespace elrat::clp;
-            
-        const Candidates positive_zero {
-            "0", "000", "+0", "+000"
-        };
-        const Candidates negative_zero {
-            "-0", "-000"
-        };
-        const Candidates positive_integers {
-            "39", "+39", "1337", "+1337"
-        };
-        const Candidates negative_integers {
-            "-39", "-1337"
-        };
-        const Candidates floating_point_numbers {
-            "0.0", ".0", "+.0", "-.0",
-            "1.337", "-1.337", "+1.337"
-        };
-        const Candidates identifiers {
-            "identifier", "iden_ti_fier", "_identifier_",
-            "a123", "a_123", "_a_123_"
-        };
-        const Candidates names {
-            "names-can-have-dashes--in-between"
-        };
-        const Candidates win_paths {
-            "C:\\Program Files\\program_v1.exe" };
-        const Candidates nix_paths {
-            "/home/elrat/../elrat/.vim/vimrc" };
-    
+
         BOOST_AUTO_TEST_CASE( NATURAL_NUMBER )
         {
             Check( ParameterType::NaturalNumber, positive_zero );
             Check( ParameterType::NaturalNumber, positive_integers );
+            Check( ParameterType::NaturalNumber, hexadecimal_zero );
+            Check( ParameterType::NaturalNumber, hexadecimals );
             FailCheck( ParameterType::NaturalNumber, negative_integers );
             FailCheck( ParameterType::NaturalNumber, floating_point_numbers );
         }
@@ -85,6 +55,8 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
             Check( ParameterType::WholeNumber, negative_zero );
             Check( ParameterType::WholeNumber, positive_integers );
             Check( ParameterType::WholeNumber, negative_integers );
+            Check( ParameterType::WholeNumber, hexadecimal_zero );
+            Check( ParameterType::WholeNumber, hexadecimals );
             FailCheck( ParameterType::WholeNumber, floating_point_numbers );
         }
         
@@ -122,11 +94,6 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
     //
     BOOST_AUTO_TEST_SUITE( CONSTRAINTS_INT )
         
-        using namespace elrat::clp;
-        
-        const Candidates range_0_to_9{ convertRangeToStrings(0,9,1) };
-        const Candidates range_10_to_19{ convertRangeToStrings(10,19,1) };
-        const Candidates range_20_to_29{ convertRangeToStrings(20,29,1) };
     
         BOOST_AUTO_TEST_CASE( AT_LEAST )
         {
@@ -177,9 +144,9 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
         
         using namespace elrat::clp;
 
-        const Candidates fm10 { "-10.000", "-10.0", "-10" };
-        const Candidates f0 { "0.00", ".0000", "0" };
-        const Candidates f10 { "+10.00", "10.000", "10" };
+        const std::vector<std::string> fm10 { "-10.000", "-10.0", "-10" };
+        const std::vector<std::string> f0 { "0.00", ".0000", "0" };
+        const std::vector<std::string> f10 { "+10.00", "10.000", "10" };
         
         BOOST_AUTO_TEST_CASE( AT_LEAST )
         {
