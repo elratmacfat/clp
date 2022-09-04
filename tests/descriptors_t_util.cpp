@@ -23,7 +23,8 @@ void Check(
     OptionDescriptorPtr option, 
     const std::vector<std::string>& parameters )
 {
-    bool passed{ option->validate(parameters) == ValidationResult::Valid };
+    auto result{option->validate(option->getName(), parameters)};
+    bool passed{result == ValidationResult::Valid};
     if (!passed) 
         BOOST_CHECK_MESSAGE( passed, toString(parameters) );
     else 
@@ -62,7 +63,8 @@ void FailCheck(
     OptionDescriptorPtr option, 
     const std::vector<std::string>& parameters )
 {
-    bool passed{ option->validate(parameters) != ValidationResult::Valid };
+    auto result{option->validate(option->getName(), parameters)};
+    bool passed{result != ValidationResult::Valid};
     if (!passed) 
         BOOST_CHECK_MESSAGE( passed, toString(parameters) );
     else 

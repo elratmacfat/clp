@@ -193,8 +193,12 @@ const ParameterDescriptors& OptionDescriptor::getParameters() const
     return parameters;
 }
 
-ValidationResult OptionDescriptor::validate( const std::vector<std::string>& arguments )
+ValidationResult OptionDescriptor::validate( 
+    const std::string& name,
+    const std::vector<std::string>& arguments )
 {
+    if ( name != this->getName() )
+        return ValidationResult::InvalidOption;
     if ( arguments.size() < numberOfRequiredParameters )
         return ValidationResult::MissingParameter;
     if ( arguments.size() > parameters.size() )
@@ -226,36 +230,49 @@ const OptionDescriptors& CommandDescriptor::getOptions() const
     return options;
 }
 
-ValidationResult CommandDescriptor::validate( const CommandLine& command_line )
+ValidationResult CommandDescriptor::validate( const CommandLine& cmdline)
 {
-    if (!command_line)
-        return ValidationResult::InvalidCommand;
-    
-    // Reminder: OptionDesriptor is the CommandDescriptor's base class!
-    auto& command_parameters{ command_line.getCommandParameters() };
-    ValidationResult result{ OptionDescriptor::validate(command_parameters) };
-    if ( result != ValidationResult::Valid ) 
-    {
-        if ( result == ValidationResult::InvalidOption ) 
-            result = ValidationResult::InvalidCommand;
+    ValidationResult result{ValidationResult::InvalidCommand};
+    if (!cmdline)
         return result;
-    }
 
-    for( int i{0}; i < command_line.getOptionCount(); i++ )
+    result = validateParameters(cmdline);
+    if ( result != ValidationResult::Valid )
+        return result;
+    
+    return validateOptions(cmdline);
+}
+
+ValidationResult CommandDescriptor::validateParameters(const CommandLine& cmdline)
+{
+    // Reminder: OptionDescriptor is the CommandDescriptor's base class!
+    ValidationResult result{ OptionDescriptor::validate(
+        cmdline.getCommand(),
+        cmdline.getCommandParameters()) };
+    if ( result == ValidationResult::InvalidOption )
+        return ValidationResult::InvalidCommand;
+    return result;
+}
+
+ValidationResult CommandDescriptor::validateOptions(const CommandLine& cmdline)
+{
+    ValidationResult result{ValidationResult::InvalidOption};
+    for( int i{0}; i < cmdline.getOptionCount(); i++ )
     {
-        auto& option_parameters{ command_line.getOptionParameters(i) };
-        for( auto option_descriptor : options )
+        auto& option_name = cmdline.getOption(i);
+        auto& option_parameters{ cmdline.getOptionParameters(i) };
+        for( auto descriptor : this->options )
         {
-            result = option_descriptor->validate( option_parameters );
-            
-            if ( result == ValidationResult::Valid )
+            result = descriptor->validate( option_name, option_parameters );
+            if ( result == ValidationResult::InvalidOption )
                 break;
-
-            if ( result != ValidationResult::InvalidOption )
+            if ( result != ValidationResult::Valid )
                 return result;
         }
     }
     return result;
 }
+
+//-----------------------------------------------------------------------------
 
 

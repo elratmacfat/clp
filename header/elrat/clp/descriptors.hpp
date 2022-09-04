@@ -144,7 +144,7 @@ public:
         const std::string&,
         const ParameterDescriptors& );
     const ParameterDescriptors& getParameters() const;
-    ValidationResult validate( const std::vector<std::string>& );
+    ValidationResult validate(const std::string&,const std::vector<std::string>&);
 protected:
     ParameterDescriptors    parameters;
     int                     numberOfRequiredParameters;
@@ -165,6 +165,8 @@ public:
     
     ValidationResult validate( const CommandLine& );
 private:
+    ValidationResult validateParameters(const CommandLine&);
+    ValidationResult validateOptions(const CommandLine&);
     OptionDescriptors options;
 };
 
