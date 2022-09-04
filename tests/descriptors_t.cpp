@@ -13,7 +13,7 @@
 #include "descriptors_t_util.hpp"
 #include "descriptors_t_input.hpp"
 
-//
+// 
 //
 //
 BOOST_AUTO_TEST_SUITE( UTIL_SELFTEST )
@@ -281,26 +281,13 @@ BOOST_AUTO_TEST_SUITE_END(); // OPTION_VALIDATION
 BOOST_AUTO_TEST_SUITE( COMMAND_VALIDATION )
 
     using namespace elrat::clp;
-
-    CommandDescriptorPtr cmd_desc = makeCommandDescriptor(
-        "command", "description", {
-            makeParameterDescriptor("parameter")
-        },{
-            makeOptionDescriptor("option")
-        }
-    );
     
+    CommandDescriptorsPtr cds{ createCommandDescriptors() };
+
     BOOST_AUTO_TEST_CASE( VALID )
     {
-        CommandLine commandLine;
-        commandLine.setCommand("command");
-        commandLine.addCommandParameter("parameter");
-        commandLine.addOption("option");
-
-        Check( cmd_desc, commandLine, ValidationResult::Valid );
+        BOOST_CHECK(false);
     }
-
-
 
 BOOST_AUTO_TEST_SUITE_END(); // COMMAND_VALIDATION 
 

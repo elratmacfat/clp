@@ -42,6 +42,8 @@ std::string toString(
 std::string toString(
     const std::vector<std::string>&); 
 
+elrat::clp::CommandDescriptorsPtr createCommandDescriptors();
+
 // Template implementation
 // vvvvvvvvvvvvvvvvvvvvvvv
 

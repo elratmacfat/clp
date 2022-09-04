@@ -18,6 +18,7 @@ namespace elrat {
 namespace clp {
 
 class CommandDescriptors;
+using CommandDescriptorsPtr = std::shared_ptr<CommandDescriptors>;
 
 class CommandDescriptor;
 using CommandDescriptorPtr = std::shared_ptr<CommandDescriptor>;
@@ -125,7 +126,7 @@ public:
     bool parameterIsRequired() const;
     TypeChecker getTypeChecker() const;
     const Constraints& getConstraints() const;
-    ValidationResult validate(const std::string&);
+    ValidationResult validate(const std::string&) const;
 private:
     bool        required;
     TypeChecker type_checker;
@@ -144,7 +145,7 @@ public:
         const std::string&,
         const ParameterDescriptors& );
     const ParameterDescriptors& getParameters() const;
-    ValidationResult validate(const std::string&,const std::vector<std::string>&);
+    ValidationResult validate(const std::string&,const std::vector<std::string>&) const;
 protected:
     ParameterDescriptors    parameters;
     int                     numberOfRequiredParameters;
@@ -163,17 +164,25 @@ public:
         const OptionDescriptors& );
     const OptionDescriptors& getOptions() const;
     
-    ValidationResult validate( const CommandLine& );
+    ValidationResult validate( const CommandLine& ) const;
 private:
-    ValidationResult validateParameters(const CommandLine&);
-    ValidationResult validateOptions(const CommandLine&);
+    ValidationResult validateParameters(const CommandLine&) const;
+    ValidationResult validateOptions(const CommandLine&) const;
     OptionDescriptors options;
 };
 
 //-----------------------------------------------------------------------------
 
 class CommandDescriptors
+: public HasName
 {
+public:
+    static CommandDescriptorsPtr Create(const std::string& = "Commands");
+    void attach(CommandDescriptorPtr);
+    ValidationResult validate(const CommandLine&) const;
+private:
+    CommandDescriptors(const std::string&);
+    std::vector<CommandDescriptorPtr> command_descriptors;
 };
 
 //-----------------------------------------------------------------------------

@@ -90,4 +90,8 @@ std::string toString(const std::vector<std::string>& strings)
     return result;
 }
 
-
+CommandDescriptorsPtr createCommandDescriptors()
+{
+    CommandDescriptorsPtr cds{ CommandDescriptors::Create() };
+    return cds;
+}

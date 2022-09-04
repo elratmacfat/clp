@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include <elrat/clp.hpp>
+
 extern const std::vector<std::string> hexadecimal_zero;
 extern const std::vector<std::string> hexadecimals;
 extern const std::vector<std::string> positive_zero;
@@ -20,5 +22,6 @@ extern const std::vector<std::string> range_0_to_9;
 extern const std::vector<std::string> range_10_to_19; 
 extern const std::vector<std::string> range_20_to_29; 
 
+extern const std::vector<std::string> cmdlines;
 #endif
 

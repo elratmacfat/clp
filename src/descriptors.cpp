@@ -1,9 +1,10 @@
 // Project......: Command Line Processor (clp)
-// File.........: inc/elrat/clp/desc.hpp
+// File.........: src/descriptors.cpp
 // Author.......: elratmacfat
 // Description..: 
 //
 #include <elrat/clp/descriptors.hpp>
+#include "errorhandling.hpp"
 #include "regex.hpp"
 
 using namespace elrat;
@@ -143,7 +144,7 @@ const Constraints& ParameterDescriptor::getConstraints() const
     return constraints;
 }
 
-ValidationResult ParameterDescriptor::validate(const std::string& p) 
+ValidationResult ParameterDescriptor::validate(const std::string& p) const
 {
     if (!type_checker(p))
         return ValidationResult::InvalidParameter;
@@ -176,10 +177,8 @@ OptionDescriptor::OptionDescriptor(
         {
             numberOfRequiredParameters++;
             if ( previousParameterWasOptional )
-                throw std::invalid_argument(
-                    "Optional parameters cannot be followed by one that "
-                    "is required. Revisit your command descriptor "
-                    "initialization.");
+                throwParameterConfigurationException(
+                    "Optional parameter followed by required parameter");
         }
         else
         {
@@ -195,7 +194,7 @@ const ParameterDescriptors& OptionDescriptor::getParameters() const
 
 ValidationResult OptionDescriptor::validate( 
     const std::string& name,
-    const std::vector<std::string>& arguments )
+    const std::vector<std::string>& arguments ) const
 {
     if ( name != this->getName() )
         return ValidationResult::InvalidOption;
@@ -230,7 +229,7 @@ const OptionDescriptors& CommandDescriptor::getOptions() const
     return options;
 }
 
-ValidationResult CommandDescriptor::validate( const CommandLine& cmdline)
+ValidationResult CommandDescriptor::validate( const CommandLine& cmdline) const
 {
     ValidationResult result{ValidationResult::InvalidCommand};
     if (!cmdline)
@@ -243,7 +242,7 @@ ValidationResult CommandDescriptor::validate( const CommandLine& cmdline)
     return validateOptions(cmdline);
 }
 
-ValidationResult CommandDescriptor::validateParameters(const CommandLine& cmdline)
+ValidationResult CommandDescriptor::validateParameters(const CommandLine& cmdline) const
 {
     // Reminder: OptionDescriptor is the CommandDescriptor's base class!
     ValidationResult result{ OptionDescriptor::validate(
@@ -254,7 +253,7 @@ ValidationResult CommandDescriptor::validateParameters(const CommandLine& cmdlin
     return result;
 }
 
-ValidationResult CommandDescriptor::validateOptions(const CommandLine& cmdline)
+ValidationResult CommandDescriptor::validateOptions(const CommandLine& cmdline) const
 {
     ValidationResult result{ValidationResult::InvalidOption};
     for( int i{0}; i < cmdline.getOptionCount(); i++ )
@@ -275,4 +274,31 @@ ValidationResult CommandDescriptor::validateOptions(const CommandLine& cmdline)
 
 //-----------------------------------------------------------------------------
 
+CommandDescriptorsPtr CommandDescriptors::Create(const std::string& name)
+{
+    return std::shared_ptr<CommandDescriptors>(new CommandDescriptors(name));
+}
 
+void CommandDescriptors::attach(CommandDescriptorPtr p)
+{
+    for( auto descriptor : command_descriptors )
+        if ( p == descriptor || p->getName() == descriptor->getName() )
+            throwAlreadyInUseException("CommandDescriptors::attach");
+    command_descriptors.push_back(p);
+}
+
+ValidationResult CommandDescriptors::validate(const CommandLine& cmdline) const 
+{
+    for( auto descriptor : command_descriptors )
+    {
+        ValidationResult result = descriptor->validate(cmdline);
+        if ( result != ValidationResult::InvalidCommand )
+            return result;
+    }
+    return ValidationResult::InvalidCommand;
+}
+
+CommandDescriptors::CommandDescriptors(const std::string& name)
+: HasName(name)
+{
+}
