@@ -48,6 +48,20 @@ bool ParameterType::Path(const std::string& s)
     return IsPath(s);
 }
 
+bool clp::isMatch( const ValidationResult& v )
+{
+    return (v == ValidationResult::Match);
+}
+
+bool clp::isNoMatch( const ValidationResult& v )
+{
+    return (v == ValidationResult::NoMatch );
+}
+
+bool clp::isInvalid( const ValidationResult& v )
+{
+    return (!isMatch(v) && !isNoMatch(v));
+}
 
 CommandDescriptorPtr clp::makeCommandDescriptor(
     const std::string& name,
@@ -100,8 +114,6 @@ const std::string& HasName::getName() const
     return name;
 }
 
-//-----------------------------------------------------------------------------
-
 HasDescription::HasDescription(const std::string& s)
 : description{s}
 {
@@ -110,6 +122,63 @@ HasDescription::HasDescription(const std::string& s)
 const std::string& HasDescription::getDescription() const
 {
     return description;
+}
+
+void HasParameters::initialize()
+{
+    // Ensure that optional parameters are not followed by parameters declared mandatory.
+    numberOfRequiredParameters = 0;
+    bool previousParameterWasOptional{false};
+    for( auto& p : parameters )
+    {
+        if (p->parameterIsRequired())
+        {
+            numberOfRequiredParameters++;
+            if ( previousParameterWasOptional )
+                throwParameterConfigurationException();
+        }
+        else
+        {
+            previousParameterWasOptional = true;
+        }
+    }
+}
+
+HasParameters::HasParameters(const ParameterDescriptors& params)
+: parameters{params}
+{
+    initialize();
+}
+
+HasParameters::HasParameters(ParameterDescriptors&& params)
+: parameters{std::move(params)}
+{
+    initialize();
+}
+
+const ParameterDescriptors& HasParameters::getParameters() const 
+{
+    return parameters;
+}
+
+int HasParameters::getRequiredParameterCount() const
+{
+    return numberOfRequiredParameters;
+}
+
+ValidationResult HasParameters::validate(const Arguments& args) const
+{
+    if ( args.size() > parameters.size() )
+        return ValidationResult::TooManyParameters;
+    if ( args.size() < numberOfRequiredParameters )
+        return ValidationResult::MissingParameters;
+    for( int i{0}; i < args.size(); ++i )
+    {
+        ValidationResult result{ parameters[i]->validate( args[i] ) };
+        if ( isInvalid(result) )
+            return result;
+    }
+    return ValidationResult::Match;
 }
 
 //-----------------------------------------------------------------------------
@@ -144,18 +213,16 @@ const Constraints& ParameterDescriptor::getConstraints() const
     return constraints;
 }
 
-ValidationResult ParameterDescriptor::validate(const std::string& p) const
+ValidationResult ParameterDescriptor::validate(const Argument& arg) const
 {
-    if (!type_checker(p))
-        return ValidationResult::InvalidParameter;
-    for( auto& c : constraints )
+    if ( !type_checker(arg) )
+        return ValidationResult::InvalidParameterType;
+    for( auto& constraint : constraints )
     {
-        if (!c->validate(p))
-        {
-            return ValidationResult::InvalidParameter;
-        }
+        if ( !constraint->validate(arg) )
+            return ValidationResult::InvalidParameterValue;
     }
-    return ValidationResult::Valid;
+    return ValidationResult::Match;
 }
 
 //-----------------------------------------------------------------------------
@@ -166,50 +233,18 @@ OptionDescriptor::OptionDescriptor(
     const ParameterDescriptors& parameter_descriptors )
 : HasName(name)
 , HasDescription(description)
-, parameters{parameter_descriptors}
+, HasParameters{parameter_descriptors}
 {
-    // Ensure that optional parameters are not followed by parameters declared mandatory.
-    numberOfRequiredParameters = 0;
-    bool previousParameterWasOptional{false};
-    for( auto& p : parameter_descriptors )
-    {
-        if (p->parameterIsRequired())
-        {
-            numberOfRequiredParameters++;
-            if ( previousParameterWasOptional )
-                throwParameterConfigurationException(
-                    "Optional parameter followed by required parameter");
-        }
-        else
-        {
-            previousParameterWasOptional = true;
-        }
-    }
-}
-
-const ParameterDescriptors& OptionDescriptor::getParameters() const
-{
-    return parameters;
 }
 
 ValidationResult OptionDescriptor::validate( 
-    const std::string& name,
-    const std::vector<std::string>& arguments ) const
+    const Argument& name, 
+    const Arguments& args ) const
 {
     if ( name != this->getName() )
-        return ValidationResult::InvalidOption;
-    if ( arguments.size() < numberOfRequiredParameters )
-        return ValidationResult::MissingParameter;
-    if ( arguments.size() > parameters.size() )
-        return ValidationResult::InvalidParameter;
+        return ValidationResult::NoMatch;
 
-    for( int i{0}; i < arguments.size(); i++ )
-    {
-        ValidationResult result {parameters[i]->validate(arguments[i])};
-        if ( result != ValidationResult::Valid )
-            return result;
-    }
-    return ValidationResult::Valid;
+    return HasParameters::validate( args );
 }
 
 //-----------------------------------------------------------------------------
@@ -217,9 +252,11 @@ ValidationResult OptionDescriptor::validate(
 CommandDescriptor::CommandDescriptor(
     const std::string& name,
     const std::string& description,
-    const ParameterDescriptors& command_parameters,
+    const ParameterDescriptors& parameter_descriptors,
     const OptionDescriptors& option_descriptors )
-: OptionDescriptor(name,description,command_parameters)
+: HasName(name)
+, HasDescription(description)
+, HasParameters(parameter_descriptors)
 , options{option_descriptors}
 {
 }
@@ -231,43 +268,27 @@ const OptionDescriptors& CommandDescriptor::getOptions() const
 
 ValidationResult CommandDescriptor::validate( const CommandLine& cmdline) const
 {
-    ValidationResult result{ValidationResult::InvalidCommand};
-    if (!cmdline)
+    if ( cmdline.getCommand() != this->getName() )
+        return ValidationResult::NoMatch;
+
+    ValidationResult result{ HasParameters::validate(cmdline.getCommandParameters()) };
+    if ( result != ValidationResult::Match )
         return result;
 
-    result = validateParameters(cmdline);
-    if ( result != ValidationResult::Valid )
-        return result;
-    
-    return validateOptions(cmdline);
-}
-
-ValidationResult CommandDescriptor::validateParameters(const CommandLine& cmdline) const
-{
-    // Reminder: OptionDescriptor is the CommandDescriptor's base class!
-    ValidationResult result{ OptionDescriptor::validate(
-        cmdline.getCommand(),
-        cmdline.getCommandParameters()) };
-    if ( result == ValidationResult::InvalidOption )
-        return ValidationResult::InvalidCommand;
-    return result;
-}
-
-ValidationResult CommandDescriptor::validateOptions(const CommandLine& cmdline) const
-{
-    ValidationResult result{ValidationResult::InvalidOption};
-    for( int i{0}; i < cmdline.getOptionCount(); i++ )
+    for( int i{0}; i < cmdline.getOptionCount(); ++i )
     {
-        auto& option_name = cmdline.getOption(i);
-        auto& option_parameters{ cmdline.getOptionParameters(i) };
-        for( auto descriptor : this->options )
+        auto& opt_name{ cmdline.getOption(i) };
+        auto& opt_parameters{ cmdline.getOptionParameters(i) };
+        for( auto& option_descriptor : options )
         {
-            result = descriptor->validate( option_name, option_parameters );
-            if ( result == ValidationResult::InvalidOption )
-                break;
-            if ( result != ValidationResult::Valid )
+            result = option_descriptor->validate( opt_name, opt_parameters );
+            if ( isInvalid(result) )
                 return result;
+            if ( isMatch(result) )
+                break;
         }
+        if ( isNoMatch(result) ) 
+            return result; 
     }
     return result;
 }

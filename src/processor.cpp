@@ -58,7 +58,7 @@ bool Processor::validateCommandLine(const CommandLine& command_line) const
     for( auto& cd : command_descriptors )
     {
         result = cd->validate(command_line);
-        if ( result == ValidationResult::Valid )
+        if ( isMatch(result) )
             return true;
     }
     return false;

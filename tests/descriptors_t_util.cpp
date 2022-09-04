@@ -24,7 +24,7 @@ void Check(
     const std::vector<std::string>& parameters )
 {
     auto result{option->validate(option->getName(), parameters)};
-    bool passed{result == ValidationResult::Valid};
+    bool passed{ isMatch(result) };
     if (!passed) 
         BOOST_CHECK_MESSAGE( passed, toString(parameters) );
     else 
@@ -64,20 +64,8 @@ void FailCheck(
     const std::vector<std::string>& parameters )
 {
     auto result{option->validate(option->getName(), parameters)};
-    bool passed{result != ValidationResult::Valid};
-    if (!passed) 
-        BOOST_CHECK_MESSAGE( passed, toString(parameters) );
-    else 
-        BOOST_CHECK( passed );
-}
-
-std::string toString(ValidationResult validation_result) 
-{
-    std::string result;
-    std::stringstream ss;
-    ss << validation_result;
-    std::getline(ss,result);
-    return result;
+    BOOST_CHECK_MESSAGE( isNoMatch(result) || isInvalid(result), 
+        toString(result) << ": " << toString(parameters)  );
 }
 
 std::string toString(const std::vector<std::string>& strings) 
@@ -90,8 +78,3 @@ std::string toString(const std::vector<std::string>& strings)
     return result;
 }
 
-CommandDescriptorsPtr createCommandDescriptors()
-{
-    CommandDescriptorsPtr cds{ CommandDescriptors::Create() };
-    return cds;
-}

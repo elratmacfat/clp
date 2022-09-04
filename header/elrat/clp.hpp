@@ -16,6 +16,8 @@ std::ostream& operator<<(std::ostream&,const elrat::clp::CommandLine&);
 
 std::ostream& operator<<(std::ostream&,const elrat::clp::ValidationResult&);
 
+std::string toString(const elrat::clp::ValidationResult& v);
+
 namespace elrat {
 namespace clp {
     

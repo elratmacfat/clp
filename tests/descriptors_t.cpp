@@ -199,10 +199,22 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
     //
     //
     BOOST_AUTO_TEST_SUITE( CONSTRAINTS_STRING )
-        BOOST_AUTO_TEST_CASE( AT_LEAST )
+        
+        const std::vector<std::string> valid_strings{
+            "abc","def","ghi"
+        };
+
+        const std::vector<std::string> invalid_strings{
+            "cba","fed","ihg"
+        };
+
+        BOOST_AUTO_TEST_CASE( IN )
         {
-            BOOST_WARN_MESSAGE( 0, "Test is not implemented" );
+            auto constraint{ In<std::string>("abc","def","ghi") };
+            Check( constraint, valid_strings );
+            FailCheck( constraint, invalid_strings );
         }
+
     BOOST_AUTO_TEST_SUITE_END() // CONSTRAINTS_STRING
 
 BOOST_AUTO_TEST_SUITE_END(); // PARAMETER_VALIDATION
@@ -260,7 +272,11 @@ BOOST_AUTO_TEST_SUITE( OPTION_VALIDATION )
         ,Parameters{"99","-10","help"}
     };
 
-        
+    BOOST_AUTO_TEST_CASE( PREREQUISITES )
+    {
+        BOOST_CHECK_EQUAL( opt_desc->getRequiredParameterCount(), 2 );
+    }
+
     BOOST_AUTO_TEST_CASE( VALID_CANDIDATES )
     {  
         for( auto& candidate : valid_candidates )
@@ -279,14 +295,32 @@ BOOST_AUTO_TEST_SUITE_END(); // OPTION_VALIDATION
 //
 //
 BOOST_AUTO_TEST_SUITE( COMMAND_VALIDATION )
-
+    using namespace elrat;
     using namespace elrat::clp;
     
-    CommandDescriptorsPtr cds{ createCommandDescriptors() };
+    auto cmddescs{ createCommandDescriptors() };
+
+    std::vector<CommandLine> valid_cmdlines{ createValidCommandLines() };
+    std::vector<CommandLine> invalid_cmdlines{ createInvalidCommandLines() };
 
     BOOST_AUTO_TEST_CASE( VALID )
     {
-        BOOST_CHECK(false);
+        for( int i{0}; i<valid_cmdlines.size(); i++ )
+        {
+            ValidationResult result{ cmddescs->validate(valid_cmdlines[i]) };
+            BOOST_CHECK_MESSAGE( clp::isMatch(result),
+                "valid_cmdlines[" << i << "]: " << toString(result)  );
+        }
+    }
+
+    BOOST_AUTO_TEST_CASE( INVALID )
+    {
+        for( int i{0}; i<invalid_cmdlines.size(); i++ )
+        {
+            ValidationResult result{ cmddescs->validate(valid_cmdlines[i]) };
+            BOOST_CHECK_MESSAGE( clp::isNoMatch(result) || isInvalid(result),
+                "invalid_cmdlines[" << i << "]: " << toString(result) );
+        }
     }
 
 BOOST_AUTO_TEST_SUITE_END(); // COMMAND_VALIDATION 

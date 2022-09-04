@@ -37,12 +37,8 @@ void FailCheck(
     const std::vector<std::string>&);
 
 std::string toString(
-    elrat::clp::ValidationResult);
-
-std::string toString(
     const std::vector<std::string>&); 
 
-elrat::clp::CommandDescriptorsPtr createCommandDescriptors();
 
 // Template implementation
 // vvvvvvvvvvvvvvvvvvvvvvv

@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include <elrat/clp/parser.hpp>
+#include <elrat/clp/commandline.hpp>
 
 namespace elrat {
 namespace clp {
@@ -37,6 +37,9 @@ class Constraint;
 using ConstraintPtr = std::shared_ptr<Constraint>;
 using Constraints = std::vector<ConstraintPtr>;
 
+using Argument = std::string;
+using Arguments = std::vector<std::string>;
+
 extern const bool Mandatory;
 extern const bool Optional;
 
@@ -55,12 +58,19 @@ public:
 
 enum class ValidationResult 
 {
-     Valid
+     Match
+    ,NoMatch
     ,InvalidCommand
-    ,InvalidParameter 
-    ,MissingParameter
+    ,InvalidParameterType
+    ,InvalidParameterValue
+    ,TooManyParameters
+    ,MissingParameters
     ,InvalidOption 
 };
+
+bool isMatch( const ValidationResult& );
+bool isNoMatch( const ValidationResult& );
+bool isInvalid( const ValidationResult& );
 
 CommandDescriptorPtr makeCommandDescriptor(
     const std::string& name,
@@ -110,6 +120,21 @@ private:
     std::string description;
 };
 
+class HasParameters
+{
+public:
+    HasParameters(const ParameterDescriptors&);
+    HasParameters(ParameterDescriptors&&);
+    const ParameterDescriptors& getParameters() const;
+    int getRequiredParameterCount() const;
+    ValidationResult validate(const Arguments&) const;
+protected:
+    ParameterDescriptors parameters;
+    int numberOfRequiredParameters;
+
+    void initialize();
+};
+
 //-----------------------------------------------------------------------------
 
 class ParameterDescriptor 
@@ -126,7 +151,7 @@ public:
     bool parameterIsRequired() const;
     TypeChecker getTypeChecker() const;
     const Constraints& getConstraints() const;
-    ValidationResult validate(const std::string&) const;
+    ValidationResult validate(const Argument&) const;
 private:
     bool        required;
     TypeChecker type_checker;
@@ -138,6 +163,7 @@ private:
 class OptionDescriptor 
 : public HasName
 , public HasDescription
+, public HasParameters
 {
 public:
     OptionDescriptor(
@@ -145,16 +171,15 @@ public:
         const std::string&,
         const ParameterDescriptors& );
     const ParameterDescriptors& getParameters() const;
-    ValidationResult validate(const std::string&,const std::vector<std::string>&) const;
-protected:
-    ParameterDescriptors    parameters;
-    int                     numberOfRequiredParameters;
+    ValidationResult validate(const Argument&, const Arguments&) const;
 };
 
 //-----------------------------------------------------------------------------
 
 class CommandDescriptor
-: public OptionDescriptor
+: public HasName
+, public HasDescription
+, public HasParameters
 {
 public:
     CommandDescriptor(
@@ -162,13 +187,12 @@ public:
         const std::string&,
         const ParameterDescriptors&,
         const OptionDescriptors& );
+    
     const OptionDescriptors& getOptions() const;
     
     ValidationResult validate( const CommandLine& ) const;
 private:
-    ValidationResult validateParameters(const CommandLine&) const;
-    ValidationResult validateOptions(const CommandLine&) const;
-    OptionDescriptors options;
+    OptionDescriptors       options;
 };
 
 //-----------------------------------------------------------------------------

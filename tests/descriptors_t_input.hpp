@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include <elrat/clp.hpp>
+#include <elrat/clp/descriptors.hpp>
 
 extern const std::vector<std::string> hexadecimal_zero;
 extern const std::vector<std::string> hexadecimals;
@@ -22,6 +22,15 @@ extern const std::vector<std::string> range_0_to_9;
 extern const std::vector<std::string> range_10_to_19; 
 extern const std::vector<std::string> range_20_to_29; 
 
-extern const std::vector<std::string> cmdlines;
+
+elrat::clp::CommandDescriptorPtr createCommandAddPlatform();
+elrat::clp::CommandDescriptorPtr createCommandSetTemperature();
+
+elrat::clp::CommandDescriptorsPtr createCommandDescriptors();
+
+std::vector<elrat::clp::CommandLine> createValidCommandLines();
+std::vector<elrat::clp::CommandLine> createInvalidCommandLines();
+
+
 #endif
 
