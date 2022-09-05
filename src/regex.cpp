@@ -19,6 +19,12 @@ const RegEx IsHexaDecimal("0[xX][0-9a-fA-F]+");
 const RegEx IsFloatingPoint("[\\+-]?\\d*\\.?\\d+");
 const RegEx IsName("[_a-zA-Z]+[\\w-]*\\w+");
 const RegEx IsIdentifier("[_a-zA-Z]\\w+");
-const RegEx IsPath("[TODO_Path_Regex]");
+const RegEx IsWindowsPath(
+    "([a-zA-Z]:(\\\\[\\w\\-_\\. ])?)?"  // C: | C:\ | C:\some-thing
+    "(\\\\?[\\w\\-_\\. ]+)*\\\\?"       // \some-thing\ | something.exe
+);
+const RegEx IsUnixPath(
+    "(/?[\\w\\-_(\\.\\.?) ]+)*/?"
+);
 
 

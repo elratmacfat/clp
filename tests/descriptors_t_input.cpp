@@ -40,10 +40,20 @@ const std::vector<std::string> names {
 };
 
 const std::vector<std::string> win_paths {
-    "C:\\Program Files\\program_v1.exe" 
+     "a:"
+    ,"A:\\"  
+    ,"Z:"
+    ,"relative\\path\\"
+    ,"relative\\path-to\\executable.exe"
+    ,"path\\containing spaces\\"
+    ,"C:\\Program Files\\program_v1.exe" 
 };
 const std::vector<std::string> nix_paths {
-    "/home/elrat/../elrat/.vim/vimrc" 
+     "/home/elrat/../elrat/.vim/vimrc" 
+    ,"elrat/Desktop"
+    ,".hidden/directory/"
+    ,".abc-def_x"
+    ,"relative path/containing spaces/"
 };
 
 const std::vector<std::string> range_0_to_9{ 

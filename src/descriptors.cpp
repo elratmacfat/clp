@@ -45,7 +45,7 @@ bool ParameterType::Identifier(const std::string& s)
 
 bool ParameterType::Path(const std::string& s)
 {
-    return IsPath(s);
+    return (IsWindowsPath(s) || IsUnixPath(s));
 }
 
 bool clp::isMatch( const ValidationResult& v )
