@@ -29,7 +29,10 @@ namespace OptionValidation
 {
     elrat::clp::OptionDescriptorPtr createOptionDescriptor();
     extern const std::vector<std::vector<std::string>> valid_parameters;
-    extern const std::vector<std::vector<std::string>> invalid_parameters;
+    extern const std::vector<std::vector<std::string>> missing_parameters;
+    extern const std::vector<std::vector<std::string>> too_many_parameters;
+    extern const std::vector<std::vector<std::string>> invalid_parameter_types;
+    extern const std::vector<std::vector<std::string>> invalid_parameter_values;
 }
 
 namespace CommandValidation

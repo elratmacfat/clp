@@ -127,7 +127,7 @@ public:
     HasParameters(ParameterDescriptors&&);
     const ParameterDescriptors& getParameters() const;
     int getRequiredParameterCount() const;
-    ValidationResult validate(const Arguments&) const;
+    void validate(const Arguments&) const;
 protected:
     ParameterDescriptors parameters;
     int numberOfRequiredParameters;
@@ -151,7 +151,7 @@ public:
     bool parameterIsRequired() const;
     TypeChecker getTypeChecker() const;
     const Constraints& getConstraints() const;
-    ValidationResult validate(const Argument&) const;
+    void validate(const Argument&) const;
 private:
     bool        required;
     TypeChecker type_checker;
@@ -171,7 +171,7 @@ public:
         const std::string&,
         const ParameterDescriptors& );
     const ParameterDescriptors& getParameters() const;
-    ValidationResult validate(const Argument&, const Arguments&) const;
+    bool validate(const Argument&, const Arguments&) const;
 };
 
 //-----------------------------------------------------------------------------
@@ -190,7 +190,7 @@ public:
     
     const OptionDescriptors& getOptions() const;
     
-    ValidationResult validate( const CommandLine& ) const;
+    bool validate( const CommandLine& ) const;
 private:
     OptionDescriptors       options;
 };
@@ -203,7 +203,7 @@ class CommandDescriptors
 public:
     static CommandDescriptorsPtr Create(const std::string& = "Commands");
     void attach(CommandDescriptorPtr);
-    ValidationResult validate(const CommandLine&) const;
+    bool validate(const CommandLine&) const;
 private:
     CommandDescriptors(const std::string&);
     std::vector<CommandDescriptorPtr> command_descriptors;

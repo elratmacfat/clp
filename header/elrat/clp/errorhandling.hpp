@@ -7,16 +7,39 @@
 namespace elrat {
 namespace clp {
 
-class Exception
+class Exception 
 : public std::exception
 {
-public: 
+public:
     virtual const char* what() const noexcept;
-    Exception(const std::string&, const std::string&);
+    void append(const std::string&);
+    virtual ~Exception();
+protected:
+    Exception(
+        const std::string& category,
+        const std::string& subcategory,
+        const std::string& argument);
 private:
     std::string message;
 };
 
+class InitializationException
+: public Exception
+{
+public: 
+    InitializationException(
+        const std::string& subcategory,
+        const std::string& argument );    
+};
+
+class InputException
+: public Exception
+{
+public:
+    InputException(
+        const std::string& subcategory,
+        const std::string& argument );
+};
 
 } // namespace clp
 } // namespace elrat

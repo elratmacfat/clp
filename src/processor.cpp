@@ -17,11 +17,12 @@ void Processor::setParser( std::shared_ptr<Parser> p )
 void Processor::attachDescriptor(CommandDescriptorPtr p )
 {
     if ( !p )
-        throwNullPointerAssignmentException("Processor::attachDescriptor");
+        ThrowException::NullPointerAssignment("Processor::attachDescriptor");
     
     for( auto& cd : command_descriptors )
         if ( cd->getName() == p->getName() )
-            throwAlreadyInUseException(p->getName());
+            ThrowException::NameAlreadyInUse(
+                p->getName() + " (in Processor::attachDescriptor())");
 
     command_descriptors.push_back( p );
 }
@@ -29,13 +30,13 @@ void Processor::attachDescriptor(CommandDescriptorPtr p )
 void Processor::attachCommand(const std::string& name, CommandPtr p)
 {
     if (!p)
-        throwNullPointerAssignmentException("Processor::attachCommand");
+        ThrowException::NullPointerAssignment("Processor::attachCommand");
     
     std::vector<CommandPtr>& command_pointers = commands[name];
 
     for( auto ptr : command_pointers )
         if ( ptr == p )
-            throwAlreadyInUseException("Processor::attachCommand");
+            ThrowException::NameAlreadyInUse("Processor::attachCommand()");
     
     command_pointers.push_back(p);
 }
@@ -54,11 +55,9 @@ bool Processor::process(const std::string& input) const
 
 bool Processor::validateCommandLine(const CommandLine& command_line) const
 {
-    ValidationResult result{ValidationResult::InvalidCommand};
     for( auto& cd : command_descriptors )
     {
-        result = cd->validate(command_line);
-        if ( isMatch(result) )
+        if ( cd->validate(command_line) )
             return true;
     }
     return false;

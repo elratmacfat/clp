@@ -75,49 +75,64 @@ namespace OptionValidation
 {
 	OptionDescriptorPtr createOptionDescriptor()
     {
-	    return makeOptionDescriptor(
-	        "option",
-	        "description", {
-	            makeParameterDescriptor(
-	                "p0", 
-	                "p0description",
-	                Mandatory,
-	                ParameterType::NaturalNumber, {
-	                    AtLeast(10),
-	                    Not(20)
-	                }
-	            ),
-	            makeParameterDescriptor(
-	                "p1", "p1description",
-	                Mandatory,
-	                ParameterType::WholeNumber, {
-	                    AtLeast(-100),
-	                    Not(0)
-	                }
-	            ),
-	            makeParameterDescriptor(
-	                "p2", "p2description",
-	                Optional,
-	                ParameterType::Identifier, {
-	                    Not<std::string>("help")
-	                }
-	            )
-	        });
+	    return makeOptionDescriptor( "option", "description", {
+            makeParameterDescriptor(
+                "p0", "description",
+                Mandatory,
+                ParameterType::NaturalNumber, {
+                    AtLeast(10),
+                    Not(20)
+                }
+            ),
+            makeParameterDescriptor(
+                "p1", "p1description",
+                Mandatory,
+                ParameterType::WholeNumber, {
+                    AtLeast(-100),
+                    Not(0)
+                }
+            ),
+            makeParameterDescriptor(
+                "p2", "p2description",
+                Optional,
+                ParameterType::Identifier, {
+                    Not<std::string>("help")
+                }
+            )
+	    });
 	}
 	
 	const std::vector<std::vector<std::string>> valid_parameters {
-	     std::vector<std::string>{"10","-100","some_identifier"}
-	    ,std::vector<std::string>{"99","-10", "__x"}
-	    ,std::vector<std::string>{"99","-10"}
+	     {"10","-100","some_identifier"}
+	    ,{"99","-10", "__x"}
+	    ,{"99","-10"}
 	};
-	
-	const std::vector<std::vector<std::string>> invalid_parameters {
-	     std::vector<std::string>{"10"}
-	    ,std::vector<std::string>{"10","-101","__x"}
-	    ,std::vector<std::string>{"20","-100"}
-	    ,std::vector<std::string>{"10","-100","invalid-identifier"}
-	    ,std::vector<std::string>{"99","-10","help"}
+
+    const std::vector<std::vector<std::string>> missing_parameters {
+         {}
+        ,{"10"}
+    };
+
+    const std::vector<std::vector<std::string>> too_many_parameters {
+         {"10","-100","some_identifier","and_one_too_many"}
+        ,{"10","-100","some_identifier","1","2","3 too many"}
+    };
+    
+    const std::vector<std::vector<std::string>> invalid_parameter_types {
+         {"-10","-100"}
+	    ,{"invalidtext","-100","identifier"}
+	    ,{"10","invalidtext","name"}
+	    ,{"10","-100","invalud-identifier"}
 	};
+
+    const std::vector<std::vector<std::string>> invalid_parameter_values {
+         {"5","-100"}
+        ,{"20","-100"}
+        ,{"10","-101"}
+        ,{"10","0"}
+        ,{"10","-100","help"}
+    };
+
 } // namespace OptionValidation
 
 namespace CommandValidation

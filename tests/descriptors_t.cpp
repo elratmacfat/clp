@@ -235,16 +235,34 @@ BOOST_AUTO_TEST_SUITE( OPTION_VALIDATION )
         BOOST_CHECK_EQUAL( opt_desc->getRequiredParameterCount(), 2 );
     }
 
-    BOOST_AUTO_TEST_CASE( VALID_CANDIDATES )
+    BOOST_AUTO_TEST_CASE( VALID_PARAMETERS )
     {  
-        for( auto& candidate : valid_parameters )
-            Check( opt_desc, candidate );    
+        for( auto& opt_parameters : valid_parameters )
+            Check( opt_desc, opt_desc->getName(), opt_parameters );    
     }
 
-    BOOST_AUTO_TEST_CASE( INVALID_CANDIDATES )
+    BOOST_AUTO_TEST_CASE( MISSING_PARAMETERS )
     {   
-        for( auto& candidate : invalid_parameters )
-            FailCheck( opt_desc, candidate );    
+        for( auto& opt_parameters : missing_parameters )
+            CheckThrow<InputException>( opt_desc, opt_desc->getName(), opt_parameters );    
+    }
+    
+    BOOST_AUTO_TEST_CASE( TOO_MANY_PARAMETERS )
+    {   
+        for( auto& opt_parameters : too_many_parameters )
+            CheckThrow<InputException>( opt_desc, opt_desc->getName(), opt_parameters );    
+    }
+
+    BOOST_AUTO_TEST_CASE( INVALID_PARAMETER_TYPE )
+    {   
+        for( auto& opt_parameters : invalid_parameter_types )
+            CheckThrow<InputException>( opt_desc, opt_desc->getName(), opt_parameters );    
+    }
+
+    BOOST_AUTO_TEST_CASE( INVALID_PARAMETER_VALUE )
+    {   
+        for( auto& opt_parameters : invalid_parameter_values )
+            CheckThrow<InputException>( opt_desc, opt_desc->getName(), opt_parameters );    
     }
 
 BOOST_AUTO_TEST_SUITE_END(); // OPTION_VALIDATION
@@ -256,31 +274,6 @@ BOOST_AUTO_TEST_SUITE( COMMAND_VALIDATION )
     using namespace elrat;
     using namespace elrat::clp;
     using namespace CommandValidation;
-
-    auto cmddescs{ createCommandDescriptors() };
-
-    std::vector<CommandLine> valid_cmdlines{ createValidCommandLines() };
-    std::vector<CommandLine> invalid_cmdlines{ createInvalidCommandLines() };
-
-    BOOST_AUTO_TEST_CASE( VALID )
-    {
-        for( int i{0}; i<valid_cmdlines.size(); i++ )
-        {
-            ValidationResult result{ cmddescs->validate(valid_cmdlines[i]) };
-            BOOST_CHECK_MESSAGE( clp::isMatch(result),
-                "valid_cmdlines[" << i << "]: " << toString(result)  );
-        }
-    }
-
-    BOOST_AUTO_TEST_CASE( INVALID )
-    {
-        for( int i{0}; i<invalid_cmdlines.size(); i++ )
-        {
-            ValidationResult result{ cmddescs->validate(valid_cmdlines[i]) };
-            BOOST_CHECK_MESSAGE( clp::isNoMatch(result) || isInvalid(result),
-                "invalid_cmdlines[" << i << "]: " << toString(result) );
-        }
-    }
 
 BOOST_AUTO_TEST_SUITE_END(); // COMMAND_VALIDATION 
 

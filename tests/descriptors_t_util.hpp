@@ -1,6 +1,6 @@
 #ifndef DESCRIPTORS_T_UTIL_HPP
 #define DESCRIPTORS_T_UTIL_HPP
-
+#include <boost/test/unit_test.hpp>
 #include <elrat/clp.hpp>
 
 #include <string>
@@ -12,32 +12,57 @@ std::vector<std::string> convertRangeToStrings(
     T to, 
     T increment = static_cast<T>(1) );
 
-void Check(
-    elrat::clp::TypeChecker, 
-    const std::vector<std::string>&);
-void Check(
-    elrat::clp::ConstraintPtr, 
-    const std::vector<std::string>&);
-void Check( 
-    elrat::clp::OptionDescriptorPtr, 
-    const std::vector<std::string>&);
-void Check( 
-    elrat::clp::CommandDescriptorPtr cmd_desc, 
-    const elrat::clp::CommandLine& input,
-    elrat::clp::ValidationResult expected );
+std::string toString(const std::vector<std::string>&); 
 
-void FailCheck(
-    elrat::clp::ConstraintPtr, 
-    const std::vector<std::string>&);
-void FailCheck(
-    elrat::clp::TypeChecker, 
-    const std::vector<std::string>&);
-void FailCheck(
-    elrat::clp::OptionDescriptorPtr, 
-    const std::vector<std::string>&);
+namespace ParameterValidation
+{
+	void Check(
+	    elrat::clp::TypeChecker, 
+	    const std::vector<std::string>&);
+	void FailCheck(
+	    elrat::clp::TypeChecker, 
+	    const std::vector<std::string>&);
+	
+	void Check(
+	    elrat::clp::ConstraintPtr, 
+	    const std::vector<std::string>&);
+	void FailCheck(
+	    elrat::clp::ConstraintPtr, 
+	    const std::vector<std::string>&);
+}    
 
-std::string toString(
-    const std::vector<std::string>&); 
+namespace OptionValidation
+{
+	void Check( 
+	    elrat::clp::OptionDescriptorPtr, 
+        const std::string&,
+	    const std::vector<std::string>&);
+	void FailCheck(
+	    elrat::clp::OptionDescriptorPtr, 
+        const std::string&,
+	    const std::vector<std::string>&);
+	
+    
+    
+    void CheckNoThrow( 
+	    elrat::clp::OptionDescriptorPtr, 
+        const std::string&,
+	    const std::vector<std::string>&);
+
+    template <class Exc>
+    void CheckThrow(
+	    elrat::clp::OptionDescriptorPtr, 
+        const std::string&,
+	    const std::vector<std::string>&);
+}
+
+namespace CommandValidation
+{
+	void Check( 
+	    elrat::clp::CommandDescriptorPtr cmd_desc, 
+	    const elrat::clp::CommandLine& input,
+	    elrat::clp::ValidationResult expected );
+}
 
 
 // Template implementation
@@ -57,6 +82,27 @@ std::vector<std::string> convertRangeToStrings(
         from+=increment;
     }
     return result;
+}
+
+template <class Exc>
+void OptionValidation::CheckThrow(
+	elrat::clp::OptionDescriptorPtr option, 
+    const std::string& opt_name,
+	const std::vector<std::string>& opt_parameters)
+{
+    try 
+    {
+        option->validate( opt_name, opt_parameters );
+        BOOST_ERROR("No exception thrown");
+    }
+    catch( Exc& err )
+    {
+        BOOST_CHECK(true);
+    }
+    catch(std::exception& err)
+    {
+        BOOST_ERROR("Caught unexpected exception: " << err.what() );
+    }
 }
 
 #endif

@@ -1,34 +1,105 @@
 #include "elrat/clp/errorhandling.hpp" // public header
 #include "errorhandling.hpp" // private
 
-elrat::clp::Exception::Exception(const std::string& prefix, const std::string& msg)
-: message{prefix}
+#include <sstream>
+
+using namespace elrat;
+
+clp::Exception::Exception(
+    const std::string& category, 
+    const std::string& subcategory,
+    const std::string& argument)
+: message{category}
 {
-    if (msg.size())
-    {
-        message += ": [";
-        message += msg;
-        message += "]";
-    }
+    message = category + ": " + subcategory + " [" + argument + "]";   
 }
 
-const char* elrat::clp::Exception::what() const noexcept
+clp::Exception::~Exception()
+{
+}
+
+void clp::Exception::append(const std::string& argument)
+{
+    message += argument;
+}
+
+const char* clp::Exception::what() const noexcept
 {
     return message.data();
 }
 
-void throwNullPointerAssignmentException(const std::string& msg)
+clp::InitializationException::InitializationException(
+    const std::string& subcategory,
+    const std::string& argument )
+: Exception("InitializationException",subcategory,argument)
 {
-    throw elrat::clp::Exception("Nullpointer assignment", msg);
 }
 
-void throwParameterConfigurationException(const std::string& msg)
+clp::InputException::InputException(
+    const std::string& subcategory,
+    const std::string& argument )
+: Exception("InputException",subcategory,argument)
 {
-    throw elrat::clp::Exception("Invalid parameter configuration", msg);
 }
 
-void throwAlreadyInUseException(const std::string& msg)
+void ThrowException::NullPointerAssignment(const std::string& argument)
 {
-    throw elrat::clp::Exception("Name already in use", msg);
+    throw clp::InitializationException("Null pointer assignment", argument);
+}
+
+void ThrowException::InvalidParameterConfiguration(const std::string& argument)
+{
+    throw clp::InitializationException("Invalid parameter configuration", argument);
+}
+void ThrowException::NameAlreadyInUse(const std::string& argument)
+{
+    throw clp::InitializationException("Name already in use", argument );
+}
+
+void ThrowException::InvalidParameterType(const std::string& argument)
+{
+    throw clp::InputException("Invalid parameter type", argument);
+}
+
+void ThrowException::InvalidParameterValue(const std::string& argument)
+{
+    throw clp::InputException("Invalid parameter value", argument);
+}
+
+void ThrowException::MissingParameters(int missing)
+{
+    std::string msg;
+    if (missing)
+    {
+        msg = std::string("At least ") 
+            + std::to_string(missing) 
+            + " parameters are missing";
+    }
+    throw clp::InputException("Missing parameter. ", msg);
+}
+
+void ThrowException::TooManyParameters(int actual, int expected)
+{
+    std::string msg{};
+    if ( actual > expected )
+    {
+	    std::stringstream ss;
+	    ss << "Expected at most "
+	        << expected
+	        << ", but found "
+	        << actual;
+	    std::getline(ss,msg);
+    }
+    throw clp::InputException("Too many parameters.", msg);
+}
+
+void ThrowException::UnrecognizedOption(const std::string& argument)
+{
+    throw clp::InputException("Unrecognized option", argument);
+}
+
+void ThrowException::UnrecognizedCommand(const std::string& argument)
+{
+    throw clp::InputException("Unrecognized command", argument);
 }
 

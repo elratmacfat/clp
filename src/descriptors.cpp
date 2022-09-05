@@ -135,7 +135,7 @@ void HasParameters::initialize()
         {
             numberOfRequiredParameters++;
             if ( previousParameterWasOptional )
-                throwParameterConfigurationException();
+                ThrowException::InvalidParameterConfiguration(p->getName());
         }
         else
         {
@@ -166,19 +166,14 @@ int HasParameters::getRequiredParameterCount() const
     return numberOfRequiredParameters;
 }
 
-ValidationResult HasParameters::validate(const Arguments& args) const
+void HasParameters::validate(const Arguments& args) const
 {
     if ( args.size() > parameters.size() )
-        return ValidationResult::TooManyParameters;
+        ThrowException::TooManyParameters( args.size(), parameters.size() );
     if ( args.size() < numberOfRequiredParameters )
-        return ValidationResult::MissingParameters;
+        ThrowException::MissingParameters(numberOfRequiredParameters - args.size());
     for( int i{0}; i < args.size(); ++i )
-    {
-        ValidationResult result{ parameters[i]->validate( args[i] ) };
-        if ( isInvalid(result) )
-            return result;
-    }
-    return ValidationResult::Match;
+        parameters[i]->validate( args[i] );
 }
 
 //-----------------------------------------------------------------------------
@@ -213,16 +208,15 @@ const Constraints& ParameterDescriptor::getConstraints() const
     return constraints;
 }
 
-ValidationResult ParameterDescriptor::validate(const Argument& arg) const
+void ParameterDescriptor::validate(const Argument& arg) const
 {
     if ( !type_checker(arg) )
-        return ValidationResult::InvalidParameterType;
+        ThrowException::InvalidParameterType(arg);
     for( auto& constraint : constraints )
     {
         if ( !constraint->validate(arg) )
-            return ValidationResult::InvalidParameterValue;
+            ThrowException::InvalidParameterValue(arg);
     }
-    return ValidationResult::Match;
 }
 
 //-----------------------------------------------------------------------------
@@ -237,14 +231,14 @@ OptionDescriptor::OptionDescriptor(
 {
 }
 
-ValidationResult OptionDescriptor::validate( 
-    const Argument& name, 
-    const Arguments& args ) const
+bool OptionDescriptor::validate( const Argument& name,const Arguments& args ) const
 {
     if ( name != this->getName() )
-        return ValidationResult::NoMatch;
-
-    return HasParameters::validate( args );
+    {
+        return false;
+    } 
+    HasParameters::validate( args );
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -266,31 +260,32 @@ const OptionDescriptors& CommandDescriptor::getOptions() const
     return options;
 }
 
-ValidationResult CommandDescriptor::validate( const CommandLine& cmdline) const
+bool CommandDescriptor::validate( const CommandLine& cmdline) const
 {
     if ( cmdline.getCommand() != this->getName() )
-        return ValidationResult::NoMatch;
+        return false;
 
-    ValidationResult result{ HasParameters::validate(cmdline.getCommandParameters()) };
-    if ( result != ValidationResult::Match )
-        return result;
+    HasParameters::validate(cmdline.getCommandParameters());
 
     for( int i{0}; i < cmdline.getOptionCount(); ++i )
     {
         auto& opt_name{ cmdline.getOption(i) };
         auto& opt_parameters{ cmdline.getOptionParameters(i) };
+        bool match;
         for( auto& option_descriptor : options )
         {
-            result = option_descriptor->validate( opt_name, opt_parameters );
-            if ( isInvalid(result) )
-                return result;
-            if ( isMatch(result) )
+            match = option_descriptor->validate(opt_name,opt_parameters);
+            if (match)
+            {
                 break;
+            }
         }
-        if ( isNoMatch(result) ) 
-            return result; 
+        if (!match) 
+        {
+            ThrowException::UnrecognizedOption(opt_name);
+        }
     }
-    return result;
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -304,19 +299,20 @@ void CommandDescriptors::attach(CommandDescriptorPtr p)
 {
     for( auto descriptor : command_descriptors )
         if ( p == descriptor || p->getName() == descriptor->getName() )
-            throwAlreadyInUseException("CommandDescriptors::attach");
+            ThrowException::NameAlreadyInUse(
+                p->getName() + " (CommandDescriptors::attach)");
     command_descriptors.push_back(p);
 }
 
-ValidationResult CommandDescriptors::validate(const CommandLine& cmdline) const 
+bool CommandDescriptors::validate(const CommandLine& cmdline) const 
 {
     for( auto descriptor : command_descriptors )
     {
-        ValidationResult result = descriptor->validate(cmdline);
-        if ( isInvalid(result) )
-            return result;
+        bool result{  };
+        if ( descriptor->validate(cmdline) )
+            return true;
     }
-    return ValidationResult::InvalidCommand;
+    return false;
 }
 
 CommandDescriptors::CommandDescriptors(const std::string& name)
