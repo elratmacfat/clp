@@ -38,46 +38,4 @@ std::ostream& operator<<(std::ostream& os, const elrat::clp::CommandLine& cl)
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const elrat::clp::ValidationResult& v)
-{
-    using namespace elrat::clp;
-    switch( v ) 
-    {
-    case ValidationResult::Match:
-        os << "Match.";
-        break;
-    case ValidationResult::NoMatch:
-        os << "No match.";
-        break;
-    case ValidationResult::InvalidCommand:
-        os << "Unrecognized command.";
-        break;
-    case ValidationResult::InvalidOption:
-        os << "Unrecognized option.";
-        break;
-    case ValidationResult::InvalidParameterType:
-        os << "Invalid parameter type.";
-        break;
-    case ValidationResult::InvalidParameterValue:
-        os << "Invalid parameter value.";
-        break;
-    case ValidationResult::MissingParameters:
-        os << "One or more parameters are missing.";
-        break;
-    case ValidationResult::TooManyParameters:
-        os << "Too many parameters assigned.";
-        break;
-    default:
-        os << "Undefined validation result.";
-    }
-    return os;
-}
 
-std::string toString(const elrat::clp::ValidationResult& v)
-{
-    std::stringstream ss;
-    std::string result;
-    ss << v;
-    std::getline(ss,result);
-    return result;
-}

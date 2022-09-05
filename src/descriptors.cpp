@@ -48,21 +48,6 @@ bool ParameterType::Path(const std::string& s)
     return (IsWindowsPath(s) || IsUnixPath(s));
 }
 
-bool clp::isMatch( const ValidationResult& v )
-{
-    return (v == ValidationResult::Match);
-}
-
-bool clp::isNoMatch( const ValidationResult& v )
-{
-    return (v == ValidationResult::NoMatch );
-}
-
-bool clp::isInvalid( const ValidationResult& v )
-{
-    return (!isMatch(v) && !isNoMatch(v));
-}
-
 CommandDescriptorPtr clp::makeCommandDescriptor(
     const std::string& name,
     const std::string& description,

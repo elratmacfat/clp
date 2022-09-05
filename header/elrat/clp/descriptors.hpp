@@ -56,22 +56,6 @@ public:
     ParameterType() = delete;
 };
 
-enum class ValidationResult 
-{
-     Match
-    ,NoMatch
-    ,InvalidCommand
-    ,InvalidParameterType
-    ,InvalidParameterValue
-    ,TooManyParameters
-    ,MissingParameters
-    ,InvalidOption 
-};
-
-bool isMatch( const ValidationResult& );
-bool isNoMatch( const ValidationResult& );
-bool isInvalid( const ValidationResult& );
-
 CommandDescriptorPtr makeCommandDescriptor(
     const std::string& name,
     const std::string& description = "",

@@ -60,8 +60,7 @@ namespace CommandValidation
 {
 	void Check( 
 	    elrat::clp::CommandDescriptorPtr cmd_desc, 
-	    const elrat::clp::CommandLine& input,
-	    elrat::clp::ValidationResult expected );
+	    const elrat::clp::CommandLine& input );
 }
 
 
