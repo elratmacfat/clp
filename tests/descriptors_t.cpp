@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_SUITE_END(); // UTIL_SELFTEST
 BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
    
     using namespace elrat::clp;
-
+    using namespace ParameterValidation;
     //
     //
     //
@@ -225,53 +225,11 @@ BOOST_AUTO_TEST_SUITE_END(); // PARAMETER_VALIDATION
 BOOST_AUTO_TEST_SUITE( OPTION_VALIDATION )
     using namespace elrat;
     using namespace elrat::clp;
-    using Parameters = std::vector<std::string>;
-    using Candidates = std::vector<Parameters>;
+    using namespace OptionValidation;
 
+    auto opt_desc = createOptionDescriptor();
    
-    auto opt_desc = makeOptionDescriptor(
-        "option",
-        "description", {
-            makeParameterDescriptor(
-                "p0", 
-                "p0description",
-                Mandatory,
-                ParameterType::NaturalNumber, {
-                    AtLeast(10),
-                    Not(20)
-                }
-            ),
-            makeParameterDescriptor(
-                "p1", "p1description",
-                Mandatory,
-                ParameterType::WholeNumber, {
-                    AtLeast(-100),
-                    Not(0)
-                }
-            ),
-            makeParameterDescriptor(
-                "p2", "p2description",
-                Optional,
-                ParameterType::Identifier, {
-                    Not<std::string>("help")
-                }
-            )
-        });
-
-    const Candidates valid_candidates {
-         Parameters{"10","-100","some_identifier"}
-        ,Parameters{"99","-10", "__x"}
-        ,Parameters{"99","-10"}
-    };
-
-    const Candidates invalid_candidates {
-         Parameters{"10"}
-        ,Parameters{"10","-101","__x"}
-        ,Parameters{"20","-100"}
-        ,Parameters{"10","-100","invalid-identifier"}
-        ,Parameters{"99","-10","help"}
-    };
-
+    
     BOOST_AUTO_TEST_CASE( PREREQUISITES )
     {
         BOOST_CHECK_EQUAL( opt_desc->getRequiredParameterCount(), 2 );
@@ -279,13 +237,13 @@ BOOST_AUTO_TEST_SUITE( OPTION_VALIDATION )
 
     BOOST_AUTO_TEST_CASE( VALID_CANDIDATES )
     {  
-        for( auto& candidate : valid_candidates )
+        for( auto& candidate : valid_parameters )
             Check( opt_desc, candidate );    
     }
 
     BOOST_AUTO_TEST_CASE( INVALID_CANDIDATES )
     {   
-        for( auto& candidate : invalid_candidates )
+        for( auto& candidate : invalid_parameters )
             FailCheck( opt_desc, candidate );    
     }
 
@@ -297,7 +255,8 @@ BOOST_AUTO_TEST_SUITE_END(); // OPTION_VALIDATION
 BOOST_AUTO_TEST_SUITE( COMMAND_VALIDATION )
     using namespace elrat;
     using namespace elrat::clp;
-    
+    using namespace CommandValidation;
+
     auto cmddescs{ createCommandDescriptors() };
 
     std::vector<CommandLine> valid_cmdlines{ createValidCommandLines() };

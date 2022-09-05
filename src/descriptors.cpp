@@ -313,7 +313,7 @@ ValidationResult CommandDescriptors::validate(const CommandLine& cmdline) const
     for( auto descriptor : command_descriptors )
     {
         ValidationResult result = descriptor->validate(cmdline);
-        if ( result != ValidationResult::InvalidCommand )
+        if ( isInvalid(result) )
             return result;
     }
     return ValidationResult::InvalidCommand;
