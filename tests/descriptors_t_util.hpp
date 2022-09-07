@@ -75,8 +75,8 @@ namespace CommandValidation
 
 namespace intern
 {
-    template <class EXCEPTION, class FUNCTION, class...ARGS>
-    void CheckThrow( FUNCTION function, ARGS...args );
+    template <class EXCEPTION, class MEMBER_FUNCTION, class OBJECT, class...ARGS>
+    void CheckThrow( MEMBER_FUNCTION function, OBJECT object, ARGS...args);
 }
 
 // Template implementation
@@ -103,20 +103,12 @@ void OptionValidation::CheckThrow(
 	elrat::clp::OptionDescriptorPtr option, 
     const std::string& opt_name,
 	const std::vector<std::string>& opt_parameters)
-{
-    try 
-    {
-        option->validate( opt_name, opt_parameters );
-        BOOST_ERROR("No exception thrown");
-    }
-    catch( EXCEPTION& err )
-    {
-        BOOST_CHECK(true);
-    }
-    catch(std::exception& err)
-    {
-        BOOST_ERROR("Caught unexpected exception: " << err.what() );
-    }
+{   
+    intern::CheckThrow<EXCEPTION>(
+        &elrat::clp::OptionDescriptor::validate,
+        *option,
+        opt_name,
+        opt_parameters );
 }
 
 template <class EXCEPTION>
@@ -130,12 +122,12 @@ void CommandValidation::CheckThrow(
         input );
 }
 
-template <class EXCEPTION, class FUNCTION, class...ARGS>
-void intern::CheckThrow( FUNCTION function, ARGS...args )
+template <class EXCEPTION, class MEMBER_FUNCTION, class OBJECT, class...ARGS>
+void intern::CheckThrow( MEMBER_FUNCTION function, OBJECT object, ARGS...args)
 {
     try 
     {
-        function(args...);
+        (object.*function)(args...);
         BOOST_ERROR("No exception thrown");
     }
     catch( EXCEPTION& exception )
@@ -151,6 +143,7 @@ void intern::CheckThrow( FUNCTION function, ARGS...args )
         BOOST_ERROR("Wrong unknown exception.");
     }
 }
+
 
 #endif
 

@@ -289,6 +289,13 @@ BOOST_AUTO_TEST_SUITE( COMMAND_VALIDATION )
         for( auto& c : cls ) 
             FailCheck( cmd, c );
     }
+
+    BOOST_AUTO_TEST_CASE( MISSING_PARAMETERS )
+    {
+        auto cls{ createMissingParameters() };
+        for( auto& c : cls )
+            CheckThrow<InputException>( cmd, c );
+    }
     
 BOOST_AUTO_TEST_SUITE_END(); // COMMAND_VALIDATION 
 

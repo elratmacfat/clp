@@ -73,8 +73,7 @@ namespace ParameterValidation
 
 namespace OptionValidation
 {
-	OptionDescriptorPtr createOptionDescriptor()
-    {
+	OptionDescriptorPtr createOptionDescriptor() {
 	    return makeOptionDescriptor( "option", "description", {
             makeParameterDescriptor(
                 "p0", "description",
@@ -137,63 +136,76 @@ namespace OptionValidation
 
 namespace CommandValidation
 {
-	CommandDescriptorPtr createCommandDescriptor()
-	{
+	CommandDescriptorPtr createCommandDescriptor() 
+    {
 	    return makeCommandDescriptor(
 	        "cube",
-	        "create a customized cube.",
-	        {
+	        "create a customized cube.", 
+            {
 	            makeParameterDescriptor(
 	                "size", 
 	                "Edge length",
-	                Optional,
-	                ParameterType::RealNumber)
-	        },
-	        {
+	                Mandatory,
+	                ParameterType::RealNumber
+                )
+            },
+            {
 	            makeOptionDescriptor(
 	                "color",
 	                "Defines the surface color of the cube.", 
-	                {
+                    {
 	                    makeParameterDescriptor(
 	                        "clr",
 	                        "color",
 	                        Mandatory,
-	                        ParameterType::Any, {
+	                        ParameterType::Any, 
+                            {
 	                            In<std::string>("red","blue","green")
-	                        }
-	                    )
-	                }
-	            ),
+                            }
+                        )
+                    }
+                ),
                 makeOptionDescriptor(
                     "ice",
                     "Create an IceCube instead."
-                ),
-
-	        }
+                )
+            }
 	    );
 	}
 	
     std::vector<CommandLine> createValid()
 	{
-	    std::vector<CommandLine> cls(4);
+	    std::vector<CommandLine> cls(3);
         for( auto& c : cls ) 
+        {
             c.setCommand("cube");
-        cls[1].addCommandParameter("12.1");
+            c.addCommandParameter("12.1");
+        }
         
-        cls[2].addOption("color");
-        cls[2].addOptionParameter("red");
+        cls[1].addOption("color");
+        cls[1].addOptionParameter("red");
 
-        cls[3].addOption("ice");
+        cls[2].addOption("ice");
 
         return std::move(cls);
 	}
 	
     std::vector<CommandLine> createUnrecognized()
     {
-        std::vector<CommandLine> cls(2);
+        std::vector<CommandLine> cls(3);
         cls[0].setCommand("hello");
         cls[1].setCommand("world");
+        cls[1].addCommandParameter("1234");
+        cls[2].setCommand("__test");
+        cls[2].addOption("option");
         return std::move(cls);
+    }
+
+    std::vector<CommandLine> createMissingParameters()
+    {
+        std::vector<CommandLine> cls(1);
+        cls[0].setCommand("cube");
+        return cls;
     }
     
 } // namespace CommandValidation
