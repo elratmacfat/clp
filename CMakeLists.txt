@@ -25,7 +25,6 @@ SET( HeaderFiles
 )
 
 SET( IncludeFiles
-    "${IncludeDir}/errorhandling.hpp"
     "${IncludeDir}/parser.hpp"
     "${IncludeDir}/regex.hpp"
 )

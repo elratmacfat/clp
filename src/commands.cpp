@@ -1,5 +1,5 @@
 #include "elrat/clp/commands.hpp"
-#include "errorhandling.hpp"
+#include "elrat/clp/errorhandling.hpp"
 
 using namespace elrat::clp;
 
@@ -11,7 +11,7 @@ CommandWrapper::CommandWrapper( Function f )
 : function(f)
 {
     if (!function)
-        ThrowException::NullPointerAssignment("CommandWrapper(Function f)");
+        throw NullptrAssignmentException("CommandWrapper(Function f)");
 }
 
 void CommandWrapper::execute(const CommandLine& cmdline)
@@ -28,7 +28,7 @@ void Commands::attach(const std::string& name, CommandPtr ptr)
     std::vector<CommandPtr>& pointers = commands[name];
     for(auto& p : pointers)
         if (p == ptr)
-            ThrowException::AlreadyInUse("CommandPtr");
+            throw AlreadyInUseException("Commands::attach(): CommandPtr");
     
     pointers.push_back( ptr );
 }
@@ -52,18 +52,18 @@ void Commands::detach(const std::string& name, CommandPtr ptr)
 const std::vector<CommandPtr>& Commands::find(const std::string& name) const 
 {
     if (commands.find(name) == commands.end())
-        ThrowException::CommandNotFound(name);
+        throw CommandNotFoundException(name);
     return commands.at(name);
 }
 
 void Commands::throwIfEmpty(const std::string& candidate, const std::string& where)
 {
     if (!candidate.size())
-        ThrowException::EmptyStringAssignment(where);
+        throw EmptyStringException(where);
 }
 
 void Commands::throwIfNull(CommandPtr p, const std::string& where )
 {
     if (!p)
-        ThrowException::NullPointerAssignment(where);
+        throw NullptrAssignmentException(where);
 }

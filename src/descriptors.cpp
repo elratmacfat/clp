@@ -1,10 +1,5 @@
-// Project......: Command Line Processor (clp)
-// File.........: src/descriptors.cpp
-// Author.......: elratmacfat
-// Description..: 
-//
-#include <elrat/clp/descriptors.hpp>
-#include "errorhandling.hpp"
+#include "elrat/clp/descriptors.hpp"
+#include "elrat/clp/errorhandling.hpp"
 #include "regex.hpp"
 
 using namespace elrat;
@@ -120,7 +115,8 @@ void HasParameters::initialize()
         {
             numberOfRequiredParameters++;
             if ( previousParameterWasOptional )
-                ThrowException::InvalidParameterConfiguration(p->getName());
+                throw InvalidParameterConfigurationException( 
+                    p->getName() + " is mandatory, but previous was optional.");
         }
         else
         {
@@ -154,9 +150,9 @@ int HasParameters::getRequiredParameterCount() const
 void HasParameters::validate(const Arguments& args) const
 {
     if ( args.size() > parameters.size() )
-        ThrowException::TooManyParameters( args.size(), parameters.size() );
+        throw TooManyParametersException( args.size(), parameters.size() );
     if ( args.size() < numberOfRequiredParameters )
-        ThrowException::MissingParameters(numberOfRequiredParameters - args.size());
+        throw MissingParametersException(numberOfRequiredParameters - args.size());
     for( int i{0}; i < args.size(); ++i )
         parameters[i]->validate( args[i] );
 }
@@ -196,11 +192,11 @@ const Constraints& ParameterDescriptor::getConstraints() const
 void ParameterDescriptor::validate(const Argument& arg) const
 {
     if ( !type_checker(arg) )
-        ThrowException::InvalidParameterType(arg);
+        throw InvalidParameterTypeException(arg);
     for( auto& constraint : constraints )
     {
         if ( !constraint->validate(arg) )
-            ThrowException::InvalidParameterValue(arg);
+            throw InvalidParameterValueException(arg);
     }
 }
 
@@ -267,7 +263,7 @@ bool CommandDescriptor::validate( const CommandLine& cmdline) const
         }
         if (!match) 
         {
-            ThrowException::UnrecognizedOption(opt_name);
+            throw InvalidOptionException(opt_name);
         }
     }
     return true;
@@ -284,7 +280,7 @@ void DescriptorMap::attach(CommandDescriptorPtr p)
 {
     for( auto descriptor : this->descriptors )
         if ( p == descriptor || p->getName() == descriptor->getName() )
-            ThrowException::AlreadyInUse(
+            throw AlreadyInUseException(
                 p->getName() + " (CommandDescriptorMap::attach)");
     this->descriptors.push_back(p);
 }

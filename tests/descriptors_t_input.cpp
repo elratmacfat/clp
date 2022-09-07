@@ -208,4 +208,17 @@ namespace CommandValidation
         return cls;
     }
     
+    std::vector<CommandLine> createTooManyParameters()
+    {
+        std::vector<CommandLine> cls(2);
+        for(auto& c : cls)
+        {
+            c.setCommand("cube");
+            c.addCommandParameter("12");
+            c.addCommandParameter("13");
+        }
+        cls[1].addCommandParameter("14");
+        return cls;
+    }
+
 } // namespace CommandValidation

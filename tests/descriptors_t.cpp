@@ -294,8 +294,16 @@ BOOST_AUTO_TEST_SUITE( COMMAND_VALIDATION )
     {
         auto cls{ createMissingParameters() };
         for( auto& c : cls )
-            CheckThrow<InputException>( cmd, c );
+            CheckThrow<MissingParametersException>( cmd, c );
     }
+
+    BOOST_AUTO_TEST_CASE( TOO_MANY_PARAMETERS )
+    {
+        auto cls{ createTooManyParameters() };
+        for( auto& c : cls )
+            CheckThrow<TooManyParametersException>(cmd, c);
+    }
+
     
 BOOST_AUTO_TEST_SUITE_END(); // COMMAND_VALIDATION 
 

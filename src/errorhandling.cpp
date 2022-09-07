@@ -1,5 +1,4 @@
 #include "elrat/clp/errorhandling.hpp" // public header
-#include "errorhandling.hpp" // private
 
 #include <sstream>
 
@@ -18,9 +17,9 @@ clp::Exception::~Exception()
 {
 }
 
-void clp::Exception::append(const std::string& argument)
+void clp::Exception::append(const std::string& arg)
 {
-    message += argument;
+    message += arg;
 }
 
 const char* clp::Exception::what() const noexcept
@@ -30,88 +29,79 @@ const char* clp::Exception::what() const noexcept
 
 clp::InitializationException::InitializationException(
     const std::string& subcategory,
-    const std::string& argument )
-: Exception("InitializationException",subcategory,argument)
+    const std::string& arg )
+: Exception("InitializationException",subcategory,arg)
 {
 }
+
+clp::NullptrAssignmentException::NullptrAssignmentException(
+    const std::string& arg)
+: InitializationException("Nullptr Assignment",arg)
+{
+}
+
+clp::EmptyStringException::EmptyStringException(
+    const std::string& arg)
+: InitializationException("Empty String",arg)
+{
+}
+
+clp::InvalidParameterConfigurationException::InvalidParameterConfigurationException(
+    const std::string& arg)
+: InitializationException("Invalid parameter configuration", arg)
+{
+}
+
+clp::AlreadyInUseException::AlreadyInUseException(
+    const std::string& arg)
+: InitializationException("Already in use", arg)
+{
+}
+
+clp::CommandNotFoundException::CommandNotFoundException(
+    const std::string& arg)
+: InitializationException("Already in use", arg)
+{
+}
+
 
 clp::InputException::InputException(
     const std::string& subcategory,
-    const std::string& argument )
-: Exception("InputException",subcategory,argument)
+    const std::string& arg )
+: Exception("InputException",subcategory,arg)
 {
 }
 
-void ThrowException::EmptyStringAssignment(const std::string& argument)
+clp::InvalidParameterTypeException::InvalidParameterTypeException(
+    const std::string& arg)
+: InputException("Invalid Parameter Type", arg)
 {
-    throw clp::InitializationException("Empty string assignment", argument);
 }
 
-void ThrowException::NullPointerAssignment(const std::string& argument)
+clp::InvalidParameterValueException::InvalidParameterValueException(
+    const std::string& arg)
+: InputException("Invalid Parameter Value", arg)
 {
-    throw clp::InitializationException("Null pointer assignment", argument);
 }
 
-void ThrowException::InvalidParameterConfiguration(const std::string& argument)
+clp::MissingParametersException::MissingParametersException(
+    int number)
+: InputException("Missing Parameters", std::to_string(number))
 {
-    throw clp::InitializationException("Invalid parameter configuration", argument);
 }
 
-void ThrowException::AlreadyInUse(const std::string& argument)
+clp::TooManyParametersException::TooManyParametersException(
+    int actual, int expected)
+: InputException(
+    "Too Many Parameters", 
+    std::to_string(actual) 
+    + "/" 
+    + std::to_string(expected))
 {
-    throw clp::InitializationException("Already in use", argument );
 }
 
-void ThrowException::CommandNotFound(const std::string& argument)
+clp::InvalidOptionException::InvalidOptionException(const std::string& arg)
+: InputException("Invalid option", arg)
 {
-    throw clp::InitializationException("Command not found", argument );
-}
-
-
-void ThrowException::InvalidParameterType(const std::string& argument)
-{
-    throw clp::InputException("Invalid parameter type", argument);
-}
-
-void ThrowException::InvalidParameterValue(const std::string& argument)
-{
-    throw clp::InputException("Invalid parameter value", argument);
-}
-
-void ThrowException::MissingParameters(int missing)
-{
-    std::string msg;
-    if (missing)
-    {
-        msg = std::string("At least ") 
-            + std::to_string(missing) 
-            + " parameters are missing";
-    }
-    throw clp::InputException("Missing parameter. ", msg);
-}
-
-void ThrowException::TooManyParameters(int actual, int expected)
-{
-    std::string msg{};
-    if ( actual > expected )
-    {
-	    std::stringstream ss;
-	    ss << "Expected at most "
-	        << expected
-	        << ", but found "
-	        << actual;
-	    std::getline(ss,msg);
-    }
-    throw clp::InputException("Too many parameters.", msg);
-}
-
-void ThrowException::UnrecognizedOption(const std::string& argument)
-{
-    throw clp::InputException("Unrecognized option", argument);
-}
-
-void ThrowException::UnrecognizedCommand(const std::string& argument)
-{
-    throw clp::InputException("Unrecognized command", argument);
 }
 

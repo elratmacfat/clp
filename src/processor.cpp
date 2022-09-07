@@ -1,6 +1,6 @@
 #include <elrat/clp.hpp>
 
-#include "errorhandling.hpp"
+#include "elrat/clp/errorhandling.hpp"
 
 using namespace elrat::clp;
 
@@ -14,8 +14,7 @@ void Processor::attach(DescriptorMapPtr p)
 {
     for( auto map : descriptor_maps )
         if ( map == p || map->getName() == p->getName() )
-            ThrowException::AlreadyInUse(
-                p->getName() + "(Processor::attach())");
+            throw AlreadyInUseException(p->getName() + "(Processor::attach())");
     descriptor_maps.push_back(p);
 }
 
