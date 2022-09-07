@@ -17,8 +17,8 @@
 namespace elrat {
 namespace clp {
 
-class CommandDescriptors;
-using CommandDescriptorsPtr = std::shared_ptr<CommandDescriptors>;
+class DescriptorMap;
+using DescriptorMapPtr = std::shared_ptr<DescriptorMap>;
 
 class CommandDescriptor;
 using CommandDescriptorPtr = std::shared_ptr<CommandDescriptor>;
@@ -181,16 +181,16 @@ private:
 
 //-----------------------------------------------------------------------------
 
-class CommandDescriptors
+class DescriptorMap
 : public HasName
 {
 public:
-    static CommandDescriptorsPtr Create(const std::string& = "Commands");
+    static DescriptorMapPtr Create(const std::string& = "Commands");
     void attach(CommandDescriptorPtr);
     bool validate(const CommandLine&) const;
 private:
-    CommandDescriptors(const std::string&);
-    std::vector<CommandDescriptorPtr> command_descriptors;
+    DescriptorMap(const std::string&);
+    std::vector<CommandDescriptorPtr> descriptors;
 };
 
 //-----------------------------------------------------------------------------

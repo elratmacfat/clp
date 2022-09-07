@@ -275,6 +275,21 @@ BOOST_AUTO_TEST_SUITE( COMMAND_VALIDATION )
     using namespace elrat::clp;
     using namespace CommandValidation;
 
+    auto cmd{ createCommandDescriptor() };
+    BOOST_AUTO_TEST_CASE( VALID_COMMAND_LINES )
+    {
+        auto cls{ createValid() };
+        for( auto c : cls )
+            Check( cmd, c );
+    }
+
+    BOOST_AUTO_TEST_CASE( UNRECOGNIZED_COMMANDS )
+    {
+        auto cls{ createUnrecognized() };
+        for( auto& c : cls ) 
+            FailCheck( cmd, c );
+    }
+    
 BOOST_AUTO_TEST_SUITE_END(); // COMMAND_VALIDATION 
 
 

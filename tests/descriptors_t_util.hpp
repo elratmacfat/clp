@@ -19,6 +19,7 @@ namespace ParameterValidation
 	void Check(
 	    elrat::clp::TypeChecker, 
 	    const std::vector<std::string>&);
+
 	void FailCheck(
 	    elrat::clp::TypeChecker, 
 	    const std::vector<std::string>&);
@@ -26,6 +27,7 @@ namespace ParameterValidation
 	void Check(
 	    elrat::clp::ConstraintPtr, 
 	    const std::vector<std::string>&);
+
 	void FailCheck(
 	    elrat::clp::ConstraintPtr, 
 	    const std::vector<std::string>&);
@@ -37,19 +39,18 @@ namespace OptionValidation
 	    elrat::clp::OptionDescriptorPtr, 
         const std::string&,
 	    const std::vector<std::string>&);
+
 	void FailCheck(
 	    elrat::clp::OptionDescriptorPtr, 
         const std::string&,
 	    const std::vector<std::string>&);
-	
-    
     
     void CheckNoThrow( 
 	    elrat::clp::OptionDescriptorPtr, 
         const std::string&,
 	    const std::vector<std::string>&);
 
-    template <class Exc>
+    template <class EXCEPTION>
     void CheckThrow(
 	    elrat::clp::OptionDescriptorPtr, 
         const std::string&,
@@ -61,8 +62,22 @@ namespace CommandValidation
 	void Check( 
 	    elrat::clp::CommandDescriptorPtr cmd_desc, 
 	    const elrat::clp::CommandLine& input );
+
+    void FailCheck(
+	    elrat::clp::CommandDescriptorPtr cmd_desc, 
+	    const elrat::clp::CommandLine& input );
+
+    template <class EXCEPTION>
+    void CheckThrow(
+	    elrat::clp::CommandDescriptorPtr cmd_desc, 
+	    const elrat::clp::CommandLine& input );
 }
 
+namespace intern
+{
+    template <class EXCEPTION, class FUNCTION, class...ARGS>
+    void CheckThrow( FUNCTION function, ARGS...args );
+}
 
 // Template implementation
 // vvvvvvvvvvvvvvvvvvvvvvv
@@ -83,7 +98,7 @@ std::vector<std::string> convertRangeToStrings(
     return result;
 }
 
-template <class Exc>
+template <class EXCEPTION>
 void OptionValidation::CheckThrow(
 	elrat::clp::OptionDescriptorPtr option, 
     const std::string& opt_name,
@@ -94,13 +109,46 @@ void OptionValidation::CheckThrow(
         option->validate( opt_name, opt_parameters );
         BOOST_ERROR("No exception thrown");
     }
-    catch( Exc& err )
+    catch( EXCEPTION& err )
     {
         BOOST_CHECK(true);
     }
     catch(std::exception& err)
     {
         BOOST_ERROR("Caught unexpected exception: " << err.what() );
+    }
+}
+
+template <class EXCEPTION>
+void CommandValidation::CheckThrow(
+    elrat::clp::CommandDescriptorPtr cmd_desc, 
+    const elrat::clp::CommandLine& input )
+{
+    intern::CheckThrow<EXCEPTION>(
+        &elrat::clp::CommandDescriptor::validate,
+        *cmd_desc,
+        input );
+}
+
+template <class EXCEPTION, class FUNCTION, class...ARGS>
+void intern::CheckThrow( FUNCTION function, ARGS...args )
+{
+    try 
+    {
+        function(args...);
+        BOOST_ERROR("No exception thrown");
+    }
+    catch( EXCEPTION& exception )
+    {
+        BOOST_CHECK(true);
+    }
+    catch( std::exception& exception )
+    {
+        BOOST_ERROR("Wrong exception: " << exception.what() );
+    }
+    catch( ... )
+    {
+        BOOST_ERROR("Wrong unknown exception.");
     }
 }
 

@@ -42,6 +42,11 @@ clp::InputException::InputException(
 {
 }
 
+void ThrowException::EmptyStringAssignment(const std::string& argument)
+{
+    throw clp::InitializationException("Empty string assignment", argument);
+}
+
 void ThrowException::NullPointerAssignment(const std::string& argument)
 {
     throw clp::InitializationException("Null pointer assignment", argument);
@@ -51,10 +56,17 @@ void ThrowException::InvalidParameterConfiguration(const std::string& argument)
 {
     throw clp::InitializationException("Invalid parameter configuration", argument);
 }
-void ThrowException::NameAlreadyInUse(const std::string& argument)
+
+void ThrowException::AlreadyInUse(const std::string& argument)
 {
-    throw clp::InitializationException("Name already in use", argument );
+    throw clp::InitializationException("Already in use", argument );
 }
+
+void ThrowException::CommandNotFound(const std::string& argument)
+{
+    throw clp::InitializationException("Command not found", argument );
+}
+
 
 void ThrowException::InvalidParameterType(const std::string& argument)
 {

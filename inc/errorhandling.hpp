@@ -7,9 +7,11 @@ class ThrowException
 {
 public:
     // InitializationException
+    static void EmptyStringAssignment(const std::string& = "");
     static void NullPointerAssignment(const std::string& = "");
     static void InvalidParameterConfiguration(const std::string& = "");
-    static void NameAlreadyInUse(const std::string& = "");
+    static void AlreadyInUse(const std::string& = "");
+    static void CommandNotFound(const std::string& = "");
     // InputException
     static void InvalidParameterType(const std::string& = "");
     static void InvalidParameterValue(const std::string& = "");

@@ -137,118 +137,56 @@ namespace OptionValidation
 
 namespace CommandValidation
 {
-	CommandDescriptorPtr createCommandAddPlatform()
+	CommandDescriptorPtr createCommandDescriptor()
 	{
 	    return makeCommandDescriptor(
-	        "add_platform",
-	        "Add a new diving platform to your swimming pool",
+	        "cube",
+	        "create a customized cube.",
 	        {
 	            makeParameterDescriptor(
-	                "height", 
-	                "Diving platform's height (meter) above the water surface.",
-	                Mandatory,
-	                ParameterType::NaturalNumber, {
-	                    In(1,3,5,10)
-	                }
-	            )
+	                "size", 
+	                "Edge length",
+	                Optional,
+	                ParameterType::RealNumber)
 	        },
 	        {
 	            makeOptionDescriptor(
 	                "color",
-	                "Use this option to specify a non-standard color for the platform.", 
+	                "Defines the surface color of the cube.", 
 	                {
 	                    makeParameterDescriptor(
+	                        "clr",
 	                        "color",
-	                        "The platform's color.",
 	                        Mandatory,
 	                        ParameterType::Any, {
 	                            In<std::string>("red","blue","green")
 	                        }
 	                    )
 	                }
-	            )
+	            ),
+                makeOptionDescriptor(
+                    "ice",
+                    "Create an IceCube instead."
+                ),
+
 	        }
 	    );
 	}
 	
-	CommandDescriptorPtr createCommandSetTemperature()
+    std::vector<CommandLine> createValid()
 	{
-	    return makeCommandDescriptor(
-	        "set_temperature",
-	        "Configure the swimming pool's water temperature.", 
-	        {
-	            makeParameterDescriptor(
-	                "temperature",
-	                "Water temperature in °C.",
-	                Mandatory,
-	                ParameterType::RealNumber, {
-	                    AtLeast(0.0f)
-	                }
-	            )
-	        },
-	        {
-	            makeOptionDescriptor(
-	                "turn-off",
-	                "Pass this option to turn off the heater at night." 
-	            )
-	        }
-	    );
+	    std::vector<CommandLine> cls(2);
+        for( auto& c : cls ) 
+            c.setCommand("cube");
+        return std::move(cls);
 	}
 	
-	CommandDescriptorsPtr createCommandDescriptors()
-	{
-	    auto cmddescs{ CommandDescriptors::Create() };
-	    cmddescs->attach( createCommandAddPlatform() );
-	    cmddescs->attach( createCommandSetTemperature() );
-	    return cmddescs;
-	}
-	
-	std::vector<CommandLine> createValidCommandLines()
-	{
-	    std::vector<CommandLine> result{};
-	    
-	    CommandLine c0;
-	    c0.setCommand("add_platform");
-	    c0.addCommandParameter("5");
-	    c0.addOption("color");
-	    c0.addOptionParameter("red");
-	
-	    CommandLine c1;
-	    c1.setCommand("add_platform");
-	    c1.addCommandParameter("3");
-	
-	    CommandLine c2;
-	    c2.setCommand("set_temperature");
-	    c2.addCommandParameter("21.5");
-	    c2.addOption("turn-off");
-	
-	    return std::vector<CommandLine>{c0,c1,c2};
-	}
-	
-	std::vector<CommandLine> createInvalidCommandLines()
-	{
-	    std::vector<CommandLine> result{};
-	    
-	    CommandLine c0;
-	    c0.setCommand("add_platform");
-	    c0.addCommandParameter("5");
-	    c0.addOption("color");
-	    c0.addOptionParameter("yellow"); // invalid
-	
-	    CommandLine c1;
-	    c1.setCommand("add_platform");
-	    c1.addCommandParameter("4");    // <--
-	
-	    CommandLine c2;
-	    c2.setCommand("set_temperature");
-	    c2.addCommandParameter("21.5");
-	    c2.addOption("turn-off");
-	    c2.addOption("blah");   // <--
-	
-	    CommandLine c3;
-	    c3.setCommand("blah"); // <--
-	
-	    return std::vector<CommandLine>{c0,c1,c2,c3};
-	}
-	
+    std::vector<CommandLine> createUnrecognized()
+    {
+        std::vector<CommandLine> cls(2);
+        cls[0].setCommand("hello");
+        cls[1].setCommand("world");
+        return std::move(cls);
+    }
+    
 } // namespace CommandValidation

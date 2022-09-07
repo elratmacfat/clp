@@ -275,32 +275,31 @@ bool CommandDescriptor::validate( const CommandLine& cmdline) const
 
 //-----------------------------------------------------------------------------
 
-CommandDescriptorsPtr CommandDescriptors::Create(const std::string& name)
+DescriptorMapPtr DescriptorMap::Create(const std::string& name)
 {
-    return std::shared_ptr<CommandDescriptors>(new CommandDescriptors(name));
+    return DescriptorMapPtr(new DescriptorMap(name));
 }
 
-void CommandDescriptors::attach(CommandDescriptorPtr p)
+void DescriptorMap::attach(CommandDescriptorPtr p)
 {
-    for( auto descriptor : command_descriptors )
+    for( auto descriptor : this->descriptors )
         if ( p == descriptor || p->getName() == descriptor->getName() )
-            ThrowException::NameAlreadyInUse(
-                p->getName() + " (CommandDescriptors::attach)");
-    command_descriptors.push_back(p);
+            ThrowException::AlreadyInUse(
+                p->getName() + " (CommandDescriptorMap::attach)");
+    this->descriptors.push_back(p);
 }
 
-bool CommandDescriptors::validate(const CommandLine& cmdline) const 
+bool DescriptorMap::validate(const CommandLine& cmdline) const 
 {
-    for( auto descriptor : command_descriptors )
+    for( auto descriptor : descriptors )
     {
-        bool result{  };
         if ( descriptor->validate(cmdline) )
             return true;
     }
     return false;
 }
 
-CommandDescriptors::CommandDescriptors(const std::string& name)
+DescriptorMap::DescriptorMap(const std::string& name)
 : HasName(name)
 {
 }

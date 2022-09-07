@@ -37,13 +37,12 @@ namespace OptionValidation
 
 namespace CommandValidation
 {
-	elrat::clp::CommandDescriptorPtr createCommandAddPlatform();
-	elrat::clp::CommandDescriptorPtr createCommandSetTemperature();
-	
-	elrat::clp::CommandDescriptorsPtr createCommandDescriptors();
-	
-	std::vector<elrat::clp::CommandLine> createValidCommandLines();
-	std::vector<elrat::clp::CommandLine> createInvalidCommandLines();
+    elrat::clp::CommandDescriptorPtr createCommandDescriptor();
+
+    std::vector<elrat::clp::CommandLine> createValid();
+    std::vector<elrat::clp::CommandLine> createUnrecognized();
+
+        
 }
 
 #endif
