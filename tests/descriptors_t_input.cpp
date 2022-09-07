@@ -175,9 +175,16 @@ namespace CommandValidation
 	
     std::vector<CommandLine> createValid()
 	{
-	    std::vector<CommandLine> cls(2);
+	    std::vector<CommandLine> cls(4);
         for( auto& c : cls ) 
             c.setCommand("cube");
+        cls[1].addCommandParameter("12.1");
+        
+        cls[2].addOption("color");
+        cls[2].addOptionParameter("red");
+
+        cls[3].addOption("ice");
+
         return std::move(cls);
 	}
 	

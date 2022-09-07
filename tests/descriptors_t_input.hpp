@@ -41,8 +41,6 @@ namespace CommandValidation
 
     std::vector<elrat::clp::CommandLine> createValid();
     std::vector<elrat::clp::CommandLine> createUnrecognized();
-
-        
 }
 
 #endif
