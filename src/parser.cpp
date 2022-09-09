@@ -1,9 +1,3 @@
-// Project......: Command Line Processor (clp)
-// File.........: src/parser.cpp
-// Author.......: elratmacfat
-// Description..: 
-//
-
 #include <stdexcept>
 
 #include <elrat/clp.hpp>

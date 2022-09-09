@@ -1,8 +1,3 @@
-// Project......: Command Line Processor (clp)
-// File.........: src/tests/descriptors_t.cpp
-// Author.......: elratmacfat
-// Description..: 
-//
 #define BOOST_TEST_MODULE "CLP - Descriptors"
 #define BOOST_TEST_DYN_LINK
 

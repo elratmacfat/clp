@@ -1,9 +1,3 @@
-// Project......: Command Line Processor (clp)
-// File.........: inc/parser.hpp
-// Author.......: elratmacfat
-// Description..: 
-//
-
 #ifndef PARSER_HPP
 #define PARSER_HPP
 

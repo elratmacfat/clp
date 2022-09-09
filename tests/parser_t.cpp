@@ -1,8 +1,3 @@
-// Project......: Command Line Processor (clp)
-// File.........: src/tests/parser_t.cpp
-// Author.......: elratmacfat
-// Description..:
-//
 #define BOOST_TEST_MODULE "Parser Test"
 #define BOOST_TEST_DYN_LINK
 

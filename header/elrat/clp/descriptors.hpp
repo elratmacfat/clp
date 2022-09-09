@@ -1,8 +1,3 @@
-// Project......: Command Line Processor (clp)
-// File.........: /elrat/clp/descriptors.hpp
-// Author.......: elratmacfat
-// Description..: 
-//
 #ifndef ELRAT_CLP_DESCRIPTORS_HPP
 #define ELRAT_CLP_DESCRIPTORS_HPP
 
