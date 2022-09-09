@@ -2,15 +2,15 @@
 
 ## What is it?
 
-Reading a command line from some source (a user-interface, a script file, ...) usually is followed by these three steps
+Reading a command line from some source (a user-interface, a script file, ...) usually involves these next three steps
 
-1. Parse input into logical pieces
-1. Check if pieces satisfy syntax rules and other constraints
-1. Invoke an appropriate function that works with the input data.
-
-The library aims to provide a simple way for the application programmer to describe and define application-specific commands. Once everything is set up, the incoming command lines can be forwarded to the command line processor, which then parses and validates the input and invokes the corresponding input handler. 
+1. Parse input into logical pieces (commands and parameters, operands and operators, ...)
+1. Check if the pieces satisfy application specific syntax rules and other constraints
+1. Invoke an appropriate input handler that works on the parsed data.
 
 ![](docs/img/top-level-principle.png)
+
+The library aims to provide a convenient way to describe application-specific commands. These descriptions can be used to generate help-messages for the user. Internally the descriptions are used to determine whether an issued command line is valid or not. If it is valid, the corresponding input handler is invoked. Within the handler all parameters and options are safe to use in their intended ways, because types and value ranges have already been validated.
 
 ## Build
 
