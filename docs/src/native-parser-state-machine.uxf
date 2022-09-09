@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.0.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>740</x>
+      <y>230</y>
+      <w>160</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>Expecting
+*Command*</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>890</x>
+      <y>480</y>
+      <w>110</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+received
+Equal Sign</panel_attributes>
+    <additional_attributes>10.0;10.0;30.0;10.0;30.0;80.0;10.0;80.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>890</x>
+      <y>390</y>
+      <w>100</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+received
+Option</panel_attributes>
+    <additional_attributes>10.0;10.0;30.0;10.0;30.0;80.0;10.0;80.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>850</x>
+      <y>300</y>
+      <w>190</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r1= received\n Option-Pack\n or\n Command-Parameter</panel_attributes>
+    <additional_attributes>50.0;60.0;70.0;60.0;70.0;10.0;10.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>740</x>
+      <y>340</y>
+      <w>160</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>Expecting one of the 
+following tokens
+*Option*
+*Option-Pack*
+*Command-Parameter*</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>320</x>
+      <y>200</y>
+      <w>210</w>
+      <h>330</h>
+    </coordinates>
+    <panel_attributes>style=wordwrap
+
+_*Nomenclature*_
+
+*Command*
+-------
+A name like "my-cmd". Zero or more parameters can be attached to the command. For example: "my-cmd hello 123".
+
+*Option*
+------
+Two dashes followed by a name, e.g. "--option-name". An option followed by an equal sign "=" takes exactly one parameter, like "--length = 5". 
+
+*Option-Pack*
+-----------
+A single dash followed by at least one letter, each representing one option, e.g. "-abc" sets options "a", "b" and "c"</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>740</x>
+      <y>460</y>
+      <w>160</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>Expecting 
+*Equal sign*</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>740</x>
+      <y>550</y>
+      <w>160</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>Expecting 
+*Option-Parameter*</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>810</x>
+      <y>410</y>
+      <w>30</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>760</x>
+      <y>260</y>
+      <w>80</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r1=received\nCommand</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;80.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>610</x>
+      <y>390</y>
+      <w>150</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+r1= received \n Option-Parameter </panel_attributes>
+    <additional_attributes>130.0;170.0;110.0;170.0;110.0;10.0;130.0;10.0</additional_attributes>
+  </element>
+</diagram>
