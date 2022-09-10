@@ -74,8 +74,8 @@ namespace ParameterValidation
 namespace OptionValidation
 {
 	OptionDescriptorPtr createOptionDescriptor() {
-	    return makeOptionDescriptor( "option", "description", {
-            makeParameterDescriptor(
+	    return OptionDescriptor::Create( "option", "description", {
+            ParameterDescriptor::Create(
                 "p0", "description",
                 Mandatory,
                 ParameterType::NaturalNumber, {
@@ -83,7 +83,7 @@ namespace OptionValidation
                     Not(20)
                 }
             ),
-            makeParameterDescriptor(
+            ParameterDescriptor::Create(
                 "p1", "p1description",
                 Mandatory,
                 ParameterType::WholeNumber, {
@@ -91,7 +91,7 @@ namespace OptionValidation
                     Not(0)
                 }
             ),
-            makeParameterDescriptor(
+            ParameterDescriptor::Create(
                 "p2", "p2description",
                 Optional,
                 ParameterType::Identifier, {
@@ -138,11 +138,11 @@ namespace CommandValidation
 {
 	CommandDescriptorPtr createCommandDescriptor() 
     {
-	    return makeCommandDescriptor(
+	    return CommandDescriptor::Create(
 	        "cube",
 	        "create a customized cube.", 
             {
-	            makeParameterDescriptor(
+	            ParameterDescriptor::Create(
 	                "size", 
 	                "Edge length",
 	                Mandatory,
@@ -150,11 +150,11 @@ namespace CommandValidation
                 )
             },
             {
-	            makeOptionDescriptor(
+	            OptionDescriptor::Create(
 	                "color",
 	                "Defines the surface color of the cube.", 
                     {
-	                    makeParameterDescriptor(
+	                    ParameterDescriptor::Create(
 	                        "clr",
 	                        "color",
 	                        Mandatory,
@@ -165,7 +165,7 @@ namespace CommandValidation
                         )
                     }
                 ),
-                makeOptionDescriptor(
+                OptionDescriptor::Create(
                     "ice",
                     "Create an IceCube instead."
                 )

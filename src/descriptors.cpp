@@ -43,45 +43,6 @@ bool ParameterType::Path(const std::string& s)
     return (IsWindowsPath(s) || IsUnixPath(s));
 }
 
-CommandDescriptorPtr clp::makeCommandDescriptor(
-    const std::string& name,
-    const std::string& description,
-    const ParameterDescriptors& parameters,
-    const OptionDescriptors& options)
-{
-    return std::make_shared<CommandDescriptor>(
-        name,
-        description,
-        parameters,
-        options);
-}
-
-OptionDescriptorPtr clp::makeOptionDescriptor(
-    const std::string& name,
-    const std::string& description,
-    const ParameterDescriptors& parameters )
-{
-    return std::make_shared<OptionDescriptor>(
-        name,
-        description,
-        parameters);
-}
-
-ParameterDescriptorPtr clp::makeParameterDescriptor(
-    const std::string& name,
-    const std::string& description,
-    bool required,
-    TypeChecker type_checker,
-    Constraints constraints )
-{
-    return std::make_shared<ParameterDescriptor>(
-        name,
-        description,
-        required,
-        type_checker,
-        constraints );
-}
-
 //-----------------------------------------------------------------------------
 
 HasName::HasName( const std::string& s ) 
@@ -159,6 +120,18 @@ void HasParameters::validate(const Arguments& args) const
 
 //-----------------------------------------------------------------------------
 
+ParameterDescriptorPtr ParameterDescriptor::Create(
+    const std::string& name,
+    const std::string& description,
+    bool required,
+    TypeChecker type_checker,
+    Constraints constraints )
+{
+    return std::make_shared<ParameterDescriptor>( 
+        name, description, required, type_checker, constraints );
+}
+
+
 ParameterDescriptor::ParameterDescriptor(
     const std::string& name,
     const std::string& description,
@@ -202,6 +175,15 @@ void ParameterDescriptor::validate(const Argument& arg) const
 
 //-----------------------------------------------------------------------------
 
+OptionDescriptorPtr OptionDescriptor::Create(
+    const std::string& name,
+    const std::string& description,
+    const ParameterDescriptors& parameters )
+{
+    return std::make_shared<OptionDescriptor>(name, description, parameters);
+}
+
+
 OptionDescriptor::OptionDescriptor(
     const std::string& name,
     const std::string& description,
@@ -223,6 +205,15 @@ bool OptionDescriptor::validate( const Argument& name,const Arguments& args ) co
 }
 
 //-----------------------------------------------------------------------------
+
+CommandDescriptorPtr CommandDescriptor::Create(
+    const std::string& name,
+    const std::string& description,
+    const ParameterDescriptors& parameters,
+    const OptionDescriptors& options)
+{
+    return std::make_shared<CommandDescriptor>(name, description, parameters, options);
+}
 
 CommandDescriptor::CommandDescriptor(
     const std::string& name,
@@ -273,7 +264,12 @@ bool CommandDescriptor::validate( const CommandLine& cmdline) const
 
 DescriptorMapPtr DescriptorMap::Create(const std::string& name)
 {
-    return DescriptorMapPtr(new DescriptorMap(name));
+    return std::make_shared<DescriptorMap>(name);
+}
+
+DescriptorMap::DescriptorMap(const std::string& name)
+: HasName(name)
+{
 }
 
 void DescriptorMap::attach(CommandDescriptorPtr p)
@@ -295,7 +291,3 @@ bool DescriptorMap::validate(const CommandLine& cmdline) const
     return false;
 }
 
-DescriptorMap::DescriptorMap(const std::string& name)
-: HasName(name)
-{
-}

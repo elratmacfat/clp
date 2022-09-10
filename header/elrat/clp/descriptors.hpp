@@ -51,27 +51,6 @@ public:
     ParameterType() = delete;
 };
 
-CommandDescriptorPtr makeCommandDescriptor(
-    const std::string& name,
-    const std::string& description = "",
-    const ParameterDescriptors& parameters = {},
-    const OptionDescriptors& options = {}
-);
-
-OptionDescriptorPtr makeOptionDescriptor(
-    const std::string& name,
-    const std::string& description = "",
-    const ParameterDescriptors& parameters = {}
-);
-
-ParameterDescriptorPtr makeParameterDescriptor(
-    const std::string& name,
-    const std::string& description = "",
-    bool requirement = Mandatory,
-    TypeChecker type_checker = ParameterType::Any,
-    Constraints constraints = {}
-);
-
 template <class T> ConstraintPtr AtLeast(const T& t);
 template <class T> ConstraintPtr AtMost(T&& t);
 template <class T> ConstraintPtr InRange(T&& t1, T&& t2);
@@ -121,6 +100,12 @@ class ParameterDescriptor
 , public HasDescription
 {
 public:
+    static ParameterDescriptorPtr Create(
+	    const std::string& name,
+	    const std::string& description = "",
+	    bool requirement = Mandatory,
+	    TypeChecker type_checker = ParameterType::Any,
+	    Constraints constraints = {});
     ParameterDescriptor(
         const std::string&,
         const std::string&,
@@ -145,6 +130,10 @@ class OptionDescriptor
 , public HasParameters
 {
 public:
+    static OptionDescriptorPtr Create(
+        const std::string& name,
+        const std::string& description = "",
+        const ParameterDescriptors& parameters = {});
     OptionDescriptor(
         const std::string&,
         const std::string&,
@@ -161,6 +150,12 @@ class CommandDescriptor
 , public HasParameters
 {
 public:
+    static CommandDescriptorPtr Create(
+        const std::string& name,
+        const std::string& description = "",
+        const ParameterDescriptors& parameters = {},
+        const OptionDescriptors& options = {});
+
     CommandDescriptor(
         const std::string&,
         const std::string&,
@@ -181,10 +176,10 @@ class DescriptorMap
 {
 public:
     static DescriptorMapPtr Create(const std::string& = "Commands");
+    DescriptorMap(const std::string&);
     void attach(CommandDescriptorPtr);
     bool validate(const CommandLine&) const;
 private:
-    DescriptorMap(const std::string&);
     std::vector<CommandDescriptorPtr> descriptors;
 };
 
