@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <elrat/clp/commandline.hpp>
+#include <elrat/clp/errorhandling.hpp>
 
 namespace elrat {
 namespace clp {
@@ -51,10 +52,10 @@ public:
     ParameterType() = delete;
 };
 
-template <class T> ConstraintPtr AtLeast(const T& t);
+template <class T> ConstraintPtr AtLeast(T&& t);
 template <class T> ConstraintPtr AtMost(T&& t);
 template <class T> ConstraintPtr InRange(T&& t1, T&& t2);
-template <class T> ConstraintPtr Not(T&& t);
+template <class T, class...TT> ConstraintPtr Not(T first, TT...others);
 template <class T, class...TT> ConstraintPtr In(T first, TT...others);
 
 
@@ -202,49 +203,55 @@ T convert(const std::string& arg)
     return result;
 }
 
-// Base class for concrete parameter constraints
-//
-// Provides a constructor that takes an arbitrary amount of arguments of the
-// same type. Subclasses can access the protected elements with:
-//    this->values.at(i)
-//
-template <class T>
-class args_t
+template <class T, int N=0> // N = number of expected arguments, 0 = any
+class AcceptArgsOfSameType
 {
 public:
     template <class TT, class...Args>
-    args_t( const TT& first, Args...args )
-    {
-        init( first, args... );
+    AcceptArgsOfSameType( const TT& first, Args...args ) {
+        initializeValues( first, args... );
+        if ( N ) 
+            throwIf( N != values.size() );
     }
-    virtual ~args_t()
-    {
+
+    virtual ~AcceptArgsOfSameType() {
     }
-    T getValue(int i) 
-    {
+
+    const T& getValue(int i) const {
         return values.at(i);
     }
 private:
     template <class TT, class...Args>
-    void init( const TT& first, Args...args ) {
+    void initializeValues( const TT& first, Args...args ) {
         values.push_back(first);
-        return init( args... );
+        return initializeValues( args... );
     }
+
     template <class TT>
-    void init( const TT& last ) {
+    void initializeValues( const TT& last ) {
         values.push_back(last);
     }
+
+    void throwIf(bool b) {
+        if ( b )
+            throw InitializationException(
+                "Constraint parameter count mismatch.",
+                std::to_string(N) 
+                + " expected, but found " 
+                + std::to_string(values.size()));
+    }
+
 protected:
     std::vector<T> values;
 };
 
 template <class T>
-class constraint_at_least
+class ConstraintAtLeast
 : public Constraint
-, public args_t<T>
+, public AcceptArgsOfSameType<T,1>
 {
 public:
-    using args_t<T>::args_t;
+    using AcceptArgsOfSameType<T,1>::AcceptArgsOfSameType;
     bool validate(const std::string& s) const 
     {
         return (convert<T>(s) >= this->values.at(0));
@@ -252,12 +259,12 @@ public:
 };
 
 template <class T>
-class constraint_at_most
+class ConstraintAtMost
 : public Constraint
-, public args_t<T>
+, public AcceptArgsOfSameType<T,1>
 {
 public:
-    using args_t<T>::args_t;
+    using AcceptArgsOfSameType<T,1>::AcceptArgsOfSameType;
     bool validate(const std::string& s) const 
     {
         return (convert<T>(s) <= this->values.at(0));
@@ -265,26 +272,30 @@ public:
 };
 
 template <class T>
-class constraint_is_not
+class ConstraintIsNot
 : public Constraint
-, public args_t<T>
+, public AcceptArgsOfSameType<T>
 {
 public:
-    using args_t<T>::args_t;
+    using AcceptArgsOfSameType<T>::AcceptArgsOfSameType;
     bool validate(const std::string& s) const 
     {
-        return (convert<T>(s) != this->values.at(0));
+        T arg{ convert<T>(s) };
+        for( auto& value : this->values )
+            if ( arg == value )
+                return false;
+        return true;
     }
 };
 
 
 template <class T>
-class constraint_in_range
+class ConstraintInRange
 : public Constraint
-, public args_t<T>
+, public AcceptArgsOfSameType<T,2>
 {
 public:
-    using args_t<T>::args_t;
+    using AcceptArgsOfSameType<T,2>::AcceptArgsOfSameType;
     bool validate(const std::string& s) const 
     {
         T x = convert<T>(s);
@@ -295,12 +306,12 @@ public:
 };
 
 template <class T>
-class constraint_in
+class ConstraintIsIn
 : public Constraint
-, public args_t<T>
+, public AcceptArgsOfSameType<T>
 {
 public:
-    using args_t<T>::args_t;
+    using AcceptArgsOfSameType<T>::AcceptArgsOfSameType;
     bool validate(const std::string& s) const 
     {
         T x = convert<T>(s);
@@ -312,33 +323,33 @@ public:
 };
 
 template <class T> 
-ConstraintPtr AtLeast(const T& t) 
+ConstraintPtr AtLeast(T&& t) 
 {
-    return std::make_shared<constraint_at_least<T>>(t);
+    return std::make_shared<ConstraintAtLeast<T>>(t);
 }
 
 template <class T> 
 ConstraintPtr AtMost(T&& t)
 {
-    return std::make_shared<constraint_at_most<T>>(std::move(t));
+    return std::make_shared<ConstraintAtMost<T>>(std::move(t));
 }
 
 template <class T> 
 ConstraintPtr InRange(T&& t1, T&& t2)
 {
-    return std::make_shared<constraint_in_range<T>>(t1,t2);
+    return std::make_shared<ConstraintInRange<T>>(t1,t2);
 }
 
-template <class T> 
-ConstraintPtr Not(T&& t)
+template <class T, class...TT> 
+ConstraintPtr Not(T first, TT...rest)
 {
-    return std::make_shared<constraint_is_not<T>>(std::move(t));
+    return std::make_shared<ConstraintIsNot<T>>(first, rest...);
 }
 
 template <class T, class...TT> 
 ConstraintPtr In(T first, TT...rest)
 {
-    return std::make_shared<constraint_in<T>>(first, rest...);
+    return std::make_shared<ConstraintIsIn<T>>(first, rest...);
 }
 
 
