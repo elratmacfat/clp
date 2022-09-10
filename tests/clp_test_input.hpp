@@ -3,7 +3,6 @@
 
 #include <elrat/clp.hpp>
 
-elrat::clp::Processor createProcessor();
 
 #endif
 

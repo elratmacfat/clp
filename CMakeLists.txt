@@ -18,7 +18,7 @@ SET( LibOutputDir "${CMAKE_CURRENT_BINARY_DIR}/lib" )
 SET( HeaderFiles
     "${HeaderDir}/elrat/clp.hpp" 
     "${HeaderDir}/elrat/clp/commandline.hpp"
-    "${HeaderDir}/elrat/clp/commands.hpp"
+    "${HeaderDir}/elrat/clp/commandmap.hpp"
     "${HeaderDir}/elrat/clp/descriptors.hpp"
     "${HeaderDir}/elrat/clp/errorhandling.hpp"
     "${HeaderDir}/elrat/clp/parser.hpp"
@@ -31,7 +31,7 @@ SET( IncludeFiles
 
 SET( SourceFiles 
     "${SourceDir}/commandline.cpp"
-    "${SourceDir}/commands.cpp"
+    "${SourceDir}/commandmap.cpp"
     "${SourceDir}/descriptors.cpp"
     "${SourceDir}/errorhandling.cpp"
     "${SourceDir}/ostream.cpp"

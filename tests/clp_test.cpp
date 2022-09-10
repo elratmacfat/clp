@@ -30,8 +30,22 @@ BOOST_AUTO_TEST_SUITE( NO_CONTEXT )
         BOOST_CHECK_THROW( processor.attach( basic_cmd_2), 
             InitializationException );
     }
+    
+    BOOST_AUTO_TEST_CASE( CALLBACK )
+    {
+
+        std::shared_ptr<Add> add = Add::Create();
+        processor.attach( createDescriptorMap() );
+        processor.attach( "add", add );
+        BOOST_CHECK( !add->isInitialized() );
+
+        BOOST_CHECK_NO_THROW( processor.process("add 40.1 1.9") );
+
+        BOOST_CHECK( add->isInitialized() );
+        BOOST_CHECK_EQUAL( add->getValue(), 42.0 );
+
+    }
 
 BOOST_AUTO_TEST_SUITE_END()
-
 
 
