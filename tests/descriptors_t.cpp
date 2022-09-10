@@ -239,25 +239,37 @@ BOOST_AUTO_TEST_SUITE( OPTION_VALIDATION )
     BOOST_AUTO_TEST_CASE( MISSING_PARAMETERS )
     {   
         for( auto& opt_parameters : missing_parameters )
-            CheckThrow<InputException>( opt_desc, opt_desc->getName(), opt_parameters );    
+            CheckThrow<MissingParametersException>( 
+                opt_desc, 
+                opt_desc->getName(), 
+                opt_parameters );    
     }
     
     BOOST_AUTO_TEST_CASE( TOO_MANY_PARAMETERS )
     {   
         for( auto& opt_parameters : too_many_parameters )
-            CheckThrow<InputException>( opt_desc, opt_desc->getName(), opt_parameters );    
+            CheckThrow<TooManyParametersException>( 
+                opt_desc, 
+                opt_desc->getName(), 
+                opt_parameters );    
     }
 
     BOOST_AUTO_TEST_CASE( INVALID_PARAMETER_TYPE )
     {   
         for( auto& opt_parameters : invalid_parameter_types )
-            CheckThrow<InputException>( opt_desc, opt_desc->getName(), opt_parameters );    
+            CheckThrow<InvalidParameterTypeException>( 
+                opt_desc, 
+                opt_desc->getName(), 
+                opt_parameters );    
     }
 
     BOOST_AUTO_TEST_CASE( INVALID_PARAMETER_VALUE )
     {   
         for( auto& opt_parameters : invalid_parameter_values )
-            CheckThrow<InputException>( opt_desc, opt_desc->getName(), opt_parameters );    
+            CheckThrow<InvalidParameterValueException>( 
+                opt_desc, 
+                opt_desc->getName(), 
+                opt_parameters );    
     }
 
 BOOST_AUTO_TEST_SUITE_END(); // OPTION_VALIDATION
@@ -298,8 +310,6 @@ BOOST_AUTO_TEST_SUITE( COMMAND_VALIDATION )
         for( auto& c : cls )
             CheckThrow<TooManyParametersException>(cmd, c);
     }
-
-    
 BOOST_AUTO_TEST_SUITE_END(); // COMMAND_VALIDATION 
 
 
