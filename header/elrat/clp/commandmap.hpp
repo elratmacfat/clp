@@ -1,5 +1,5 @@
-#ifndef ELRAT_CLP_COMMANDS_HPP
-#define ELRAT_CLP_COMMANDS_HPP
+#ifndef ELRAT_CLP_COMMANDMAP_HPP
+#define ELRAT_CLP_COMMANDMAP_HPP
 
 #include <elrat/clp/commandline.hpp>
 
@@ -40,7 +40,7 @@ private:
     Function function;
 };
 
-class Commands 
+class CommandMap 
 {
 public:
     void attach(const std::string& name, CommandPtr);

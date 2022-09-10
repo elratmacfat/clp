@@ -1,4 +1,4 @@
-#include "elrat/clp/commands.hpp"
+#include "elrat/clp/commandmap.hpp"
 #include "elrat/clp/errorhandling.hpp"
 
 using namespace elrat::clp;
@@ -19,23 +19,23 @@ void CommandWrapper::execute(const CommandLine& cmdline)
     function(cmdline);
 }
 
-void Commands::attach(const std::string& name, CommandPtr ptr)
+void CommandMap::attach(const std::string& name, CommandPtr ptr)
 {
-    static const std::string where{"Commands::attach()"};
+    static const std::string where{"CommandMap::attach()"};
     throwIfEmpty(name, where);
     throwIfNull(ptr, where);
     
     std::vector<CommandPtr>& pointers = commands[name];
     for(auto& p : pointers)
         if (p == ptr)
-            throw AlreadyInUseException("Commands::attach(): CommandPtr");
+            throw AlreadyInUseException("CommandMap::attach(): CommandPtr");
     
     pointers.push_back( ptr );
 }
 
-void Commands::detach(const std::string& name, CommandPtr ptr)
+void CommandMap::detach(const std::string& name, CommandPtr ptr)
 {
-    throwIfEmpty(name,"Commands::detach()");
+    throwIfEmpty(name,"CommandMap::detach()");
 
     std::vector<CommandPtr>& pointers{ commands[name] };
     if (ptr)
@@ -49,20 +49,20 @@ void Commands::detach(const std::string& name, CommandPtr ptr)
         pointers.clear();
 }
 
-const std::vector<CommandPtr>& Commands::find(const std::string& name) const 
+const std::vector<CommandPtr>& CommandMap::find(const std::string& name) const 
 {
     if (commands.find(name) == commands.end())
         throw CommandNotFoundException(name);
     return commands.at(name);
 }
 
-void Commands::throwIfEmpty(const std::string& candidate, const std::string& where)
+void CommandMap::throwIfEmpty(const std::string& candidate, const std::string& where)
 {
     if (!candidate.size())
         throw EmptyStringException(where);
 }
 
-void Commands::throwIfNull(CommandPtr p, const std::string& where )
+void CommandMap::throwIfNull(CommandPtr p, const std::string& where )
 {
     if (!p)
         throw NullptrAssignmentException(where);
