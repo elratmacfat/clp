@@ -2,40 +2,9 @@
 
 [Back to overview](../README.md)
 
-This file yields some information about the implementation. This information is incomplete and possibly out-of-date.
-
-## Top level view
-
-The **Parser**'s responsibility is to convert a command line, that's been received from the application(e.g. `help me --i-am-lost`), into the library's data structure **CommandLine**.
-
-Every **CommandDescriptor** gets to see the parsed *CommandLine*-object, and decides whether it matches its signature or not.
-
-If the *CommandLine* is considered valid, the corresponding **Command** will be invoked, which can safely operate on the *CommandLine*.
-
-![](img/top-level-classes.png)
-
-## Command Line
-
-A command line is defined as follows.
-
-- A command line consists of at least one element.
-- Exactly one element is considered to be the command.
-- Zero or more parameter can be associated with a command.
-- A command can have zero or more options.
-- An option can have zero or more parameters.
-
-![](img/commandline.png)
-
-A concrete parser can put further restrictions on this definition, but cannot losen it up. The `NativeParser` described in the next section, for example, defines with its syntax rules, that an option can have either zero or exactly one parameter.
-
-
-## Parser
+### The library's default parser
 
 The `NativeParser` is the concrete parser that comes with the library, and is deployed by default. The application programmer however can override this by providing an own parser implementation.
-
-### `NativeParser` 
-
-![](img/native-parser-state-machine.png)
 
 #### Command
 
@@ -73,3 +42,7 @@ Syntax examples:
 ```
 tar -cvf
 ```
+
+#### State machine 
+
+![](img/native-parser-state-machine.png)
