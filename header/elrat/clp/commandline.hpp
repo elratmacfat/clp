@@ -22,6 +22,7 @@ public:
     const std::string& getOption(int) const;
     
     const Parameters& getCommandParameters() const;
+    const std::string& getCommandParameter(int) const;
     const Parameters& getOptionParameters(const std::string&) const;
     const Parameters& getOptionParameters(int) const;
 

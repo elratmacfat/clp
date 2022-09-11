@@ -38,6 +38,11 @@ const Parameters& CommandLine::getCommandParameters() const
     return parameters;
 }
 
+const std::string& CommandLine::getCommandParameter(int index) const
+{
+    return parameters.at(index);
+}
+
 const Parameters& CommandLine::getOptionParameters(const std::string& option_name ) const
 {
     for( auto& opt: options )
