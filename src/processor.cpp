@@ -18,9 +18,26 @@ void Processor::attach(DescriptorMapPtr p)
     descriptor_maps.push_back(p);
 }
 
+void Processor::attach(CommandDescriptorPtr p)
+{
+    if ( descriptor_maps.size() > 1 )
+        throw InitializationException("Processor::attach()",
+            "Please attach CommandDescriptor to existing DescriptorMap directly!");
+    if ( !descriptor_maps.size() )
+        descriptor_maps.push_back(DescriptorMap::Create("Commands"));
+    descriptor_maps[0]->attach(p);
+}
+
 void Processor::attach(const std::string& name, CommandPtr ptr)
 {
     command_map.attach(name,ptr);
+}
+
+void Processor::attach(
+    const std::string& name, 
+    std::function<void(const CommandLine&)> function)
+{
+    command_map.attach(name, Command::Create<CommandWrapper>(function));
 }
 
 bool Processor::process(const std::string& input) const

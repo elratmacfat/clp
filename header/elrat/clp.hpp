@@ -19,8 +19,10 @@ namespace clp {
         Processor( std::shared_ptr<Parser> = std::make_shared<NativeParser>() );
         
         void attach(DescriptorMapPtr);
-      
+        void attach(CommandDescriptorPtr);
+
         void attach(const std::string&, CommandPtr);
+        void attach(const std::string&, std::function<void(const CommandLine&)>);
 
         bool process(const std::string&) const;
         
