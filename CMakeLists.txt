@@ -11,6 +11,7 @@ SET( TestSourceDir "${CMAKE_CURRENT_SOURCE_DIR}/tests" )
 
 SET( TestOutputDir "${CMAKE_CURRENT_BINARY_DIR}/tests" )
 SET( ToolsOutputDir "${CMAKE_CURRENT_BINARY_DIR}/tools" )
+SET( ExamplesOutputDir "${CMAKE_CURRENT_BINARY_DIR}/examples" )
 SET( LibOutputDir "${CMAKE_CURRENT_BINARY_DIR}/lib" )
 
 ### L I B R A R Y #############################################################
@@ -65,6 +66,16 @@ TARGET_LINK_LIBRARIES( inspector
 SET_TARGET_PROPERTIES( inspector 
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${ToolsOutputDir} )
+
+### E X A M P L E S ###########################################################
+
+ADD_EXECUTABLE( helloworld
+    "${SourceDir}/examples/helloworld.cpp" )
+TARGET_LINK_LIBRARIES( helloworld
+    PUBLIC clp )
+SET_TARGET_PROPERTIES( helloworld 
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${ExamplesOutputDir} )
 
 ### T E S T ###################################################################
 
