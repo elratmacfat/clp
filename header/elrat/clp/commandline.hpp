@@ -1,6 +1,8 @@
 #ifndef ELRAT_CLP_COMMANDLINE_HPP
 #define ELRAT_CLP_COMMANDLINE_HPP
 
+#include <elrat/clp/convert.hpp>
+
 #include <string>
 #include <vector>
 
@@ -38,8 +40,6 @@ private:
     std::string command;
     Parameters  parameters;
     Options     options;
-
-    template <class T> T convert(const std::string&) const;
 };
 
 template <class T> 
@@ -66,16 +66,6 @@ T CommandLine::getOptionParameterAs(int opt_index, int param_index) const
 {
     return convert<T>( options.at(opt_index).second.at(param_index) );
 }
-
-template <class T> 
-T CommandLine::convert(const std::string& param) const
-{
-    std::stringstream ss( param );
-    T result;
-    ss >> result;
-    return result;
-}
-
 
 } // clp
 } // elrat

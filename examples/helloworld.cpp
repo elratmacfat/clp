@@ -2,9 +2,13 @@
 #include <cctype>
 #include <iostream>
 
-using namespace elrat;
+using namespace elrat::clp;
 
-void sayHello(const clp::CommandLine& cmdline)
+// Command
+// -------
+// Prints 'hello' followed by the provided argument. If the option 'shout' is set,
+// all letters will be capitalized.
+void sayHello(const CommandLine& cmdline)
 {
     std::string msg("Hello ");
     msg += cmdline.getCommandParameter(0);
@@ -16,51 +20,69 @@ void sayHello(const clp::CommandLine& cmdline)
     std::cout << '\n';
 }
 
-int main()
+// Descriptor
+// ----------
+// Provides a precise description, which is used to validate issued command lines.
+CommandDescriptorPtr createSayHelloDescriptor() 
 {
-    clp::CommandDescriptorPtr descriptor = clp::CommandDescriptor::Create (
+    return CommandDescriptor::Create(
         "sayhello",
-        "Greet someone or something",
-        {
-            clp::ParameterDescriptor::Create(
+        "Greet someone or something", {
+            ParameterDescriptor::Create(
                 "someone",
                 "The one you want to greet.",
-                clp::Mandatory,
-                clp::ParameterType::Name
-            )
-        },
-        {
-            clp::OptionDescriptor::Create("shout")
+                Mandatory,
+                ParameterType::Name, {
+                    Not<std::string>("me", "you")
+                })
+        }, {
+            OptionDescriptor::Create("shout")
         }
     );
+}
 
-    clp::Processor processor;
-
-    processor.attach( descriptor );
-    processor.attach( descriptor->getName(), sayHello );
-
-    const std::vector<std::string> lines{
-         "sayhello World"           // OK
-        ,"sayhello World --shout"   // OK
-        ,"sayhello --shout World"   // OK
+// Input 
+// -----
+// Creates input command lines, some of which are valid. Others are not.
+std::vector<std::string> createInput() 
+{
+    return std::vector<std::string>{
+         "sayhello World"   
+        ,"sayhello World --shout"
+        ,"sayhello --shout World" 
         ,"sayhello not@name"        // @ is an invalid character in 'ParameterType::Name'
         ,"sayhello"                 // Missing parameter which is declared 'Mandatory'
         ,"sayhello world --whisper" // Undefined option
+        ,"sayhello me"              // Disallowed parameter value
+        ,"sayhello you"             // Disallowed parameter value
     };
+}
 
-    for(auto& line : lines)
-    {
-        std::cout << "> " << line << "\n";
-        try 
-        {
+// Main
+// ----
+// Configure the processor (which is default constructed, and thus deploys the built-in
+// parser), and let it process the input lines defined above.
+// Processing a command line involves the following steps:
+// 1. parsing
+// 2. validating
+// 3. executing
+//
+int main()
+{
+    Processor processor;                                
+    auto descriptor = createSayHelloDescriptor();      
+    processor.attach(descriptor);
+    processor.attach(descriptor->getName(), sayHello); 
+
+    auto lines{ createInput() };
+    for(auto& line : lines) {
+        std::cout << "\n> " << line << "\n";
+        try {
             processor.process(line);
         }
-        catch( clp::InputException& exception )
-        {
+        catch( InputException& exception ) {
             std::cout << exception.what() << '\n';
         }
-        std::cout << '\n';
     }
-
     return 0;
 }

@@ -193,20 +193,14 @@ public:
     virtual bool validate(const std::string&) const = 0;
 };
 
-template <class T>
-T convert(const std::string& arg) 
-{
-    std::stringstream ss;
-    ss << arg;
-    T result;
-    ss >> result;
-    return result;
-}
-
 template <class T, int N=0> // N = number of expected arguments, 0 = any
 class AcceptArgsOfSameType
 {
+    static_assert( 
+        !std::is_same<T,const char*>::value,
+        "\n\nYou need to explicitely use 'std::string'. I can't handle 'const char*'\n");
 public:
+
     template <class TT, class...Args>
     AcceptArgsOfSameType( const TT& first, Args...args ) {
         initializeValues( first, args... );
