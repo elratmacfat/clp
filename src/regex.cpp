@@ -1,6 +1,5 @@
-#include <regex>
-
 #include "regex.hpp"
+#include <regex>
 
 RegEx::RegEx(const std::string& regular_expression)
 : regex(regular_expression)

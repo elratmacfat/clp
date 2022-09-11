@@ -1,8 +1,7 @@
-#include <stdexcept>
-
-#include <elrat/clp.hpp>
+#include "elrat/clp.hpp"
 #include "parser.hpp"
 
+#include <stdexcept>
 
 using elrat::clp::CommandLine;
 using elrat::clp::Parser;

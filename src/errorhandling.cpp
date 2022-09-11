@@ -1,6 +1,4 @@
-#include "elrat/clp/errorhandling.hpp" // public header
-
-#include <sstream>
+#include "elrat/clp/errorhandling.hpp"
 
 using namespace elrat;
 
