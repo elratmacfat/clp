@@ -4,10 +4,12 @@ PROJECT( clp CXX )
 
 SET( CMAKE_CXX_STANDARD 17 )
 
-SET( SourceDir "${CMAKE_CURRENT_SOURCE_DIR}/src" )
+SET( SourceDir "${CMAKE_CURRENT_SOURCE_DIR}/source" )
 SET( HeaderDir "${CMAKE_CURRENT_SOURCE_DIR}/header" )
-SET( IncludeDir "${CMAKE_CURRENT_SOURCE_DIR}/inc" )
+SET( IncludeDir "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 SET( TestSourceDir "${CMAKE_CURRENT_SOURCE_DIR}/tests" )
+SET( ToolsSourceDir "${CMAKE_CURRENT_SOURCE_DIR}/tools" )
+SET( ExamplesSourceDir "${CMAKE_CURRENT_SOURCE_DIR}/examples" )
 
 SET( TestOutputDir "${CMAKE_CURRENT_BINARY_DIR}/tests" )
 SET( ToolsOutputDir "${CMAKE_CURRENT_BINARY_DIR}/tools" )
@@ -62,7 +64,7 @@ SET_TARGET_PROPERTIES( clp
 ### T O O L S #################################################################
 
 ADD_EXECUTABLE( inspector 
-    "${SourceDir}/tools/inspector.cpp" )
+    "${ToolsSourceDir}/inspector.cpp" )
 TARGET_LINK_LIBRARIES( inspector 
     PUBLIC clp )
 SET_TARGET_PROPERTIES( inspector 
@@ -72,7 +74,7 @@ SET_TARGET_PROPERTIES( inspector
 ### E X A M P L E S ###########################################################
 
 ADD_EXECUTABLE( helloworld
-    "${SourceDir}/examples/helloworld.cpp" )
+    "${ExamplesSourceDir}/helloworld.cpp" )
 TARGET_LINK_LIBRARIES( helloworld
     PUBLIC clp )
 SET_TARGET_PROPERTIES( helloworld 
