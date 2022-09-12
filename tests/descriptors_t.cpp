@@ -81,6 +81,16 @@ BOOST_AUTO_TEST_SUITE( PARAMETER_VALIDATION )
             Check( ParameterType::Path, win_paths );
             Check( ParameterType::Path, nix_paths );
         }
+
+        BOOST_AUTO_TEST_CASE( EMAIL_ADDRESS )
+        {
+            Check( ParameterType::EmailAddress, email_addresses );
+        }
+
+        BOOST_AUTO_TEST_CASE( INVALID_EMAIL_ADDRESS )
+        {
+            FailCheck( ParameterType::EmailAddress, invalid_email_addresses );
+        }
     
     BOOST_AUTO_TEST_SUITE_END(); // TYPE 
         

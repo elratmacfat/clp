@@ -18,6 +18,8 @@ namespace ParameterValidation
     extern const std::vector<std::string> names;
     extern const std::vector<std::string> win_paths;
     extern const std::vector<std::string> nix_paths;
+    extern const std::vector<std::string> email_addresses;
+    extern const std::vector<std::string> invalid_email_addresses;
     
     // ParameterValidation/Constraint
     extern const std::vector<std::string> range_0_to_9; 

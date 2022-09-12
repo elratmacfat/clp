@@ -21,6 +21,7 @@ extern const RegEx IsName;
 extern const RegEx IsIdentifier;
 extern const RegEx IsWindowsPath;
 extern const RegEx IsUnixPath;
+extern const RegEx IsEmailAddress;
 
 #endif
 

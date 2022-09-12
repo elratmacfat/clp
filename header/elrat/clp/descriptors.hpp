@@ -49,6 +49,7 @@ public:
     static bool Name(const std::string&);
     static bool Identifier(const std::string&);
     static bool Path(const std::string&);
+    static bool EmailAddress(const std::string&);
     ParameterType() = delete;
 };
 

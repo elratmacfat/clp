@@ -43,6 +43,11 @@ bool ParameterType::Path(const std::string& s)
     return (IsWindowsPath(s) || IsUnixPath(s));
 }
 
+bool ParameterType::EmailAddress(const std::string& s)
+{
+    return IsEmailAddress(s);
+}
+
 //-----------------------------------------------------------------------------
 
 HasName::HasName( const std::string& s ) 

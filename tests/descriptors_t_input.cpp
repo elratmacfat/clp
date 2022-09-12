@@ -58,6 +58,25 @@ namespace ParameterValidation
 	    ,"relative path/containing spaces/"
 	};
 	
+    const std::vector<std::string> email_addresses {
+         "hello.world@server.com"
+        ,"hello-world@server.com"
+        ,"hello_world@server.com"
+        ,"a@a.a"
+        ,"a@a-a.a"
+        ,"a@a_a.a"
+    };
+
+    const std::vector<std::string> invalid_email_addresses {
+         "helloworld@@server.com"
+        ,"hello/world@server.com"
+        ,"abc?def@server.com"
+        ,"-abc@xxx.com"
+        ,"abc-@xxx.com"
+        ,"abc.-abc@abc.com"
+        ,"abc-def@abc-.com"
+    };
+
 	const std::vector<std::string> range_0_to_9{ 
 	    convertRangeToStrings(0,9,1) 
 	};
