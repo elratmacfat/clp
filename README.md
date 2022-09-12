@@ -8,7 +8,7 @@ The library's intent is to support the programmer by performing the necessary st
 
 ![](docs/img/processor-component.png)
 
-`Parser`, `DescriptorMap` and `CommandMap` have to be defined by the application (The library comes with a default parser, though). However, these three sub-components have one thing in common, the `CommandLine` class, that represents the logical structure of any instruction. In order to put this library to use, the following definition of a *command line* must be agreed on.
+`Parser`, `DescriptorMap` and `CommandMap` have to be initialized by the application (The library comes with a default parser, though). However, these three sub-components have one thing in common, the `CommandLine` class, that represents the logical structure of any instruction. In order to put this library to use, the following definition of a *command line* must be agreed on.
 
 - A command line has exactly one element that is called the *command*.
 - A command can have *options* and *parameters*.
