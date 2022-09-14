@@ -4,91 +4,87 @@
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>160</x>
-      <y>310</y>
+      <x>420</x>
+      <y>190</y>
       <w>90</w>
-      <h>50</h>
+      <h>40</h>
     </coordinates>
-    <panel_attributes>Receive 
-Command Line
+    <panel_attributes>Receive
 Input</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>290</x>
-      <y>310</y>
-      <w>90</w>
-      <h>50</h>
+      <x>560</x>
+      <y>190</y>
+      <w>80</w>
+      <h>40</h>
     </coordinates>
-    <panel_attributes>Parse input</panel_attributes>
+    <panel_attributes>Parse</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>240</x>
-      <y>320</y>
-      <w>70</w>
+      <x>500</x>
+      <y>200</y>
+      <w>80</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>lt=-&gt;</panel_attributes>
-    <additional_attributes>10.0;10.0;50.0;10.0</additional_attributes>
+    <additional_attributes>10.0;10.0;60.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>420</x>
-      <y>310</y>
-      <w>140</w>
-      <h>50</h>
+      <x>690</x>
+      <y>190</y>
+      <w>80</w>
+      <h>40</h>
     </coordinates>
-    <panel_attributes>Check if input
-is valid in the
-application context</panel_attributes>
+    <panel_attributes>Validate</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>370</x>
-      <y>320</y>
-      <w>70</w>
+      <x>630</x>
+      <y>200</y>
+      <w>80</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>lt=-&gt;</panel_attributes>
-    <additional_attributes>10.0;10.0;50.0;10.0</additional_attributes>
+    <additional_attributes>10.0;10.0;60.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>600</x>
-      <y>310</y>
-      <w>130</w>
-      <h>50</h>
+      <x>820</x>
+      <y>190</y>
+      <w>80</w>
+      <h>40</h>
     </coordinates>
-    <panel_attributes>Call some function
-utilizing the input</panel_attributes>
+    <panel_attributes>Process</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>550</x>
-      <y>320</y>
-      <w>70</w>
+      <x>760</x>
+      <y>200</y>
+      <w>80</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>lt=-&gt;</panel_attributes>
-    <additional_attributes>10.0;10.0;50.0;10.0</additional_attributes>
+    <additional_attributes>10.0;10.0;60.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>270</x>
-      <y>280</y>
-      <w>480</w>
+      <x>540</x>
+      <y>300</y>
+      <w>380</w>
       <h>100</h>
     </coordinates>
     <panel_attributes>symbol=component
@@ -98,8 +94,8 @@ Command Line Processor</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>240</x>
-      <y>570</y>
+      <x>490</x>
+      <y>470</y>
       <w>100</w>
       <h>30</h>
     </coordinates>
@@ -109,8 +105,8 @@ Command Line Processor</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>360</x>
-      <y>640</y>
+      <x>570</x>
+      <y>540</y>
       <w>100</w>
       <h>30</h>
     </coordinates>
@@ -120,8 +116,8 @@ Command Line Processor</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>130</x>
-      <y>640</y>
+      <x>410</x>
+      <y>540</y>
       <w>100</w>
       <h>30</h>
     </coordinates>
@@ -131,8 +127,8 @@ Command Line Processor</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>530</x>
-      <y>570</y>
+      <x>1090</x>
+      <y>100</y>
       <w>250</w>
       <h>100</h>
     </coordinates>
@@ -149,40 +145,356 @@ Command Line Processor</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>170</x>
-      <y>590</y>
-      <w>100</w>
+      <x>450</x>
+      <y>490</y>
+      <w>70</w>
       <h>70</h>
     </coordinates>
     <panel_attributes>lt=&lt;-
 has
 m1=0..n</panel_attributes>
-    <additional_attributes>10.0;50.0;10.0;20.0;80.0;20.0;80.0;10.0</additional_attributes>
+    <additional_attributes>10.0;50.0;10.0;20.0;50.0;20.0;50.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>320</x>
-      <y>590</y>
-      <w>130</w>
+      <x>570</x>
+      <y>490</y>
+      <w>90</w>
       <h>70</h>
     </coordinates>
     <panel_attributes>lt=&lt;-
 has
 m1=0..n</panel_attributes>
-    <additional_attributes>90.0;50.0;90.0;20.0;10.0;20.0;10.0;10.0</additional_attributes>
+    <additional_attributes>50.0;50.0;50.0;20.0;10.0;20.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>220</x>
-      <y>630</y>
-      <w>160</w>
+      <x>500</x>
+      <y>530</y>
+      <w>90</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>lt=&lt;-
 has
 m1=0..n</panel_attributes>
-    <additional_attributes>140.0;20.0;10.0;20.0</additional_attributes>
+    <additional_attributes>70.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>420</x>
+      <y>340</y>
+      <w>90</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>Receive
+Input</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>560</x>
+      <y>340</y>
+      <w>80</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>Parse</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>500</x>
+      <y>350</y>
+      <w>80</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;60.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>690</x>
+      <y>340</y>
+      <w>80</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>Validate</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>630</x>
+      <y>350</y>
+      <w>80</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;60.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>820</x>
+      <y>340</y>
+      <w>80</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>Process</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>760</x>
+      <y>350</y>
+      <w>80</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;60.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>1030</x>
+      <y>270</y>
+      <w>340</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>symbol=component
+Processor</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1040</x>
+      <y>300</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>Parser</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1150</x>
+      <y>360</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>CommandLine</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1150</x>
+      <y>300</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>DescriptorMap</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1260</x>
+      <y>300</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>CommandMap</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1070</x>
+      <y>320</y>
+      <w>100</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+
+produces</panel_attributes>
+    <additional_attributes>80.0;50.0;20.0;50.0;20.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1240</x>
+      <y>320</y>
+      <w>90</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+
+uses</panel_attributes>
+    <additional_attributes>10.0;50.0;70.0;50.0;70.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1190</x>
+      <y>320</y>
+      <w>80</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+validates
+</panel_attributes>
+    <additional_attributes>10.0;40.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>870</x>
+      <y>470</y>
+      <w>80</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>_:Command_</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>870</x>
+      <y>520</y>
+      <w>80</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>_:Option_</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>970</x>
+      <y>520</y>
+      <w>80</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>_:Parameter_</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>900</x>
+      <y>480</y>
+      <w>130</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>110.0;40.0;110.0;20.0;10.0;20.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>900</x>
+      <y>480</y>
+      <w>30</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;40.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>770</x>
+      <y>520</y>
+      <w>80</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>_:Option_</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>800</x>
+      <y>480</y>
+      <w>130</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;40.0;10.0;20.0;110.0;20.0;110.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>820</x>
+      <y>570</y>
+      <w>80</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>_:Parameter_</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>850</x>
+      <y>530</y>
+      <w>80</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;40.0;10.0;20.0;60.0;20.0;60.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>920</x>
+      <y>570</y>
+      <w>80</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>_:Parameter_</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>900</x>
+      <y>530</y>
+      <w>80</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>60.0;40.0;60.0;20.0;10.0;20.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1060</x>
+      <y>520</y>
+      <w>80</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>_:Parameter_</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>900</x>
+      <y>480</y>
+      <w>220</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>200.0;40.0;200.0;20.0;10.0;20.0;10.0;10.0</additional_attributes>
   </element>
 </diagram>
