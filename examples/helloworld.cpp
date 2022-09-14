@@ -66,7 +66,7 @@ int main()
         sayHello);
 
     for(auto& line : input_sequences ) {
-        std::cout << "\n> " << line << "\n";
+        std::cout << "> " << line << "\n";
         try {
             processor.process(line);
         }
