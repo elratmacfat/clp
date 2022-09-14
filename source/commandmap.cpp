@@ -1,22 +1,11 @@
 #include "elrat/clp/commandmap.hpp"
 #include "elrat/clp/errorhandling.hpp"
+#include "commandwrapper.hpp"
 
 using namespace elrat::clp;
 
 Command::~Command()
 {
-}
-
-CommandWrapper::CommandWrapper( Function f )
-: function(f)
-{
-    if (!function)
-        throw NullptrAssignmentException("CommandWrapper(Function f)");
-}
-
-void CommandWrapper::execute(const CommandLine& cmdline)
-{
-    function(cmdline);
 }
 
 void CommandMap::attach(const std::string& name, CommandPtr ptr)

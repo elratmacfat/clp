@@ -1,5 +1,6 @@
 #include "elrat/clp.hpp"
 #include "elrat/clp/errorhandling.hpp"
+#include "commandwrapper.hpp"
 
 using namespace elrat::clp;
 

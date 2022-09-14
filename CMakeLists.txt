@@ -29,6 +29,7 @@ SET( HeaderFiles
 )
 
 SET( IncludeFiles
+    "${IncludeDir}/commandwrapper.hpp"
     "${IncludeDir}/parser.hpp"
     "${IncludeDir}/regex.hpp"
 )
@@ -36,6 +37,7 @@ SET( IncludeFiles
 SET( SourceFiles 
     "${SourceDir}/commandline.cpp"
     "${SourceDir}/commandmap.cpp"
+    "${SourceDir}/commandwrapper.cpp"
     "${SourceDir}/convert.cpp"
     "${SourceDir}/descriptors.cpp"
     "${SourceDir}/errorhandling.cpp"

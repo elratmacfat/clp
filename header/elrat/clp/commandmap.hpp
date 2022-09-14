@@ -29,17 +29,6 @@ public:
     virtual void execute(const CommandLine&) = 0;
 };
 
-class CommandWrapper
-: public Command
-{
-public:
-    using Function = std::function<void(const CommandLine&)>;
-    CommandWrapper( Function );
-    virtual void execute(const CommandLine&);
-private:
-    Function function;
-};
-
 class CommandMap 
 {
 public:
