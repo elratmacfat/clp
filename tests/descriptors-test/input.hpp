@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <elrat/clp/descriptors.hpp>
+
 namespace ParameterValidation 
 {
     extern const std::vector<std::string> hexadecimal_zero;

@@ -5,8 +5,8 @@
 
 #include <elrat/clp.hpp>
 
-#include "clp_test_util.hpp"
-#include "clp_test_input.hpp"
+#include "processor-test/util.hpp"
+#include "processor-test/input.hpp"
 
 
 

@@ -94,7 +94,7 @@ IF ( Boost_FOUND )
 	INCLUDE(CTest)
     
     ADD_EXECUTABLE( parser_test 
-        "${TestSourceDir}/parser_t.cpp" )
+        "${TestSourceDir}/parser-test/test.cpp" )
     TARGET_LINK_LIBRARIES( parser_test
         PUBLIC clp 
         PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
@@ -102,9 +102,9 @@ IF ( Boost_FOUND )
         COMMAND parser_test )
 
     ADD_EXECUTABLE( descriptors_test
-        "${TestSourceDir}/descriptors_t.cpp"
-        "${TestSourceDir}/descriptors_t_input.cpp"
-        "${TestSourceDir}/descriptors_t_util.cpp" )
+        "${TestSourceDir}/descriptors-test/test.cpp"
+        "${TestSourceDir}/descriptors-test/input.cpp"
+        "${TestSourceDir}/descriptors-test/util.cpp" )
     TARGET_INCLUDE_DIRECTORIES( descriptors_test
         PUBLIC ${TestSourceDir} )
     TARGET_LINK_LIBRARIES( descriptors_test
@@ -113,19 +113,19 @@ IF ( Boost_FOUND )
     ADD_TEST( NAME descriptors
         COMMAND descriptors_test )
 
-    ADD_EXECUTABLE( clp_test
-        "${TestSourceDir}/clp_test.cpp"
-        "${TestSourceDir}/clp_test_input.cpp"
-        "${TestSourceDir}/clp_test_util.cpp" )
-    TARGET_INCLUDE_DIRECTORIES( clp_test
+    ADD_EXECUTABLE( processor_test
+        "${TestSourceDir}/processor-test/test.cpp"
+        "${TestSourceDir}/processor-test/input.cpp"
+        "${TestSourceDir}/processor-test/util.cpp" )
+    TARGET_INCLUDE_DIRECTORIES( processor_test
         PUBLIC ${TestSourceDir} )
-    TARGET_LINK_LIBRARIES( clp_test
+    TARGET_LINK_LIBRARIES( processor_test
         PUBLIC clp
         PRIVATE ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
     ADD_TEST( NAME processor
-        COMMAND clp_test )
+        COMMAND processor_test )
 
-    SET_TARGET_PROPERTIES( parser_test descriptors_test clp_test
+    SET_TARGET_PROPERTIES( parser_test descriptors_test processor_test
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${TestOutputDir} )
 

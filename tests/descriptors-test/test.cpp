@@ -1,12 +1,12 @@
-#define BOOST_TEST_MODULE "CLP - Descriptors"
+#define BOOST_TEST_MODULE "Descriptors"
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
 
 #include <elrat/clp.hpp>
 
-#include "descriptors_t_util.hpp"
-#include "descriptors_t_input.hpp"
+#include "descriptors-test/util.hpp"
+#include "descriptors-test/input.hpp"
 
 // 
 //
