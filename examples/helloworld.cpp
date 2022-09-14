@@ -4,25 +4,21 @@
 
 using namespace elrat::clp;
 
-// Command
-// -------
-// Prints 'hello' followed by the provided argument. If the option 'shout' is set,
-// all letters will be capitalized.
 void sayHello(const CommandLine& cmdline)
 {
+    static const auto toUpperCase{[](std::string& s){
+        static const int offset{32};
+        for( auto& it : s )
+            if ( it > 'a' && it < 'z' )
+                it -= offset;
+    }};
     std::string msg("Hello ");
     msg += cmdline.getCommandParameter(0);
     if ( cmdline.optionExists("shout") )
-        for( const char& c : msg )
-            std::cout << static_cast<char>(std::toupper(c));
-    else
-        std::cout << msg;
-    std::cout << '\n';
+        toUpperCase(msg);
+    std::cout << msg << '\n';
 }
 
-// Descriptor
-// ----------
-// Provides a precise description, which is used to validate issued command lines.
 CommandDescriptorPtr createSayHelloDescriptor() 
 {
     return CommandDescriptor::Create(
@@ -41,22 +37,16 @@ CommandDescriptorPtr createSayHelloDescriptor()
     );
 }
 
-// Input 
-// -----
-// Creates input command lines, some of which are valid. Others are not.
-std::vector<std::string> createInput() 
-{
-    return std::vector<std::string>{
-         "sayhello World"   
-        ,"sayhello World --shout"
-        ,"sayhello --shout You" 
-        ,"sayhello not@name"        // @ is an invalid character in 'ParameterType::Name'
-        ,"sayhello"                 // Missing parameter which is declared 'Mandatory'
-        ,"sayhello world --whisper" // Undefined option
-        ,"sayhello me"              // Disallowed parameter value
-        ,"say_hello world"          // Unrecognized command
-    };
-}
+const std::vector<std::string> input_sequences {
+     "sayhello World"   
+    ,"sayhello World --shout"
+    ,"sayhello --shout You" 
+    ,"sayhello not@name"        // @ is an invalid character in 'ParameterType::Name'
+    ,"sayhello"                 // Missing parameter which is declared 'Mandatory'
+    ,"sayhello world --whisper" // Undefined option
+    ,"sayhello me"              // Disallowed parameter value
+    ,"say_hello world"          // Unrecognized command
+};
 
 // Main
 // ----
@@ -70,12 +60,12 @@ std::vector<std::string> createInput()
 int main()
 {
     Processor processor;                                
-    auto descriptor = createSayHelloDescriptor();      
-    processor.attach(descriptor);
-    processor.attach(descriptor->getName(), sayHello); 
+   
+    processor.attach(
+        createSayHelloDescriptor(), 
+        sayHello);
 
-    auto lines{ createInput() };
-    for(auto& line : lines) {
+    for(auto& line : input_sequences ) {
         std::cout << "\n> " << line << "\n";
         try {
             processor.process(line);

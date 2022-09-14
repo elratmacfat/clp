@@ -28,6 +28,18 @@ void Processor::attach(CommandDescriptorPtr p)
     descriptor_maps[0]->attach(p);
 }
 
+void Processor::attach(CommandDescriptorPtr desc, CommandPtr cmd )
+{
+    attach(desc);
+    attach(desc->getName(), cmd);
+}
+
+void Processor::attach(CommandDescriptorPtr desc, std::function<void(const CommandLine&)> cmd )
+{
+    attach( desc );
+    attach( desc->getName(), cmd );
+}
+
 void Processor::attach(const std::string& name, CommandPtr ptr)
 {
     command_map.attach(name,ptr);

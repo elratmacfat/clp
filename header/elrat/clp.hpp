@@ -20,6 +20,8 @@ namespace clp {
         
         void attach(DescriptorMapPtr);
         void attach(CommandDescriptorPtr);
+        void attach(CommandDescriptorPtr, CommandPtr);
+        void attach(CommandDescriptorPtr, std::function<void(const CommandLine&)>);
 
         void attach(const std::string&, CommandPtr);
         void attach(const std::string&, std::function<void(const CommandLine&)>);
