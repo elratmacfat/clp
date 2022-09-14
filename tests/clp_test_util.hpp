@@ -3,13 +3,15 @@
 
 #include <elrat/clp.hpp>
 
-elrat::clp::DescriptorMapPtr createDescriptorMap();
+elrat::clp::DescriptorMapPtr initializeDescriptorMapA();
+elrat::clp::DescriptorMapPtr initializeDescriptorMapB();
 
 class Add
 : public elrat::clp::Command
 {
 public:
     static std::shared_ptr<Add> Create();
+    static const std::string& GetName();
     Add();
     bool isInitialized() const;
     double getValue() const;
@@ -18,6 +20,7 @@ public:
 private:
     bool initialized;
     double result;
+    static const std::string name;
 };
 
 #endif

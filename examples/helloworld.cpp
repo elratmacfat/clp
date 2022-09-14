@@ -49,12 +49,12 @@ std::vector<std::string> createInput()
     return std::vector<std::string>{
          "sayhello World"   
         ,"sayhello World --shout"
-        ,"sayhello --shout World" 
+        ,"sayhello --shout You" 
         ,"sayhello not@name"        // @ is an invalid character in 'ParameterType::Name'
         ,"sayhello"                 // Missing parameter which is declared 'Mandatory'
         ,"sayhello world --whisper" // Undefined option
         ,"sayhello me"              // Disallowed parameter value
-        ,"sayhello you"             // Disallowed parameter value
+        ,"say_hello world"          // Unrecognized command
     };
 }
 

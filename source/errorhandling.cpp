@@ -103,3 +103,7 @@ clp::InvalidOptionException::InvalidOptionException(const std::string& arg)
 {
 }
 
+clp::InvalidCommandException::InvalidCommandException(const std::string& arg)
+: InputException("Invalid command", arg)
+{
+}

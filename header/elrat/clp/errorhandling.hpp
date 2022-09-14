@@ -111,6 +111,13 @@ public:
     InvalidOptionException(const std::string&);
 };
 
+class InvalidCommandException
+: public InputException
+{
+public:
+    InvalidCommandException(const std::string&);
+};
+
 } // namespace clp
 } // namespace elrat
 

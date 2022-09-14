@@ -2,9 +2,9 @@
 
 using namespace elrat::clp;
 
-DescriptorMapPtr createDescriptorMap()
+DescriptorMapPtr initializeDescriptorMapA()
 {
-    auto map{ DescriptorMap::Create() };
+    auto map{ DescriptorMap::Create("MapA") };
 
     map->attach( CommandDescriptor::Create(
         "add",
@@ -28,9 +28,23 @@ DescriptorMapPtr createDescriptorMap()
     return map;
 }
 
+DescriptorMapPtr initializeDescriptorMapB()
+{
+    auto map{ DescriptorMap::Create("MapB") };
+    return map;
+}
+
+
+const std::string Add::name("add");
+
 std::shared_ptr<Add> Add::Create() 
 {
     return std::make_shared<Add>();
+}
+
+const std::string& Add::GetName()
+{
+    return name;
 }
 
 Add::Add()

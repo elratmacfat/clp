@@ -40,7 +40,7 @@ void Processor::attach(
     command_map.attach(name, Command::Create<CommandWrapper>(function));
 }
 
-bool Processor::process(const std::string& input) const
+void Processor::process(const std::string& input) const
 {
     CommandLine cmdline = parser->parse(input);
 
@@ -51,9 +51,9 @@ bool Processor::process(const std::string& input) const
             auto& commands{ command_map.find( cmdline.getCommand() ) };
             for( auto command : commands )
                 command->execute( cmdline );
-            return true;
+            return;
         }
     }
-    return false;
+    throw InvalidCommandException(cmdline.getCommand());
 }
 

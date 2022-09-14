@@ -24,7 +24,7 @@ namespace clp {
         void attach(const std::string&, CommandPtr);
         void attach(const std::string&, std::function<void(const CommandLine&)>);
 
-        bool process(const std::string&) const;
+        void process(const std::string&) const;
         
     private:
         
