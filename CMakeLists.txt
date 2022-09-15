@@ -91,7 +91,7 @@ FIND_PACKAGE( Boost
 
 IF ( Boost_FOUND )
 
-	INCLUDE(CTest)
+    INCLUDE(CTest)
     
     ADD_EXECUTABLE( parser_test 
         "${TestSourceDir}/parser-test/test.cpp" )
