@@ -18,7 +18,6 @@ namespace clp {
     public:
         Processor( std::shared_ptr<Parser> = std::make_shared<NativeParser>() );
         
-        void attach(DescriptorMapPtr);
         void attach(CommandDescriptorPtr);
         void attach(CommandDescriptorPtr, CommandPtr);
         void attach(CommandDescriptorPtr, std::function<void(const CommandLine&)>);
@@ -30,9 +29,9 @@ namespace clp {
         
     private:
         
-        std::shared_ptr<Parser>         parser;
-        std::vector<DescriptorMapPtr>   descriptor_maps;
-        CommandMap                      command_map;
+        std::shared_ptr<Parser>     parser;
+        DescriptorMap               descriptors;
+        CommandMap                  commands;
     };
 
 } // clp

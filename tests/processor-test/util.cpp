@@ -2,11 +2,9 @@
 
 using namespace elrat::clp;
 
-DescriptorMapPtr initializeDescriptorMapA()
+CommandDescriptorPtr initializeCommandDescriptor()
 {
-    auto map{ DescriptorMap::Create("MapA") };
-
-    map->attach( CommandDescriptor::Create(
+    return CommandDescriptor::Create(
         "add",
         "add two numbers",
         {
@@ -22,9 +20,16 @@ DescriptorMapPtr initializeDescriptorMapA()
                 Mandatory,
                 ParameterType::RealNumber
             )
-        })
+        }
     );
+}
 
+
+DescriptorMapPtr initializeDescriptorMapA()
+{
+    auto map{ DescriptorMap::Create("MapA") };
+
+    map->attach( initializeCommandDescriptor() );
     return map;
 }
 

@@ -38,6 +38,14 @@ void CommandMap::detach(const std::string& name, CommandPtr ptr)
         pointers.clear();
 }
 
+void CommandMap::invoke(const CommandLine& cmdline) const
+{
+    auto& key{ cmdline.getCommand() };
+    auto& cmds{ this->find( key ) };
+    for( auto cmd : cmds )
+        cmd->execute(cmdline);
+}
+
 const std::vector<CommandPtr>& CommandMap::find(const std::string& name) const 
 {
     if (commands.find(name) == commands.end())

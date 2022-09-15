@@ -178,7 +178,7 @@ class DescriptorMap
 {
 public:
     static DescriptorMapPtr Create(const std::string& = "Commands");
-    DescriptorMap(const std::string&);
+    DescriptorMap(const std::string& = "Commands");
     void attach(CommandDescriptorPtr);
     bool validate(const CommandLine&) const;
 private:

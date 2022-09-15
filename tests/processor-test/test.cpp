@@ -16,24 +16,20 @@ BOOST_AUTO_TEST_SUITE( PROCESSOR )
 
     Processor processor;
 
-    DescriptorMapPtr descMapA{ initializeDescriptorMapA() };
-    DescriptorMapPtr descMapB{ initializeDescriptorMapB() };
-
     auto cmdAdd = Add::Create();
+    auto descAdd = initializeCommandDescriptor();
 
-    BOOST_AUTO_TEST_CASE( ATTACH_DESCRIPTOR_MAP )
+    BOOST_AUTO_TEST_CASE( ATTACH_DESCRIPTOR )
     {
-        BOOST_CHECK_NO_THROW( processor.attach( descMapA ) );
-        BOOST_CHECK_NO_THROW( processor.attach( descMapB ) );
-    }
-
-    BOOST_AUTO_TEST_CASE( ATTACH_DESCRIPTOR_MAP_FAILED )
-    {
-        DescriptorMapPtr descMapX{ DescriptorMap::Create( descMapB->getName() ) };    
-        BOOST_CHECK_THROW( processor.attach( descMapA ), InitializationException );
-        BOOST_CHECK_THROW( processor.attach( descMapX ), InitializationException );
+        BOOST_CHECK_NO_THROW( processor.attach( descAdd ) ); 
     }
     
+    BOOST_AUTO_TEST_CASE( ATTACH_DESCRIPTOR_FAILED )
+    {
+        BOOST_CHECK_THROW( processor.attach( descAdd ), 
+            AlreadyInUseException ); 
+    }
+
     BOOST_AUTO_TEST_CASE( ATTACH_COMMANDS )
     {
         BOOST_CHECK_NO_THROW( processor.attach( Add::GetName(), cmdAdd ) );
@@ -50,7 +46,11 @@ BOOST_AUTO_TEST_SUITE( PROCESSOR )
 
         BOOST_CHECK( !cmdAdd->isInitialized() );
 
-        BOOST_CHECK_NO_THROW( processor.process("add 40.1 1.9") );
+        try { 
+            processor.process("add 40.1 1.9");
+        } catch( std::exception& e ) {
+            BOOST_ERROR( e.what() );
+        }
 
         BOOST_CHECK( cmdAdd->isInitialized() );
         BOOST_CHECK_EQUAL( cmdAdd->getValue(), 42.0 );

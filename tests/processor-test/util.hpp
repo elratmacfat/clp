@@ -3,6 +3,7 @@
 
 #include <elrat/clp.hpp>
 
+elrat::clp::CommandDescriptorPtr initializeCommandDescriptor();
 elrat::clp::DescriptorMapPtr initializeDescriptorMapA();
 elrat::clp::DescriptorMapPtr initializeDescriptorMapB();
 
