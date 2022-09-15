@@ -1,14 +1,8 @@
-/* This "hello world" example demonstrates the most simple way of setting up and using
- * the 'Command Line Processor'.
- */
 #include <elrat/clp.hpp>
 #include <cctype>
 #include <iostream>
 
 using namespace elrat::clp;
-
-void print(const std::string&);
-void print(const InputException&);
 
 void sayHelloFunction(const CommandLine&);
 CommandDescriptorPtr createSayHelloDescriptor();
@@ -26,27 +20,17 @@ int main()
 
     for(auto& input: inputSequences ) 
     {
-        print( input );
+        std::cout << "> " << input << '\n';
         try 
         {
             processor.process( input );
         }
         catch( InputException& exception ) 
         {
-            print( exception );
+            std::cout << exception.what() << '\n';
         }
     }
     return 0;
-}
-
-void print(const std::string& input)
-{
-    std::cout << "> " << input << '\n';
-}
-
-void print(const InputException& exception)
-{
-    std::cout << exception.what() << '\n';
 }
 
 void sayHelloFunction(const CommandLine& cmdline)
@@ -54,7 +38,7 @@ void sayHelloFunction(const CommandLine& cmdline)
     static const auto toUpperCase{[](std::string& s){
         static const int offset{32};
         for( auto& it : s )
-            if ( it > 'a' && it < 'z' )
+            if ( it >= 'a' && it <= 'z' )
                 it -= offset;
     }};
     std::string msg("Hello ");

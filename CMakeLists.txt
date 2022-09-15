@@ -75,11 +75,12 @@ SET_TARGET_PROPERTIES( inspector
 
 ### E X A M P L E S ###########################################################
 
-ADD_EXECUTABLE( helloworld
-    "${ExamplesSourceDir}/helloworld.cpp" )
-TARGET_LINK_LIBRARIES( helloworld
-    PUBLIC clp )
-SET_TARGET_PROPERTIES( helloworld 
+ADD_EXECUTABLE( helloworld-1 "${ExamplesSourceDir}/helloworld-1.cpp" )
+ADD_EXECUTABLE( helloworld-2 "${ExamplesSourceDir}/helloworld-2.cpp" )
+TARGET_LINK_LIBRARIES( helloworld-1 PUBLIC clp )
+TARGET_LINK_LIBRARIES( helloworld-2 PUBLIC clp )
+
+SET_TARGET_PROPERTIES( helloworld-1 helloworld-2
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${ExamplesOutputDir} )
 
