@@ -29,9 +29,11 @@ namespace clp {
         
     private:
         
-        std::shared_ptr<Parser>     parser;
-        DescriptorMap               descriptors;
-        CommandMap                  commands;
+        std::shared_ptr<Parser> parser;
+        std::vector<DescriptorMapPtr> descriptor_maps;
+        CommandMap commands;
+
+
     };
 
 } // clp

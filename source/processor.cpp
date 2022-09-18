@@ -1,17 +1,34 @@
 #include "elrat/clp.hpp"
 #include "elrat/clp/errorhandling.hpp"
 #include "commandwrapper.hpp"
+#include "builtin.hpp"
 
 using namespace elrat::clp;
 
 Processor::Processor( std::shared_ptr<Parser> p )
 : parser{p}
 {
+    auto builtin_descriptors{ DescriptorMap::Create("Built-In Commands") };
+    auto help_descriptor{ HelpDescriptor::Create() };
+    auto exit_descriptor{ ExitDescriptor::Create() };
+    
+    builtin_descriptors->attach( help_descriptor );
+    builtin_descriptors->attach( exit_descriptor );
+
+    auto help_command{ std::make_shared<HelpCommand>( descriptor_maps ) };
+    auto exit_command{ Command::Create<ExitCommand>() };
+
+    commands.attach( help_descriptor->getName(), help_command );
+    commands.attach( exit_descriptor->getName(), exit_command );
+
+    descriptor_maps.push_back( builtin_descriptors );
 }
 
 void Processor::attach(CommandDescriptorPtr p)
 {
-    descriptors.attach(p);
+    if ( descriptor_maps.size() < 2 )
+        descriptor_maps.push_back( DescriptorMap::Create("Commands") );
+    descriptor_maps.back()->attach(p);
 }
 
 void Processor::attach(CommandDescriptorPtr desc, CommandPtr cmd )
@@ -43,9 +60,14 @@ void Processor::attach(
 void Processor::process(const std::string& input) const
 {
     CommandLine cmdline = parser->parse( input );
-    if ( descriptors.validate( cmdline ) )
-        commands.invoke( cmdline );
-    else
-        throw InvalidCommandException( cmdline.getCommand() );
+    for( auto map : descriptor_maps )
+    {
+        if ( map->validate( cmdline ) )
+        {
+            commands.invoke( cmdline );
+            return;
+        }
+    }
+    throw InvalidCommandException( cmdline.getCommand() );
 }
 

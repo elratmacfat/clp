@@ -181,6 +181,7 @@ public:
     DescriptorMap(const std::string& = "Commands");
     void attach(CommandDescriptorPtr);
     bool validate(const CommandLine&) const;
+    const std::vector<CommandDescriptorPtr>& getCommandDescriptors() const;
 private:
     std::vector<CommandDescriptorPtr> descriptors;
 };

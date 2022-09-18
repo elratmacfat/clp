@@ -29,12 +29,14 @@ SET( HeaderFiles
 )
 
 SET( IncludeFiles
+    "${IncludeDir}/builtin.hpp"
     "${IncludeDir}/commandwrapper.hpp"
     "${IncludeDir}/parser.hpp"
     "${IncludeDir}/regex.hpp"
 )
 
 SET( SourceFiles 
+    "${SourceDir}/builtin.cpp"
     "${SourceDir}/commandline.cpp"
     "${SourceDir}/commandmap.cpp"
     "${SourceDir}/commandwrapper.cpp"
@@ -77,10 +79,15 @@ SET_TARGET_PROPERTIES( inspector
 
 ADD_EXECUTABLE( helloworld-1 "${ExamplesSourceDir}/helloworld-1.cpp" )
 ADD_EXECUTABLE( helloworld-2 "${ExamplesSourceDir}/helloworld-2.cpp" )
+ADD_EXECUTABLE( builtin-commands "${ExamplesSourceDir}/builtin-commands.cpp" )
 TARGET_LINK_LIBRARIES( helloworld-1 PUBLIC clp )
 TARGET_LINK_LIBRARIES( helloworld-2 PUBLIC clp )
+TARGET_LINK_LIBRARIES( builtin-commands PUBLIC clp )
 
-SET_TARGET_PROPERTIES( helloworld-1 helloworld-2
+SET_TARGET_PROPERTIES( 
+    helloworld-1 
+    helloworld-2 
+    builtin-commands
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${ExamplesOutputDir} )
 

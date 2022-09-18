@@ -286,6 +286,11 @@ void DescriptorMap::attach(CommandDescriptorPtr p)
     this->descriptors.push_back(p);
 }
 
+const std::vector<CommandDescriptorPtr>& DescriptorMap::getCommandDescriptors() const 
+{
+    return descriptors;
+}
+
 bool DescriptorMap::validate(const CommandLine& cmdline) const 
 {
     for( auto descriptor : descriptors )
