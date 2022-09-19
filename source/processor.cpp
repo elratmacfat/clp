@@ -9,20 +9,29 @@ Processor::Processor( std::shared_ptr<Parser> p )
 : parser{p}
 {
     auto builtin_descriptors{ DescriptorMap::Create("Built-In Commands") };
-    auto help_descriptor{ HelpDescriptor::Create() };
-    auto exit_descriptor{ ExitDescriptor::Create() };
-    
-    builtin_descriptors->attach( help_descriptor );
-    builtin_descriptors->attach( exit_descriptor );
-
-    auto help_command{ std::make_shared<HelpCommand>( descriptor_maps ) };
-    auto exit_command{ Command::Create<ExitCommand>() };
-
-    commands.attach( help_descriptor->getName(), help_command );
-    commands.attach( exit_descriptor->getName(), exit_command );
-
     descriptor_maps.push_back( builtin_descriptors );
+    addHelpCommand();
+    addExitCommand();
 }
+
+void Processor::addExitCommand()
+{
+    auto builtin_descriptors{ descriptor_maps[0] };
+    auto exit_descriptor{ ExitDescriptor::Create() };
+    builtin_descriptors->attach( exit_descriptor );
+    auto exit_command{ Command::Create<ExitCommand>() };
+    commands.attach( exit_descriptor->getName(), exit_command );
+}
+
+void Processor::addHelpCommand()
+{
+    auto builtin_descriptors{ descriptor_maps[0] };
+    auto help_descriptor{ HelpDescriptor::Create() };
+    builtin_descriptors->attach( help_descriptor );
+    auto help_command{ std::make_shared<HelpCommand>( descriptor_maps ) };
+    commands.attach( help_descriptor->getName(), help_command );
+}
+
 
 void Processor::attach(CommandDescriptorPtr p)
 {

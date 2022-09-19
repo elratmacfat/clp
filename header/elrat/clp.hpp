@@ -17,14 +17,14 @@ namespace clp {
     {
     public:
         Processor( std::shared_ptr<Parser> = std::make_shared<NativeParser>() );
-        
+
         void attach(CommandDescriptorPtr);
         void attach(CommandDescriptorPtr, CommandPtr);
         void attach(CommandDescriptorPtr, std::function<void(const CommandLine&)>);
 
         void attach(const std::string&, CommandPtr);
         void attach(const std::string&, std::function<void(const CommandLine&)>);
-
+    
         void process(const std::string&) const;
         
     private:
@@ -33,6 +33,8 @@ namespace clp {
         std::vector<DescriptorMapPtr> descriptor_maps;
         CommandMap commands;
 
+        void addExitCommand();
+        void addHelpCommand();
 
     };
 
