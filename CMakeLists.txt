@@ -141,3 +141,24 @@ ELSE()
 	MESSAGE( WARNING "Could not find 'Boost'. Skip compiling the test executable." )
 ENDIF()
 
+
+### C U C U M B E R ###########################################################
+
+find_package( Boost COMPONENTS 
+  unit_test_framework 
+  program_options 
+  regex 
+  filesystem 
+  thread 
+  REQUIRED )
+
+add_executable( first_steps features/step_definitions/first.cpp )
+target_link_libraries( first_steps
+  PRIVATE clp
+  PUBLIC cucumber-cpp
+  PRIVATE ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+  PRIVATE ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  PRIVATE ${Boost_REGEX_LIBRARY}
+  PRIVATE ${Boost_FILESYSTEM_LIBRARY}
+  PRIVATE ${Boost_THREAD_LIBRARY})
+
