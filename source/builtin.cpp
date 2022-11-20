@@ -1,7 +1,6 @@
+#include <cstdlib>
 
 #include "builtin.hpp"
-
-#include <cstdlib>
 
 using namespace elrat::clp;
 

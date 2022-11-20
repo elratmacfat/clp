@@ -68,7 +68,7 @@ namespace invalid
     };
 }
 
-void TryParsingCatchInvalidArgument(clp::Parser*, const std::string&);
+void TryParsingCatchInputException(clp::Parser*, const std::string&);
 void TryParsingCheckNoThrow(clp::Parser*, const std::string&);
 
 BOOST_AUTO_TEST_SUITE( ParserTestSuite )
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_SUITE( ParserTestSuite )
     {
         for( auto& input : invalid::commands )
         {
-            TryParsingCatchInvalidArgument(&t, input);
+            TryParsingCatchInputException(&t, input);
         }
     }
 
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_SUITE( ParserTestSuite )
     {
         for( auto& input : invalid::redundant_options )
         {
-            TryParsingCatchInvalidArgument(&t, input);
+            TryParsingCatchInputException(&t, input);
         }
     }
 
@@ -129,13 +129,13 @@ BOOST_AUTO_TEST_SUITE( ParserTestSuite )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-void TryParsingCatchInvalidArgument(clp::Parser* p, const std::string& input)
+void TryParsingCatchInputException(clp::Parser* p, const std::string& input)
 {
     bool thrown{false};
     try {
         p->parse(input);
     }
-    catch( std::invalid_argument& exc ) {
+    catch( elrat::clp::InputException& exc ) {
         thrown = true;
     }
     BOOST_CHECK_MESSAGE( thrown, input );

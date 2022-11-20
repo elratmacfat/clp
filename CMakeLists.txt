@@ -26,13 +26,15 @@ SET( HeaderFiles
     "${HeaderDir}/elrat/clp/descriptors.hpp"
     "${HeaderDir}/elrat/clp/errorhandling.hpp"
     "${HeaderDir}/elrat/clp/parser.hpp"
+    "${HeaderDir}/elrat/clp/parserwrapper.hpp"
+    "${HeaderDir}/elrat/clp/nativeparser.hpp"
 )
 
 SET( IncludeFiles
     "${IncludeDir}/builtin.hpp"
     "${IncludeDir}/commandwrapper.hpp"
-    "${IncludeDir}/parser.hpp"
     "${IncludeDir}/regex.hpp"
+    "${IncludeDir}/tokenhandler.hpp"
 )
 
 SET( SourceFiles 
@@ -43,10 +45,13 @@ SET( SourceFiles
     "${SourceDir}/convert.cpp"
     "${SourceDir}/descriptors.cpp"
     "${SourceDir}/errorhandling.cpp"
+    "${SourceDir}/nativeparser.cpp"
     "${SourceDir}/ostream.cpp"
     "${SourceDir}/parser.cpp"
+    "${SourceDir}/parserwrapper.cpp"
     "${SourceDir}/processor.cpp"
     "${SourceDir}/regex.cpp"
+    "${SourceDir}/tokenhandler.cpp"
 )
 
 ADD_LIBRARY( clp SHARED 
@@ -144,6 +149,7 @@ ENDIF()
 
 ### C U C U M B E R ###########################################################
 
+
 find_package( Boost COMPONENTS 
   unit_test_framework 
   program_options 
@@ -161,4 +167,5 @@ target_link_libraries( first_steps
   PRIVATE ${Boost_REGEX_LIBRARY}
   PRIVATE ${Boost_FILESYSTEM_LIBRARY}
   PRIVATE ${Boost_THREAD_LIBRARY})
+
 

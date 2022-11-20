@@ -5,6 +5,7 @@
 #include <elrat/clp/descriptors.hpp>
 #include <elrat/clp/errorhandling.hpp>
 #include <elrat/clp/parser.hpp>
+#include <elrat/clp/nativeparser.hpp>
 
 #include <map>
 
