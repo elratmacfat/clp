@@ -118,124 +118,32 @@ const RegEx IsEqualSign(
 );
 
 
-TokenHandler::TokenHandler(CommandLine* p)
-: target{p}
-{
-    // done
-}
-
-TokenHandler::~TokenHandler()
-{
-    // done
-}
-
-State TokenHandlerExpectingCommand::handle(const std::string& token)
-{
-    if ( !IsIdentifierPlus(token) )
-        return State::Received_Invalid_Token;
-    target->setCommand(token);
-    return State::Received_Anything_Else;
-}
-
-State TokenHandlerForCommandParameter::handle(const std::string& token)
-{
-    if (IsEqualSign(token))
-        return State::Received_Invalid_Token;
-    target->addCommandParameter(token);
-    return State::Received_Anything_Else;
-}
-
-State TokenHandlerForOptionParameter::handle(const std::string& token)
-{
-    if (IsEqualSign(token))
-        return State::Received_Invalid_Token;
-    target->addOptionParameter(token);
-    return State::Received_Anything_Else;
-}
-
-State TokenHandlerForAnythingElse::handle(const std::string& token)
-{
-    if ( IsOptionPack(token) )
-    {
-        if (add_option_pack(this->target, token))
-            return State::Received_Anything_Else;
-        return State::Received_Option_Twice;
-    }
-    if ( IsOption(token) )
-    {
-        if( add_long_option(this->target, token))
-            return State::Received_Option;
-        return State::Received_Option_Twice;
-    }
-    return TokenHandlerForCommandParameter::handle(token);
-}
-
-State TokenHandlerOnOptionReception::handle(const std::string& token)
-{
-    if (IsEqualSign(token))
-        return State::Received_EqualSign;
-    return TokenHandlerForAnythingElse::handle(token);
-}
-
-
-TokenHandlerFactory::TokenHandlerFactory(CommandLine* p)
-: target{p}
-{
-}
-
-std::unique_ptr<TokenHandler> TokenHandlerFactory::createTokenHandler(State state)
-{
-    switch(state)
-    {
-    case State::Expecting_Command:
-        return std::make_unique<TokenHandlerExpectingCommand>(target);
-
-    case State::Received_Option:
-        return std::make_unique<TokenHandlerOnOptionReception>(target);
-
-    case State::Received_EqualSign:
-        return std::make_unique<TokenHandlerForOptionParameter>(target);
-
-    case State::Received_Anything_Else:
-        return std::make_unique<TokenHandlerForAnythingElse>(target);
-    
-    case State::Received_Invalid_Token:
-    case State::Received_Option_Twice:
-        break;
-    }
-    throw_runtime_error(to_string(state));
-    return std::unique_ptr<TokenHandler>{nullptr};
-}
-// ---------------------------------------------------------------------------
-//
-//
-
-THandler::THandler()
+TokenHandler::TokenHandler()
 : mState{std::make_unique<InitialState>(*this,mCmdLine)}
 {
 }
 
-void THandler::handle(const std::string& token)
+void TokenHandler::handle(const std::string& token)
 {
   mState->handle(token);
 }
 
-CommandLine&& THandler::fetch() 
+CommandLine&& TokenHandler::fetch() 
 {
   return std::move(mCmdLine);
 }
 
-THandler::State::State(THandler& tokenHandler, CommandLine& commandLine)
+TokenHandler::State::State(TokenHandler& tokenHandler, CommandLine& commandLine)
 : token_handler{tokenHandler}
 , command_line{commandLine}
 {
 }
 
-THandler::State::~State() 
+TokenHandler::State::~State() 
 {
 }
 
-void THandler::InitialState::handle(const std::string& token)
+void TokenHandler::InitialState::handle(const std::string& token)
 {
   if ( !IsIdentifierPlus(token) ) {
     throw_invalid_argument(token);
@@ -244,7 +152,7 @@ void THandler::InitialState::handle(const std::string& token)
   token_handler.setNextState<DefaultState>();
 }
 
-void THandler::DefaultState::handle(const std::string& token)
+void TokenHandler::DefaultState::handle(const std::string& token)
 {
   if ( IsEqualSign(token) )
   {
@@ -268,7 +176,7 @@ void THandler::DefaultState::handle(const std::string& token)
   }
 }
 
-void THandler::ReceivedOptionState::handle(const std::string& token)
+void TokenHandler::ReceivedOptionState::handle(const std::string& token)
 {
   if( IsEqualSign(token) ) 
   {
@@ -279,7 +187,7 @@ void THandler::ReceivedOptionState::handle(const std::string& token)
   }
 }
 
-void THandler::ReceivedEqualSignState::handle(const std::string& token)
+void TokenHandler::ReceivedEqualSignState::handle(const std::string& token)
 {
   command_line.addOptionParameter(token);
   token_handler.setNextState<DefaultState>();
@@ -326,7 +234,7 @@ CommandLine NativeParser::parse(const std::string& input) const
     if ( !tokens.size() )
         throw_invalid_argument("Empty input");
 
-    THandler token_handler;
+    TokenHandler token_handler;
     for(auto it = tokens.begin(); it != tokens.end(); ++it)
     {
         token_handler.handle(*it);

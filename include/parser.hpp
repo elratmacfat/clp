@@ -39,15 +39,15 @@ extern const RegEx IsOption;
 extern const RegEx IsOptionPack;
 extern const RegEx IsEqualSign;
 
-class THandler
+class TokenHandler
 {
 public:
-    THandler();
-    THandler(const THandler&)=delete;
-    THandler(THandler&&)=default;
-    THandler& operator=(const THandler&)=delete;
-    THandler& operator=(THandler&&)=default;
-    ~THandler()=default;
+    TokenHandler();
+    TokenHandler(const TokenHandler&)=delete;
+    TokenHandler(TokenHandler&&)=default;
+    TokenHandler& operator=(const TokenHandler&)=delete;
+    TokenHandler& operator=(TokenHandler&&)=default;
+    ~TokenHandler()=default;
     void handle(const std::string& token);
     
     template <class NextState>
@@ -67,103 +67,43 @@ private:
     std::unique_ptr<State>  mState;
 };
 
-class THandler::State 
+class TokenHandler::State 
 {
 public:
-    State(THandler&, elrat::clp::CommandLine&);
+    State(TokenHandler&, elrat::clp::CommandLine&);
     virtual ~State();
     virtual void handle(const std::string& token) = 0;
 protected:
-    THandler&                   token_handler;
+    TokenHandler&                   token_handler;
     elrat::clp::CommandLine&    command_line;
 };
 
-class THandler::InitialState : public THandler::State 
+class TokenHandler::InitialState : public TokenHandler::State 
 {
 public:
     using State::State;
     void handle(const std::string& token);
 };
 
-class THandler::DefaultState : public THandler::State 
+class TokenHandler::DefaultState : public TokenHandler::State 
 {
 public:
     using State::State;
     void handle(const std::string& token);
 };
 
-class THandler::ReceivedOptionState: public THandler::DefaultState 
+class TokenHandler::ReceivedOptionState: public TokenHandler::DefaultState 
 {
 public:
     using DefaultState::DefaultState;
     void handle(const std::string& token);
 };
 
-class THandler::ReceivedEqualSignState: public THandler::State 
+class TokenHandler::ReceivedEqualSignState: public TokenHandler::State 
 {
 public:
     using State::State;
     void handle(const std::string& token);
-};
-
-
-class TokenHandler
-{
-public:
-    TokenHandler(elrat::clp::CommandLine*);
-    virtual ~TokenHandler();
-    virtual State handle( const std::string& token ) = 0;
-protected:
-    elrat::clp::CommandLine* target;
-};
-
-class TokenHandlerExpectingCommand
-: public TokenHandler
-{
-public:
-    using TokenHandler::TokenHandler;
-    virtual State handle(const std::string& token);
-};
-
-class TokenHandlerForCommandParameter
-: public TokenHandler
-{
-public:
-    using TokenHandler::TokenHandler;
-    virtual State handle(const std::string& token);
-};
-
-class TokenHandlerForAnythingElse
-: public TokenHandlerForCommandParameter
-{
-public:
-    using TokenHandlerForCommandParameter::TokenHandlerForCommandParameter;
-    virtual State handle(const std::string& token);
-};
-
-class TokenHandlerForOptionParameter
-: public TokenHandler
-{
-public:
-    using TokenHandler::TokenHandler;
-    virtual State handle(const std::string& token);
-};
-
-class TokenHandlerOnOptionReception
-: public TokenHandlerForAnythingElse
-{
-public:
-    using TokenHandlerForAnythingElse::TokenHandlerForAnythingElse;
-    virtual State handle(const std::string& token);
-};
-
-class TokenHandlerFactory
-{
-public:
-    TokenHandlerFactory(elrat::clp::CommandLine*);
-    std::unique_ptr<TokenHandler> createTokenHandler( State );
-private:
-    elrat::clp::CommandLine* target;
 };
 
 #endif
