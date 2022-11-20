@@ -39,6 +39,72 @@ extern const RegEx IsOption;
 extern const RegEx IsOptionPack;
 extern const RegEx IsEqualSign;
 
+class THandler
+{
+public:
+    THandler()=delete;
+    THandler( elrat::clp::CommandLine& destination );
+    THandler(const THandler&)=delete;
+    THandler(THandler&&)=default;
+    THandler& operator=(const THandler&)=delete;
+    THandler& operator=(THandler&&)=default;
+    ~THandler()=default;
+    void handle(const std::string& token);
+    template <class NextState>
+    void setNextState() {
+        state = std::make_unique<NextState>(*this);
+    }
+private:
+    class State;
+    class InitialState;        
+    class DefaultState;        
+    class ReceivedOptionState;  
+    class ReceivedEqualSignState;
+
+    elrat::clp::CommandLine&    destination;
+    std::unique_ptr<State>      state;
+};
+
+class THandler::State 
+{
+public:
+    State(THandler& parent, elrat::clp::CommandLine& destination);
+    virtual ~State();
+    virtual void handle(const std::string& token) = 0;
+protected:
+    THandler& parent;
+    elrat::clp::CommandLine& destination;
+};
+
+class THandler::InitialState : public THandler::State 
+{
+public:
+    using State::State;
+    void handle(const std::string& token);
+};
+
+class THandler::DefaultState : public THandler::State 
+{
+public:
+    using State::State;
+    void handle(const std::string& token);
+};
+
+class THandler::ReceivedOptionState: public THandler::State 
+{
+public:
+    using State::State;
+    void handle(const std::string& token);
+};
+
+class THandler::ReceivedEqualSignState: public THandler::State 
+{
+public:
+    using State::State;
+    void handle(const std::string& token);
+};
+
+
 class TokenHandler
 {
 public:

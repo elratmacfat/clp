@@ -206,6 +206,46 @@ std::unique_ptr<TokenHandler> TokenHandlerFactory::createTokenHandler(State stat
     throw_runtime_error(to_string(state));
     return std::unique_ptr<TokenHandler>{nullptr};
 }
+// ---------------------------------------------------------------------------
+//
+//
+
+THandler::THandler(CommandLine& dest)
+: destination(dest)
+, state{std::make_unique<InitialState>(*this,destination)}
+{
+}
+
+void THandler::handle(const std::string& token)
+{
+  state->handle(token);
+}
+
+THandler::State::State(THandler& p, CommandLine& c)
+: parent{p}
+, destination{c}
+{
+}
+
+THandler::State::~State() 
+{
+}
+
+void THandler::InitialState::handle(const std::string& token)
+{
+}
+
+void THandler::DefaultState::handle(const std::string& token)
+{
+}
+
+void THandler::ReceivedOptionState::handle(const std::string& token)
+{
+}
+
+void THandler::ReceivedEqualSignState::handle(const std::string& token)
+{
+}
 
 //
 // Implementation of public header "elrat/clp.hpp"
