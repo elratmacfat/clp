@@ -210,20 +210,24 @@ std::unique_ptr<TokenHandler> TokenHandlerFactory::createTokenHandler(State stat
 //
 //
 
-THandler::THandler(CommandLine& dest)
-: destination(dest)
-, state{std::make_unique<InitialState>(*this,destination)}
+THandler::THandler()
+: mState{std::make_unique<InitialState>(*this,mCmdLine)}
 {
 }
 
 void THandler::handle(const std::string& token)
 {
-  state->handle(token);
+  mState->handle(token);
 }
 
-THandler::State::State(THandler& p, CommandLine& c)
-: parent{p}
-, destination{c}
+CommandLine&& THandler::fetch() 
+{
+  return std::move(mCmdLine);
+}
+
+THandler::State::State(THandler& tokenHandler, CommandLine& commandLine)
+: token_handler{tokenHandler}
+, command_line{commandLine}
 {
 }
 
@@ -236,8 +240,8 @@ void THandler::InitialState::handle(const std::string& token)
   if ( !IsIdentifierPlus(token) ) {
     throw_invalid_argument(token);
   }
-  this->destination.setCommand(token);
-  this->parent.setNextState<DefaultState>();
+  command_line.setCommand(token);
+  token_handler.setNextState<DefaultState>();
 }
 
 void THandler::DefaultState::handle(const std::string& token)
@@ -248,19 +252,19 @@ void THandler::DefaultState::handle(const std::string& token)
   }
   if ( IsOptionPack(token) ) 
   {
-    bool redundantOptionsFound{ !add_option_pack(&destination, token) };
+    bool redundantOptionsFound{ !add_option_pack(&command_line, token) };
     if (redundantOptionsFound)
     {
       throw_invalid_argument(token + " contains option that already exists.");
     }
   }
   else if ( IsOption(token) ) {
-    if ( !add_long_option(&destination, token) )
+    if ( !add_long_option(&command_line, token) )
       throw_invalid_argument(token + " already exists." );
-    this->parent.setNextState<ReceivedOptionState>();
+    token_handler.setNextState<ReceivedOptionState>();
   }
   else {
-    destination.addCommandParameter(token);
+    command_line.addCommandParameter(token);
   }
 }
 
@@ -268,7 +272,7 @@ void THandler::ReceivedOptionState::handle(const std::string& token)
 {
   if( IsEqualSign(token) ) 
   {
-    parent.setNextState<ReceivedEqualSignState>();
+    token_handler.setNextState<ReceivedEqualSignState>();
   }
   else {
     DefaultState::handle(token);
@@ -277,8 +281,8 @@ void THandler::ReceivedOptionState::handle(const std::string& token)
 
 void THandler::ReceivedEqualSignState::handle(const std::string& token)
 {
-  destination.addOptionParameter(token);
-  parent.setNextState<DefaultState>();
+  command_line.addOptionParameter(token);
+  token_handler.setNextState<DefaultState>();
 }
 
 //
@@ -322,35 +326,12 @@ CommandLine NativeParser::parse(const std::string& input) const
     if ( !tokens.size() )
         throw_invalid_argument("Empty input");
 
-    CommandLine result{};
-    THandler token_handler(result);
+    THandler token_handler;
     for(auto it = tokens.begin(); it != tokens.end(); ++it)
     {
         token_handler.handle(*it);
     }
-
-    /*
-    TokenHandlerFactory factory(&result);
-
-    State current_state{ State::Expecting_Command };
-    
-    auto tokenHandler{ factory.createTokenHandler( current_state ) };
-    
-    for (auto it = tokens.begin(); it != tokens.end(); ++it) 
-    {
-        auto next_state = tokenHandler->handle(*it);
-        if ( is_error(next_state) )
-        {
-            throw_invalid_argument(next_state,*it);
-        }
-        if ( next_state != current_state ) 
-        {
-            tokenHandler = factory.createTokenHandler(next_state);
-            current_state = next_state;
-        }
-    }
-    */
-    return result;
+    return token_handler.fetch();
 }
 
 const std::string& NativeParser::getSyntaxDescription() const 

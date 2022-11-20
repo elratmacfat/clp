@@ -42,8 +42,7 @@ extern const RegEx IsEqualSign;
 class THandler
 {
 public:
-    THandler()=delete;
-    THandler( elrat::clp::CommandLine& destination );
+    THandler();
     THandler(const THandler&)=delete;
     THandler(THandler&&)=default;
     THandler& operator=(const THandler&)=delete;
@@ -53,8 +52,10 @@ public:
     
     template <class NextState>
     void setNextState() {
-        state = std::make_unique<NextState>(*this, destination);
+        mState = std::make_unique<NextState>(*this,mCmdLine);
     }
+
+    elrat::clp::CommandLine&& fetch();
 private:
     class State;
     class InitialState;        
@@ -62,19 +63,19 @@ private:
     class ReceivedOptionState;  
     class ReceivedEqualSignState;
 
-    elrat::clp::CommandLine&    destination;
-    std::unique_ptr<State>      state;
+    elrat::clp::CommandLine mCmdLine;
+    std::unique_ptr<State>  mState;
 };
 
 class THandler::State 
 {
 public:
-    State(THandler& parent, elrat::clp::CommandLine& destination);
+    State(THandler&, elrat::clp::CommandLine&);
     virtual ~State();
     virtual void handle(const std::string& token) = 0;
 protected:
-    THandler& parent;
-    elrat::clp::CommandLine& destination;
+    THandler&                   token_handler;
+    elrat::clp::CommandLine&    command_line;
 };
 
 class THandler::InitialState : public THandler::State 
