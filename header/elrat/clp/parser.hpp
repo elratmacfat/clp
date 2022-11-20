@@ -20,6 +20,7 @@ public:
 };
    
 class ParserWrapper
+: public Parser
 {
 public:
     using ParsingFunction = std::function<CommandLine(const std::string&)>;
