@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <elrat/clp.hpp>
 
 using namespace elrat::clp;
