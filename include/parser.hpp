@@ -50,9 +50,10 @@ public:
     THandler& operator=(THandler&&)=default;
     ~THandler()=default;
     void handle(const std::string& token);
+    
     template <class NextState>
     void setNextState() {
-        state = std::make_unique<NextState>(*this);
+        state = std::make_unique<NextState>(*this, destination);
     }
 private:
     class State;
@@ -90,10 +91,10 @@ public:
     void handle(const std::string& token);
 };
 
-class THandler::ReceivedOptionState: public THandler::State 
+class THandler::ReceivedOptionState: public THandler::DefaultState 
 {
 public:
-    using State::State;
+    using DefaultState::DefaultState;
     void handle(const std::string& token);
 };
 

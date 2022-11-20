@@ -233,18 +233,52 @@ THandler::State::~State()
 
 void THandler::InitialState::handle(const std::string& token)
 {
+  if ( !IsIdentifierPlus(token) ) {
+    throw_invalid_argument(token);
+  }
+  this->destination.setCommand(token);
+  this->parent.setNextState<DefaultState>();
 }
 
 void THandler::DefaultState::handle(const std::string& token)
 {
+  if ( IsEqualSign(token) )
+  {
+    throw_invalid_argument(token + " not allowed in this context.");
+  }
+  if ( IsOptionPack(token) ) 
+  {
+    bool redundantOptionsFound{ !add_option_pack(&destination, token) };
+    if (redundantOptionsFound)
+    {
+      throw_invalid_argument(token + " contains option that already exists.");
+    }
+  }
+  else if ( IsOption(token) ) {
+    if ( !add_long_option(&destination, token) )
+      throw_invalid_argument(token + " already exists." );
+    this->parent.setNextState<ReceivedOptionState>();
+  }
+  else {
+    destination.addCommandParameter(token);
+  }
 }
 
 void THandler::ReceivedOptionState::handle(const std::string& token)
 {
+  if( IsEqualSign(token) ) 
+  {
+    parent.setNextState<ReceivedEqualSignState>();
+  }
+  else {
+    DefaultState::handle(token);
+  }
 }
 
 void THandler::ReceivedEqualSignState::handle(const std::string& token)
 {
+  destination.addOptionParameter(token);
+  parent.setNextState<DefaultState>();
 }
 
 //
@@ -289,6 +323,13 @@ CommandLine NativeParser::parse(const std::string& input) const
         throw_invalid_argument("Empty input");
 
     CommandLine result{};
+    THandler token_handler(result);
+    for(auto it = tokens.begin(); it != tokens.end(); ++it)
+    {
+        token_handler.handle(*it);
+    }
+
+    /*
     TokenHandlerFactory factory(&result);
 
     State current_state{ State::Expecting_Command };
@@ -308,6 +349,7 @@ CommandLine NativeParser::parse(const std::string& input) const
             current_state = next_state;
         }
     }
+    */
     return result;
 }
 
