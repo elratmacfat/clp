@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <elrat/clp.hpp>
+#include <elrat/clp/clp.hpp>
 
 using namespace elrat::clp;
 

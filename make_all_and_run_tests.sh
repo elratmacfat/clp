@@ -10,7 +10,7 @@ cd build
 #
 # Run CMake and abort script on failure
 #
-cmake ..
+cmake .. 
 
 if [ $? -ne 0 ]; then
     exit 0

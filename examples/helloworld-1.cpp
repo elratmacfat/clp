@@ -1,4 +1,4 @@
-#include <elrat/clp.hpp>
+#include <elrat/clp/clp.hpp>
 #include <iostream>
 
 using namespace elrat::clp;

@@ -1,5 +1,5 @@
-#ifndef ELRAT_CLP_HPP
-#define ELRAT_CLP_HPP
+#ifndef ELRAT_CLP_CLP_HPP
+#define ELRAT_CLP_CLP_HPP
 
 #include <elrat/clp/command.hpp>
 #include <elrat/clp/commandline.hpp>
