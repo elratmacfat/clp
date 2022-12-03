@@ -28,6 +28,5 @@ fi
 #
 # Run tests
 #
-
-bin/unittest
+ctest
  
