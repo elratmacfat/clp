@@ -39,19 +39,17 @@ using Arguments = std::vector<std::string>;
 extern const bool Mandatory;
 extern const bool Optional;
 
-class ParameterType 
+namespace ParameterType 
 {
-public:
-    static bool Any(const std::string&);
-    static bool NaturalNumber(const std::string&);
-    static bool WholeNumber(const std::string&);
-    static bool RealNumber(const std::string&);
-    static bool Name(const std::string&);
-    static bool Identifier(const std::string&);
-    static bool Path(const std::string&);
-    static bool EmailAddress(const std::string&);
-    ParameterType() = delete;
-};
+    bool Any(const std::string&);
+    bool NaturalNumber(const std::string&);
+    bool WholeNumber(const std::string&);
+    bool RealNumber(const std::string&);
+    bool Name(const std::string&);
+    bool Identifier(const std::string&);
+    bool Path(const std::string&);
+    bool EmailAddress(const std::string&);
+}
 
 template <class T> ConstraintPtr AtLeast(T&& t);
 template <class T> ConstraintPtr AtMost(T&& t);
