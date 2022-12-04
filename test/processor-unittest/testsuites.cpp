@@ -15,8 +15,8 @@ BOOST_AUTO_TEST_SUITE( PROCESSOR )
 
     Processor processor;
 
-    auto cmdAdd = Add::Create();
-    auto descAdd = initializeCommandDescriptor();
+    auto cmdAdd = Add::CreateCommand();
+    auto descAdd = Add::GetDescriptor();
 
     BOOST_AUTO_TEST_CASE( ATTACH_DESCRIPTOR )
     {
@@ -31,12 +31,12 @@ BOOST_AUTO_TEST_SUITE( PROCESSOR )
 
     BOOST_AUTO_TEST_CASE( ATTACH_COMMANDS )
     {
-        BOOST_CHECK_NO_THROW( processor.attach( Add::GetName(), cmdAdd ) );
+        BOOST_CHECK_NO_THROW( processor.attach( descAdd->getName(), cmdAdd ) );
     }
 
     BOOST_AUTO_TEST_CASE( ATTACH_COMMANDS_FAILED )
     {
-        BOOST_CHECK_THROW( processor.attach( Add::GetName(), cmdAdd ),
+        BOOST_CHECK_THROW( processor.attach( descAdd->getName(), cmdAdd ),
             AlreadyInUseException );
     }
 

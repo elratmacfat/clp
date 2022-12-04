@@ -2,34 +2,11 @@
 
 using namespace elrat::clp;
 
-CommandDescriptorPtr initializeCommandDescriptor()
-{
-    return CommandDescriptor::Create(
-        "add",
-        "add two numbers",
-        {
-            ParameterDescriptor::Create(
-                "a",
-                "First number",
-                Mandatory,
-                ParameterType::RealNumber
-            ),
-            ParameterDescriptor::Create(
-                "b",
-                "Second number",
-                Mandatory,
-                ParameterType::RealNumber
-            )
-        }
-    );
-}
-
-
 DescriptorMapPtr initializeDescriptorMapA()
 {
     auto map{ DescriptorMap::Create("MapA") };
 
-    map->attach( initializeCommandDescriptor() );
+    map->attach( Add::GetDescriptor() );
     return map;
 }
 
@@ -40,16 +17,32 @@ DescriptorMapPtr initializeDescriptorMapB()
 }
 
 
-const std::string Add::name("add");
+CommandDescriptorPtr Add::descriptor;
 
-std::shared_ptr<Add> Add::Create() 
+CommandDescriptorPtr Add::GetDescriptor()
 {
-    return std::make_shared<Add>();
+  if (!descriptor) 
+  {
+    ParameterDescriptorPtr first_parameter = ParameterDescriptor::Create(
+	    "a",
+	    "First number",
+	    Mandatory,
+	    ParameterType::RealNumber
+    );
+    ParameterDescriptorPtr second_parameter = ParameterDescriptor::Create(
+      "b",
+  		"Second number",
+  		Mandatory,
+  		ParameterType::RealNumber
+    );
+    descriptor = CommandDescriptor::Create("add", "add two numbers", { first_parameter, second_parameter } );
+  }
+  return descriptor;
 }
 
-const std::string& Add::GetName()
+std::shared_ptr<Add> Add::CreateCommand() 
 {
-    return name;
+    return std::make_shared<Add>();
 }
 
 Add::Add()

@@ -4,7 +4,6 @@
 #include "elrat/clp/command.hpp"
 #include "elrat/clp/descriptors.hpp"
 
-elrat::clp::CommandDescriptorPtr initializeCommandDescriptor();
 elrat::clp::DescriptorMapPtr initializeDescriptorMapA();
 elrat::clp::DescriptorMapPtr initializeDescriptorMapB();
 
@@ -12,8 +11,8 @@ class Add
 : public elrat::clp::Command
 {
 public:
-    static std::shared_ptr<Add> Create();
-    static const std::string& GetName();
+    static elrat::clp::CommandDescriptorPtr GetDescriptor();
+    static std::shared_ptr<Add> CreateCommand();
     Add();
     bool isInitialized() const;
     double getValue() const;
@@ -23,6 +22,7 @@ private:
     bool initialized;
     double result;
     static const std::string name;
+    static elrat::clp::CommandDescriptorPtr descriptor;
 };
 
 #endif
