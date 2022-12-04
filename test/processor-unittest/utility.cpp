@@ -19,7 +19,7 @@ DescriptorMapPtr initializeDescriptorMapB()
 
 CommandDescriptorPtr Add::descriptor;
 
-CommandDescriptorPtr Add::GetDescriptor()
+const CommandDescriptorPtr Add::GetDescriptor()
 {
   if (!descriptor) 
   {

@@ -11,7 +11,7 @@ class Add
 : public elrat::clp::Command
 {
 public:
-    static elrat::clp::CommandDescriptorPtr GetDescriptor();
+    static const elrat::clp::CommandDescriptorPtr GetDescriptor();
     static std::shared_ptr<Add> CreateCommand();
     Add();
     bool isInitialized() const;
